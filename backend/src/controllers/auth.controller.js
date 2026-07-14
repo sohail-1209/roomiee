@@ -1,0 +1,131 @@
+// Auth controller — register, login, refresh, logout
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const prisma = require('../utils/prisma');
+const AppError = require('../utils/AppError');
+const asyncHandler = require('../utils/asyncHandler');
+
+// ─── Token helpers ────────────────────────────
+const signAccessToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '15m' });
+
+const signRefreshToken = (id) =>
+  jwt.sign({ id }, process.env.REFRESH_SECRET, { expiresIn: process.env.REFRESH_EXPIRES_IN || '7d' });
+
+const sendTokens = async (user, res, statusCode = 200) => {
+  const accessToken = signAccessToken(user.id);
+  const refreshToken = signRefreshToken(user.id);
+
+  // Store refresh token in DB
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await prisma.refreshToken.create({ data: { token: refreshToken, userId: user.id, expiresAt } });
+
+  // HttpOnly cookie for web security
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000,
+  });
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  const { password: _, ...safeUser } = user;
+  res.status(statusCode).json({
+    success: true,
+    data: { user: safeUser, accessToken, refreshToken },
+  });
+};
+
+// ─── Register ─────────────────────────────────
+const register = asyncHandler(async (req, res) => {
+  const { name, email, phone, password, role } = req.body;
+
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ email }, ...(phone ? [{ phone }] : [])] },
+  });
+  if (existing) throw new AppError('Email or phone already registered', 409);
+
+  // Only allow TENANT or OWNER on self-registration
+  const allowedRole = ['TENANT', 'OWNER'].includes(role) ? role : 'TENANT';
+
+  const hashed = await bcrypt.hash(password, 12);
+  const user = await prisma.user.create({
+    data: { name, email, phone, password: hashed, role: allowedRole },
+  });
+
+  await sendTokens(user, res, 201);
+});
+
+// ─── Login ────────────────────────────────────
+const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new AppError('Invalid credentials', 401);
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) throw new AppError('Invalid credentials', 401);
+
+  if (user.isBanned) throw new AppError('Account banned', 403);
+
+  await sendTokens(user, res);
+});
+
+// ─── Refresh Token ────────────────────────────
+const refresh = asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken || req.body?.refreshToken;
+  if (!token) throw new AppError('No refresh token', 401);
+
+  const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
+
+  const stored = await prisma.refreshToken.findUnique({ where: { token } });
+  if (!stored || stored.userId !== decoded.id || stored.expiresAt < new Date()) {
+    throw new AppError('Invalid or expired refresh token', 401);
+  }
+
+  // Rotate: delete old, issue new
+  await prisma.refreshToken.delete({ where: { token } });
+
+  const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+  if (!user) throw new AppError('User not found', 401);
+
+  await sendTokens(user, res);
+});
+
+// ─── Logout ───────────────────────────────────
+const logout = asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken || req.body?.refreshToken;
+  if (token) {
+    await prisma.refreshToken.deleteMany({ where: { token } });
+  }
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+  res.json({ success: true, message: 'Logged out' });
+});
+
+// ─── Get current user ─────────────────────────
+const getMe = asyncHandler(async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: {
+      id: true, name: true, email: true, phone: true, role: true,
+      profileImage: true, bio: true, avgRating: true, totalRatings: true,
+      isVerified: true, createdAt: true,
+    },
+  });
+  res.json({ success: true, data: user });
+});
+
+// ─── Update FCM token ─────────────────────────
+const updateFcmToken = asyncHandler(async (req, res) => {
+  const { fcmToken } = req.body;
+  await prisma.user.update({ where: { id: req.user.id }, data: { fcmToken } });
+  res.json({ success: true });
+});
+
+module.exports = { register, login, refresh, logout, getMe, updateFcmToken };

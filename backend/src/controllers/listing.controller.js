@@ -3,8 +3,6 @@ const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const cloudinary = require('../services/cloudinary.service');
-const fs = require('fs');
-const path = require('path');
 
 // ─── Shared listing select (reused in list + detail) ──
 const listingSelect = {
@@ -208,7 +206,7 @@ const createListing = asyncHandler(async (req, res) => {
 const updateListing = asyncHandler(async (req, res) => {
   const listing = await prisma.listing.findUnique({ where: { id: req.params.id } });
   if (!listing) throw new AppError('Listing not found', 404);
-  if (listing.ownerId !== req.user.id && req.user.role !== 'ADMIN') {
+  if (listing.ownerId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'TENANT') {
     throw new AppError('Not authorized', 403);
   }
 
@@ -319,33 +317,16 @@ const deleteListing = asyncHandler(async (req, res) => {
     throw new AppError('Not authorized', 403);
   }
 
-  // Delete photos from Cloudinary/local storage
+  // Delete photos from Cloudinary
   for (const photo of listing.photos) {
-    if (photo.publicId.startsWith('local-')) {
-      const fileName = photo.publicId.substring(6);
-      const localPath = path.join(__dirname, '../../public/uploads', fileName);
-      if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
-    } else {
-      try {
-        await cloudinary.uploader.destroy(photo.publicId);
-      } catch (e) {
-        console.warn('Failed to delete photo from Cloudinary:', e.message);
-      }
+    try {
+      await cloudinary.uploader.destroy(photo.publicId);
+    } catch (e) {
+      console.warn('Failed to delete photo:', e.message);
     }
   }
 
-  // Delete related records in order
-  await prisma.photo.deleteMany({ where: { listingId: listing.id } });
-  await prisma.amenities.deleteMany({ where: { listingId: listing.id } });
-  await prisma.roomSharing.deleteMany({ where: { listingId: listing.id } });
-  await prisma.hostelSharingTier.deleteMany({ where: { hostelSharing: { listingId: listing.id } } });
-  await prisma.hostelSharing.deleteMany({ where: { listingId: listing.id } });
-  await prisma.savedListing.deleteMany({ where: { listingId: listing.id } });
-  await prisma.review.deleteMany({ where: { listingId: listing.id } });
-  await prisma.request.deleteMany({ where: { listingId: listing.id } });
-  await prisma.report.deleteMany({ where: { listingId: listing.id } });
-
-  // Hard delete the listing
+  // Delete listing — all related records cascade via Prisma schema
   await prisma.listing.delete({ where: { id: listing.id } });
   res.json({ success: true, message: 'Listing deleted' });
 });
@@ -360,7 +341,7 @@ const updateListingStatus = asyncHandler(async (req, res) => {
 
   const listing = await prisma.listing.findUnique({ where: { id: req.params.id } });
   if (!listing) throw new AppError('Listing not found', 404);
-  if (listing.ownerId !== req.user.id && req.user.role !== 'ADMIN') {
+  if (listing.ownerId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'TENANT') {
     throw new AppError('Not authorized', 403);
   }
 

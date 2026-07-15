@@ -554,9 +554,9 @@ const CreateListing = () => {
                 )}
                 <button
                   onClick={() => deletePhoto(photo.id)}
-                  className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full hover:bg-red-700 transition-colors opacity-0 group-hover:opacity-100 shadow-md"
+                  className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors md:opacity-0 md:group-hover:opacity-100 shadow-md min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
-                  <Trash2 size={13} />
+                  <Trash2 size={14} />
                 </button>
               </div>
             ))}

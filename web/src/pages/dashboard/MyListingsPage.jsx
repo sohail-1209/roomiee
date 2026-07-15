@@ -97,12 +97,12 @@ const MyListingsPage = () => {
                   </div>
 
                   {/* Radio-style status toggle */}
-                  <div className="flex items-center gap-1.5 mb-3">
+                  <div className="flex items-center gap-1.5 mb-3 flex-wrap">
                     {STATUS_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         onClick={() => updateStatus({ id: listing.id, status: opt.value })}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 min-h-[36px] ${
                           listing.status === opt.value
                             ? `${opt.activeColor} shadow-sm scale-105`
                             : `${opt.color} hover:opacity-80`
@@ -117,17 +117,17 @@ const MyListingsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Link to={getDetailPath(listing)} className="btn btn-sm btn-ghost text-xs px-2 py-1 rounded-lg">
-                      <Eye size={12} /> View
+                    <Link to={getDetailPath(listing)} className="btn btn-sm btn-ghost text-xs px-3 py-2 rounded-lg min-h-[40px]">
+                      <Eye size={14} /> View
                     </Link>
-                    <Link to={`/dashboard/listings/${listing.id}/edit`} className="btn btn-sm btn-secondary text-xs px-2 py-1 rounded-lg">
-                      <Edit size={12} /> Edit
+                    <Link to={`/dashboard/listings/${listing.id}/edit`} className="btn btn-sm btn-secondary text-xs px-3 py-2 rounded-lg min-h-[40px]">
+                      <Edit size={14} /> Edit
                     </Link>
                     <button
                       onClick={() => { if (confirm('Delete this listing?')) deleteListing(listing.id); }}
-                      className="btn btn-sm text-xs px-2 py-1 rounded-lg text-danger-500 hover:bg-danger-50"
+                      className="btn btn-sm text-xs px-3 py-2 rounded-lg text-danger-500 hover:bg-danger-50 min-h-[40px]"
                     >
-                      <Trash2 size={12} />
+                      <Trash2 size={14} /> Delete
                     </button>
                   </div>
                 </div>

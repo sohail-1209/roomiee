@@ -7,7 +7,6 @@ import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
-import MobileDetect from './components/layout/MobileDetect';
 
 // Pages — lazy loaded for performance
 import { lazy, Suspense } from 'react';
@@ -183,8 +182,6 @@ export default function App() {
               }}
             />
 
-            {/* Mobile detection — toast + auto location */}
-            <MobileDetect />
           </BrowserRouter>
         </SocketProvider>
       </AuthProvider>

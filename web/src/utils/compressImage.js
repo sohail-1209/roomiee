@@ -30,7 +30,6 @@ export function compressImage(file, { maxWidth = 1200, maxHeight = 900, maxSizeK
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Iteratively reduce quality to hit target size
         const tryCompress = (quality) => {
           canvas.toBlob(
             (blob) => {
@@ -39,22 +38,27 @@ export function compressImage(file, { maxWidth = 1200, maxHeight = 900, maxSizeK
                 return;
               }
 
-              // If still too large and quality > 0.1, try again with lower quality
-              if (blob.size > maxSizeKB * 1024 && quality > 0.1) {
+              if (blob.size <= maxSizeKB * 1024) {
+                const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve({ file: compressed, originalSize, compressedSize: compressed.size });
+                return;
+              }
+
+              if (quality > 0.15) {
                 tryCompress(quality - 0.1);
                 return;
               }
 
-              // Also try reducing dimensions if still too large
-              if (blob.size > maxSizeKB * 1024 && width > 200 && height > 200) {
-                const newW = Math.round(width * 0.7);
-                const newH = Math.round(height * 0.7);
-                canvas.width = newW;
-                canvas.height = newH;
-                ctx.drawImage(img, 0, 0, newW, newH);
-                width = newW;
-                height = newH;
-                tryCompress(quality);
+              if (width > 200 && height > 200) {
+                width = Math.round(width * 0.7);
+                height = Math.round(height * 0.7);
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+                tryCompress(0.6);
                 return;
               }
 

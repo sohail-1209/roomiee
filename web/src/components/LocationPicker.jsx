@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import toast from 'react-hot-toast';
 import { MapPin, Crosshair, Loader2 } from 'lucide-react';
 
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
@@ -58,25 +59,6 @@ const LocationPicker = ({ latitude, longitude, onChange }) => {
     };
   }, []);
 
-  // Auto-request location on small screens when map is ready
-  useEffect(() => {
-    if (!mapReady) return;
-    const isSmallScreen = window.innerWidth < 768;
-    const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost';
-    if (isSmallScreen && isSecure && !latitude && !longitude && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const lat = Number(pos.coords.latitude.toFixed(6));
-          const lng = Number(pos.coords.longitude.toFixed(6));
-          updateMarker(lng, lat);
-          onChange(lat, lng);
-        },
-        () => {},
-        { enableHighAccuracy: false, timeout: 8000 }
-      );
-    }
-  }, [mapReady]);
-
   // Sync marker when lat/lng props change externally (e.g. from address autocomplete)
   useEffect(() => {
     if (mapReady && latitude && longitude) {
@@ -88,11 +70,11 @@ const LocationPicker = ({ latitude, longitude, onChange }) => {
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
+      toast.error('Geolocation is not supported by your browser');
       return;
     }
     if (!isSecure) {
-      alert('Location requires HTTPS. Use localhost or access via HTTPS to use current location.\n\nYou can still click on the map to set coordinates.');
+      toast('Location requires HTTPS. You can still click on the map to set coordinates.', { duration: 5000 });
       return;
     }
     setGettingLocation(true);
@@ -103,13 +85,14 @@ const LocationPicker = ({ latitude, longitude, onChange }) => {
         updateMarker(lng, lat);
         onChange(lat, lng);
         setGettingLocation(false);
+        toast.success('Location set!');
       },
       (err) => {
         console.error('Geolocation error:', err);
         if (err.code === 1) {
-          alert('Location permission denied. Please allow location access in your browser settings.');
+          toast.error('Location permission denied. Please allow location access in your browser settings.');
         } else {
-          alert('Unable to get your location. Please try again or select on the map.');
+          toast.error('Unable to get your location. Please try again or select on the map.');
         }
         setGettingLocation(false);
       },

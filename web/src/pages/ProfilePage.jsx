@@ -33,13 +33,13 @@ const ProfilePage = () => {
   });
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
     setUploading(true);
     try {
-      const compressed = await compressImage(file, { maxWidth: 500, maxHeight: 500, quality: 0.8 });
+      const { file } = await compressImage(original, { maxWidth: 500, maxHeight: 500, quality: 0.8 });
       const fd = new FormData();
-      fd.append('photo', compressed);
+      fd.append('photo', file);
       const { data } = await uploadAPI.profilePhoto(fd);
       updateUser({ profileImage: data.data.url });
       toast.success('Photo updated!');

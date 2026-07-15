@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import {
   Home,
   Search,
@@ -76,7 +77,7 @@ export default function Navbar() {
 
   const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
 
-  // PWA install prompt — store globally for MobileDetect
+  // PWA install prompt — store globally
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
@@ -102,9 +103,9 @@ export default function Navbar() {
       // Fallback: show instructions
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes('Mac') && 'ontouchend' in window);
       if (isIOS) {
-        alert('To install:\n1. Tap Share ⬇️\n2. "Add to Home Screen"');
+        toast('To install: Tap Share → "Add to Home Screen"', { duration: 5000, icon: '📱' });
       } else {
-        alert('To install: tap ⋮ menu → "Add to Home screen"');
+        toast('To install: tap ⋮ menu → "Add to Home screen"', { duration: 5000, icon: '📱' });
       }
     }
   };

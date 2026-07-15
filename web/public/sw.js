@@ -1,4 +1,4 @@
-const CACHE_NAME = 'houziee-v4';
+const CACHE_NAME = 'houziee-v5';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -24,23 +24,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // JS/CSS - network first (Vite HMR)
+  // JS/CSS - network first, cache fallback
   if (request.url.includes('.js') || request.url.includes('.css')) {
     event.respondWith(
       fetch(request).then((res) => {
-        if (res.ok) caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(request, clone));
+        }
         return res;
       }).catch(() => caches.match(request))
     );
     return;
   }
 
-  // Images & other assets - cache first
+  // Images & other assets - cache first, network fallback
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
       return fetch(request).then((res) => {
-        if (res.ok) caches.open(CACHE_NAME).then((c) => c.put(request, res.clone()));
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(request, clone));
+        }
         return res;
       });
     })

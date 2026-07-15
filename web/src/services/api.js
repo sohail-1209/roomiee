@@ -1,9 +1,9 @@
 // Axios instance — single configured instance for all API calls
 import axios from 'axios';
 
-// In production, VITE_API_URL points to the deployed backend.
-// In development, '/api' is proxied by Vite to localhost:5000.
-const baseURL = import.meta.env.VITE_API_URL || '/api';
+// Auto-detect: localhost = use proxy (/api), production = use VITE_API_URL
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const baseURL = isLocal ? '/api' : (import.meta.env.VITE_API_URL || '/api');
 
 const api = axios.create({
   baseURL,
@@ -32,7 +32,6 @@ api.interceptors.response.use(
   async (error) => {
     const original = error.config;
 
-    // Do not attempt token refresh for login, register or refresh requests
     const isAuthRequest = original.url?.includes('/auth/login') ||
                           original.url?.includes('/auth/register') ||
                           original.url?.includes('/auth/refresh');

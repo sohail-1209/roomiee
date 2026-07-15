@@ -3,7 +3,9 @@ import axios from 'axios';
 
 // Auto-detect: localhost = use proxy (/api), production = use VITE_API_URL
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const baseURL = isLocal ? '/api' : (import.meta.env.VITE_API_URL || '/api');
+const baseURL = isLocal
+  ? '/api'
+  : import.meta.env.VITE_API_URL || 'https://roomiee.onrender.com';
 
 const api = axios.create({
   baseURL,

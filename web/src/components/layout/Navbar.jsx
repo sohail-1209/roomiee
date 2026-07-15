@@ -219,8 +219,8 @@ export default function Navbar() {
 
                   {/* Notifications dropdown */}
                   {notifOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-80 max-h-96 card py-0 z-50 overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-surface-100">
+                    <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] sm:max-h-96 rounded-2xl bg-surface-50/80 backdrop-blur-xl border border-surface-200/60 shadow-xl shadow-surface-900/5 py-0 z-50 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-surface-200/60">
                         <h3 className="font-semibold text-surface-900 text-sm">Notifications</h3>
                         {unreadCount > 0 && (
                           <button
@@ -232,10 +232,11 @@ export default function Navbar() {
                           </button>
                         )}
                       </div>
-                      <div className="overflow-y-auto max-h-72">
+                      <div className="overflow-y-auto max-h-[60vh] sm:max-h-72">
                         {notifData?.length === 0 ? (
-                          <div className="px-4 py-8 text-center text-surface-400 text-sm">
-                            No notifications yet
+                          <div className="px-4 py-10 text-center text-surface-400 text-sm">
+                            <Bell size={32} className="mx-auto mb-2 opacity-30" />
+                            <p>No notifications yet</p>
                           </div>
                         ) : (
                           notifData?.slice(0, 20).map((notif) => (
@@ -252,18 +253,18 @@ export default function Navbar() {
                                 }
                                 setNotifOpen(false);
                               }}
-                              className={`w-full text-left px-4 py-3 hover:bg-surface-50 transition-colors border-b border-surface-50 ${
-                                !notif.read ? 'bg-primary-50/40' : ''
+                              className={`w-full text-left px-4 py-3.5 sm:py-3 hover:bg-surface-100/60 active:bg-surface-100 transition-colors border-b border-surface-100/60 last:border-0 ${
+                                !notif.read ? 'bg-primary-50/50' : ''
                               }`}
                             >
                               <div className="flex items-start gap-3">
-                                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                                  !notif.read ? 'bg-primary-500' : 'bg-transparent'
+                                <div className={`w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${
+                                  !notif.read ? 'bg-primary-500 shadow-sm shadow-primary-500/50' : 'bg-surface-300'
                                 }`} />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-surface-900">{notif.title}</p>
-                                  <p className="text-sm text-surface-600 line-clamp-2 mt-0.5">{notif.body}</p>
-                                  <p className="text-xs text-surface-400 mt-1">{timeAgo(notif.createdAt)}</p>
+                                  <p className="text-sm font-semibold text-surface-900">{notif.title}</p>
+                                  <p className="text-sm text-surface-600 line-clamp-2 mt-0.5 leading-relaxed">{notif.body}</p>
+                                  <p className="text-xs text-surface-400 mt-1.5">{timeAgo(notif.createdAt)}</p>
                                 </div>
                               </div>
                             </button>

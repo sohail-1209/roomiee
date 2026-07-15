@@ -4,7 +4,7 @@ const { protect, restrictTo } = require('../middleware/auth.middleware');
 
 router.get('/', protect, getRequests);
 router.post('/', protect, restrictTo('TENANT'), createRequest);
-router.patch('/:id', protect, restrictTo('OWNER'), updateRequest);
+router.patch('/:id', protect, updateRequest);
 router.get('/:id/contact', protect, restrictTo('TENANT'), getContact);
 
 module.exports = router;

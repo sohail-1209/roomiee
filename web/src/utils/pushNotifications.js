@@ -40,8 +40,11 @@ export async function subscribeToPush() {
     const { endpoint, keys } = subscription.toJSON();
     await api.post('/push/subscribe', { endpoint, p256dh: keys.p256dh, auth: keys.auth });
 
-    // Send welcome notifications
-    await api.post('/push/welcome');
+    // Send welcome notifications only once per user
+    if (!localStorage.getItem('welcomeNotifSent')) {
+      await api.post('/push/welcome');
+      localStorage.setItem('welcomeNotifSent', 'true');
+    }
 
     return true;
   } catch (err) {

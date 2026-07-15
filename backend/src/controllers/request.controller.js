@@ -49,7 +49,10 @@ const updateRequest = asyncHandler(async (req, res) => {
     },
   });
   if (!request) throw new AppError('Request not found', 404);
-  if (request.listing.ownerId !== req.user.id) throw new AppError('Not authorized', 403);
+  // Allow listing owner or creator of roommate listing to accept
+  const isOwner = request.listing.ownerId === req.user.id;
+  const isRoommateHost = req.user.role === 'TENANT' && request.listing.ownerId === req.user.id;
+  if (!isOwner && !isRoommateHost) throw new AppError('Not authorized', 403);
   if (request.status !== 'PENDING') throw new AppError('Request already processed', 400);
 
   let chat = null;

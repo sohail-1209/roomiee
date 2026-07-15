@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.login(credentials);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
-    // Subscribe to push notifications after login
+    // Subscribe to push on login (welcome already sent at registration)
     subscribeToPush().catch(() => {});
     return data.data.user;
   };
@@ -37,8 +37,10 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.register(payload);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
-    // Subscribe to push notifications after registration
-    subscribeToPush().catch(() => {});
+    // Subscribe to push and send welcome notifications (only on first registration)
+    subscribeToPush().then(() => {
+      localStorage.setItem('welcomeNotifSent', data.data.user.id);
+    }).catch(() => {});
     return data.data.user;
   };
 

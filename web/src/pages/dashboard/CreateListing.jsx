@@ -333,15 +333,15 @@ const CreateListing = () => {
           </div>
           <div className="space-y-3">
             {form.hostelSharing.tiers.map((tier, idx) => (
-              <div key={idx} className="flex items-end gap-3 p-3 bg-surface-50 rounded-xl">
+              <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 p-3 bg-surface-50 rounded-xl">
                 <div className="flex-1">
                   <Input label="No. of Sharing" type="number" value={tier.sharingSize} onChange={(e) => setHSTier(idx, 'sharingSize', e.target.value)} placeholder="e.g. 2, 3, 4" />
                 </div>
                 <div className="flex-1">
                   <Input label="Price ₹/mo" type="number" value={tier.price} onChange={(e) => setHSTier(idx, 'price', e.target.value)} placeholder="e.g. 5000" />
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer pb-2">
-                  <input type="checkbox" checked={tier.available} onChange={(e) => setHSTier(idx, 'available', e.target.checked)} className="w-4 h-4 accent-primary-600" />
+                <label className="flex items-center gap-2 cursor-pointer min-h-[44px] sm:pb-2">
+                  <input type="checkbox" checked={tier.available} onChange={(e) => setHSTier(idx, 'available', e.target.checked)} className="w-5 h-5 accent-primary-600" />
                   <span className="text-xs text-surface-600">Available</span>
                 </label>
                 {form.hostelSharing.tiers.length > 1 && (
@@ -358,12 +358,12 @@ const CreateListing = () => {
 
       {form.type !== 'HOSTEL' && form.type !== 'LAND_SALE' && (
         <>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input label="Rent (₹/mo)" type="number" value={form.rent} onChange={(e) => set('rent', e.target.value)} />
             <Input label="Deposit (₹)" type="number" value={form.deposit} onChange={(e) => set('deposit', e.target.value)} />
             <Input label="Maintenance (₹)" type="number" value={form.maintenance} onChange={(e) => set('maintenance', e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Bedrooms" type="number" value={form.bedrooms} onChange={(e) => set('bedrooms', e.target.value)} />
             <Input label="Bathrooms" type="number" value={form.bathrooms} onChange={(e) => set('bathrooms', e.target.value)} />
           </div>
@@ -371,7 +371,7 @@ const CreateListing = () => {
       )}
 
       {form.type === 'HOSTEL' && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Deposit (₹)" type="number" value={form.deposit} onChange={(e) => set('deposit', e.target.value)} />
           <Input label="Available From" type="date" value={form.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} />
         </div>
@@ -379,7 +379,7 @@ const CreateListing = () => {
 
       {form.type === 'LAND_SALE' && (
         <>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Total Price (₹)" type="number" value={form.rent} onChange={(e) => set('rent', e.target.value)} placeholder="e.g. 2500000" />
             <Input label="Area (sqft)" type="number" value={form.areaSqFt} onChange={(e) => set('areaSqFt', e.target.value)} placeholder="e.g. 1200" />
           </div>
@@ -388,17 +388,17 @@ const CreateListing = () => {
       )}
 
       {form.type !== 'HOSTEL' && form.type !== 'LAND_SALE' && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Area (sqft)" type="number" value={form.areaSqFt} onChange={(e) => set('areaSqFt', e.target.value)} />
           <Input label="Available From" type="date" value={form.availableFrom} onChange={(e) => set('availableFrom', e.target.value)} />
         </div>
       )}
 
       {form.type !== 'LAND_SALE' && (
-        <div className="flex gap-6">
+        <div className="flex flex-wrap gap-4 sm:gap-6">
           {[['furnished', 'Furnished'], ['balcony', 'Has Balcony'], ['parking', 'Parking Available']].map(([key, label]) => (
-            <label key={key} className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)} className="w-4 h-4 accent-primary-600" />
+            <label key={key} className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+              <input type="checkbox" checked={form[key]} onChange={(e) => set(key, e.target.checked)} className="w-5 h-5 accent-primary-600" />
               <span className="text-sm text-surface-700">{label}</span>
             </label>
           ))}
@@ -421,7 +421,7 @@ const CreateListing = () => {
           className="w-full"
         />
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute left-0 right-0 z-50 bg-white border border-surface-200 rounded-xl mt-1 shadow-lg max-h-48 overflow-y-auto py-1">
+          <div className="absolute left-0 right-0 z-50 bg-surface-50/95 backdrop-blur-xl border border-surface-200/60 rounded-xl mt-1 shadow-lg max-h-48 overflow-y-auto py-1">
             {suggestions.map((s, idx) => (
               <button
                 key={idx}
@@ -450,7 +450,7 @@ const CreateListing = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input label="City" value={form.city} onChange={(e) => set('city', e.target.value)} />
         <Input label="State" value={form.state} onChange={(e) => set('state', e.target.value)} />
       </div>
@@ -468,7 +468,7 @@ const CreateListing = () => {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input label="Latitude" type="number" step="any" value={form.latitude} onChange={(e) => set('latitude', e.target.value)} placeholder="e.g. 17.3850" />
         <Input label="Longitude" type="number" step="any" value={form.longitude} onChange={(e) => set('longitude', e.target.value)} placeholder="e.g. 78.4867" />
       </div>
@@ -477,10 +477,10 @@ const CreateListing = () => {
     // Step 2 — Amenities
     <div key="amenities" className="space-y-3">
       <p className="text-sm text-surface-500">Select all amenities available at this property</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {AMENITY_FIELDS.map((key) => (
-          <label key={key} className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${form.amenities[key] ? 'border-primary-500 bg-primary-50' : 'border-surface-200 hover:border-surface-300'}`}>
-            <input type="checkbox" checked={form.amenities[key]} onChange={(e) => setAmenity(key, e.target.checked)} className="w-4 h-4 accent-primary-600" />
+          <label key={key} className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all min-h-[48px] ${form.amenities[key] ? 'border-primary-500 bg-primary-50' : 'border-surface-200 hover:border-surface-300'}`}>
+            <input type="checkbox" checked={form.amenities[key]} onChange={(e) => setAmenity(key, e.target.checked)} className="w-5 h-5 accent-primary-600" />
             <span className="text-sm font-medium text-surface-700">{AMENITY_LABELS[key]}</span>
           </label>
         ))}
@@ -493,18 +493,18 @@ const CreateListing = () => {
         <>
           <Select label="Gender Preference" value={form.roomSharing.genderRequired} onChange={(e) => setRS('genderRequired', e.target.value)}
             options={[{ value: 'ANY', label: 'Any' }, { value: 'MALE', label: 'Male Only' }, { value: 'FEMALE', label: 'Female Only' }]} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Min Age" type="number" value={form.roomSharing.minAge} onChange={(e) => setRS('minAge', e.target.value)} />
             <Input label="Max Age" type="number" value={form.roomSharing.maxAge} onChange={(e) => setRS('maxAge', e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Current Occupants" type="number" value={form.roomSharing.currentOccupants} onChange={(e) => setRS('currentOccupants', e.target.value)} />
             <Input label="Total Rooms" type="number" value={form.roomSharing.totalRooms} onChange={(e) => setRS('totalRooms', e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[['smoking', 'Smoking Allowed'], ['drinking', 'Drinking Allowed'], ['vegOnly', 'Veg Only'], ['petsAllowed', 'Pets Allowed']].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 cursor-pointer p-3 border rounded-xl hover:bg-surface-50">
-                <input type="checkbox" checked={form.roomSharing[key]} onChange={(e) => setRS(key, e.target.checked)} className="w-4 h-4 accent-primary-600" />
+              <label key={key} className="flex items-center gap-2 cursor-pointer min-h-[44px] p-3 border rounded-xl hover:bg-surface-50">
+                <input type="checkbox" checked={form.roomSharing[key]} onChange={(e) => setRS(key, e.target.checked)} className="w-5 h-5 accent-primary-600" />
                 <span className="text-sm text-surface-700">{label}</span>
               </label>
             ))}
@@ -514,14 +514,14 @@ const CreateListing = () => {
         <>
           <Select label="Gender Preference" value={form.hostelSharing.genderRequired} onChange={(e) => setHS('genderRequired', e.target.value)}
             options={[{ value: 'ANY', label: 'Any' }, { value: 'MALE', label: 'Male Only' }, { value: 'FEMALE', label: 'Female Only' }]} />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input label="Min Age" type="number" value={form.hostelSharing.minAge} onChange={(e) => setHS('minAge', e.target.value)} />
             <Input label="Max Age" type="number" value={form.hostelSharing.maxAge} onChange={(e) => setHS('maxAge', e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[['smoking', 'Smoking Allowed'], ['drinking', 'Drinking Allowed'], ['vegOnly', 'Veg Only'], ['petsAllowed', 'Pets Allowed']].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 cursor-pointer p-3 border rounded-xl hover:bg-surface-50">
-                <input type="checkbox" checked={form.hostelSharing[key]} onChange={(e) => setHS(key, e.target.checked)} className="w-4 h-4 accent-primary-600" />
+              <label key={key} className="flex items-center gap-2 cursor-pointer min-h-[44px] p-3 border rounded-xl hover:bg-surface-50">
+                <input type="checkbox" checked={form.hostelSharing[key]} onChange={(e) => setHS(key, e.target.checked)} className="w-5 h-5 accent-primary-600" />
                 <span className="text-sm text-surface-700">{label}</span>
               </label>
             ))}
@@ -545,7 +545,7 @@ const CreateListing = () => {
 
         {/* Existing photos */}
         {listingData?.photos?.length > 0 && (
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {listingData.photos.map((photo, idx) => (
               <div key={photo.id} className="relative aspect-square rounded-2xl overflow-hidden group border border-surface-100">
                 <img src={photo.url} alt="" className="w-full h-full object-cover" />
@@ -658,7 +658,7 @@ const CreateListing = () => {
               </div>
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-surface-200" /></div>
-                <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-surface-400">OR</span></div>
+                <div className="relative flex justify-center"><span className="bg-surface-50/80 px-3 text-xs text-surface-400">OR</span></div>
               </div>
             </>
           )}
@@ -705,15 +705,15 @@ const CreateListing = () => {
           {steps[step]}
         </div>
 
-        <div className="flex justify-between mt-4">
-          <Button variant="secondary" size="md" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+        <div className="flex flex-col sm:flex-row justify-between gap-3 mt-4">
+          <Button variant="secondary" size="lg" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="w-full sm:w-auto min-h-[48px]">
             Previous
           </Button>
           {step < activeStepsList.length - 1 ? (
-            <Button variant="primary" size="md" onClick={() => setStep((s) => s + 1)}>Next</Button>
+            <Button variant="primary" size="lg" onClick={() => setStep((s) => s + 1)} className="w-full sm:w-auto min-h-[48px]">Next</Button>
           ) : (
-            <Button variant="primary" size="md" loading={isPending} onClick={() => save()}>
-              🚀 {isEdit ? 'Save Listing' : 'Create Listing'}
+            <Button variant="primary" size="lg" loading={isPending} onClick={() => save()} className="w-full sm:w-auto min-h-[48px]">
+              {isEdit ? 'Save Listing' : 'Create Listing'}
             </Button>
           )}
         </div>

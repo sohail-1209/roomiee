@@ -4,7 +4,7 @@
   "description": "India's easiest platform to find rental houses, rooms, and roommates.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "background_color": "#FFFDF7",
   "theme_color": "#4f46e5",
   "orientation": "portrait-primary",
   "scope": "/",

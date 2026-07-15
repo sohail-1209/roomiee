@@ -1,4 +1,4 @@
-const CACHE_NAME = 'houziee-v5';
+const CACHE_NAME = 'houziee-v6';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -18,13 +18,11 @@ self.addEventListener('fetch', (event) => {
   if (request.url.includes('/proxy/')) return;
   if (request.url.includes('/socket.io')) return;
 
-  // Navigation - network first
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
     return;
   }
 
-  // JS/CSS - network first, cache fallback
   if (request.url.includes('.js') || request.url.includes('.css')) {
     event.respondWith(
       fetch(request).then((res) => {
@@ -38,7 +36,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Images & other assets - cache first, network fallback
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
@@ -49,6 +46,47 @@ self.addEventListener('fetch', (event) => {
         }
         return res;
       });
+    })
+  );
+});
+
+// ── Push Notifications ──
+self.addEventListener('push', (event) => {
+  let data = { title: 'Houziee', body: 'You have a new notification' };
+  if (event.data) {
+    try { data = event.data.json(); } catch { data.body = event.data.text(); }
+  }
+
+  const options = {
+    body: data.body,
+    icon: '/icons/icon-192x192.svg',
+    badge: '/icons/icon-192x192.svg',
+    vibrate: [200, 100, 200],
+    data: data.data || {},
+    actions: [
+      { action: 'open', title: 'Open' },
+      { action: 'dismiss', title: 'Dismiss' },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'dismiss') return;
+
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then((clients) => {
+      for (const client of clients) {
+        if (client.url.includes(self.registration.scope) && 'focus' in client) {
+          client.focus();
+          client.navigate(url);
+          return;
+        }
+      }
+      self.clients.openWindow(url);
     })
   );
 });

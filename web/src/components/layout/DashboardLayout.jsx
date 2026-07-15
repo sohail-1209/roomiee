@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }) {
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Mobile top bar with hamburger */}
-        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-surface-100 sticky top-16 z-20">
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 bg-surface-50/80 backdrop-blur-xl border-b border-surface-100/60 sticky top-16 z-20">
           <button
             onClick={() => setDrawerOpen((v) => !v)}
             className="btn btn-ghost p-2 rounded-xl"

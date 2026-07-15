@@ -39,7 +39,7 @@ const ChatPage = () => {
         {chatId && otherUser ? (
           <div className="w-full">
             {/* Mobile back button */}
-            <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-surface-100 bg-white">
+            <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-surface-100/60 bg-surface-50/80 backdrop-blur-xl">
               <button
                 onClick={() => navigate('/dashboard/chats')}
                 className="p-2 -ml-2 hover:bg-surface-100 rounded-xl transition-colors"

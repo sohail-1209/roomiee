@@ -157,7 +157,7 @@ const RegisterPage = () => {
       </div>
 
       {/* Right panel - Registration Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-surface-50/50">
         <div className="max-w-md w-full space-y-6">
           <div className="text-center lg:text-left">
             <h2 className="font-display font-bold text-3xl text-surface-900 tracking-tight">

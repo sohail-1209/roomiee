@@ -225,7 +225,7 @@ export default function LoginPage() {
         </div>
 
         {/* Glass card */}
-        <div className="w-full max-w-md bg-white/80 backdrop-blur-md border border-surface-100 rounded-3xl shadow-card p-8 md:p-10">
+        <div className="w-full max-w-md bg-surface-50/70 backdrop-blur-xl border border-surface-100/60 rounded-3xl shadow-card p-8 md:p-10">
           {/* Heading */}
           <div className="mb-8">
             <h2 className="font-display font-bold text-2xl text-surface-900 tracking-tight">
@@ -240,7 +240,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 border border-surface-200 rounded-xl px-4 py-3 text-sm font-medium text-surface-700 bg-white hover:bg-surface-50 hover:border-surface-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 active:scale-[0.99]"
+            className="w-full flex items-center justify-center gap-3 border border-surface-200/60 rounded-xl px-4 py-3 text-sm font-medium text-surface-700 bg-surface-50/80 hover:bg-surface-50 hover:border-surface-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 active:scale-[0.99]"
           >
             <GoogleIcon />
             Continue with Google

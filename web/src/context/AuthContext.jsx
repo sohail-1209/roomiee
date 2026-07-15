@@ -1,6 +1,7 @@
 // Auth Context — global auth state shared across the entire app
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/endpoints';
+import { subscribeToPush } from '../utils/pushNotifications';
 
 const AuthContext = createContext(null);
 
@@ -14,7 +15,11 @@ export const AuthProvider = ({ children }) => {
     if (!token) return setLoading(false);
 
     authAPI.getMe()
-      .then(({ data }) => setUser(data.data))
+      .then(({ data }) => {
+        setUser(data.data);
+        // Subscribe to push if user is already logged in
+        subscribeToPush().catch(() => {});
+      })
       .catch(() => localStorage.removeItem('accessToken'))
       .finally(() => setLoading(false));
   }, []);
@@ -23,6 +28,8 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.login(credentials);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
+    // Subscribe to push notifications after login
+    subscribeToPush().catch(() => {});
     return data.data.user;
   };
 
@@ -30,6 +37,8 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.register(payload);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
+    // Subscribe to push notifications after registration
+    subscribeToPush().catch(() => {});
     return data.data.user;
   };
 

@@ -83,7 +83,7 @@ export default function Sidebar({ role }) {
   const items = MENUS[role] ?? MENUS.TENANT;
 
   return (
-    <aside className="flex flex-col h-full bg-white border-r border-surface-100 px-3 py-6 gap-1">
+    <aside className="flex flex-col h-full bg-surface-50/80 backdrop-blur-xl border-r border-surface-100/60 px-3 py-6 gap-1">
       {/* Section label */}
       <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-surface-400">
         {role === 'ADMIN' ? 'Admin Panel' : 'My Account'}

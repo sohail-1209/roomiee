@@ -10,6 +10,7 @@ import {
 import { listingsAPI } from '../services/endpoints';
 import ListingCard from '../components/listing/ListingCard';
 import Navbar from '../components/layout/Navbar';
+import { sessionCache } from '../utils/sessionCache';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -47,9 +48,9 @@ const HOW_IT_WORKS = [
 ];
 
 const STATS = [
-  { value: '500+', label: 'Listings', Icon: Building2 },
-  { value: '200+', label: 'Cities',   Icon: MapPin },
-  { value: '1000+', label: 'Happy Tenants', Icon: Star },
+  { value: '500+', label: 'Listings Goal', Icon: Building2 },
+  { value: '10+', label: 'Cities Target',   Icon: MapPin },
+  { value: '100%', label: 'Free to Use', Icon: Star },
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -86,7 +87,7 @@ const HScrollRow = ({ children, isLoading, skeletonCount = 4 }) => {
       {/* Left arrow */}
       <button
         onClick={() => scroll(-1)}
-        className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-surface-100 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
+        className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-50/80 backdrop-blur-sm shadow-lg border border-surface-100/60 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
         aria-label="Scroll left"
       >
         <ChevronLeft size={18} />
@@ -103,7 +104,7 @@ const HScrollRow = ({ children, isLoading, skeletonCount = 4 }) => {
       {/* Right arrow */}
       <button
         onClick={() => scroll(1)}
-        className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white shadow-lg border border-surface-100 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
+        className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-50/80 backdrop-blur-sm shadow-lg border border-surface-100/60 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
         aria-label="Scroll right"
       >
         <ChevronRight size={18} />
@@ -129,29 +130,53 @@ export default function HomePage() {
   /* ── Data fetching ── */
   const { data: houseData, isLoading: houseLoading } = useQuery({
     queryKey: ['home-house-listings'],
-    queryFn: () => listingsAPI.getAll({ type: 'HOUSE_RENTAL', limit: 6 }),
-    select: (res) => res.data?.data ?? res.data ?? [],
+    queryFn: async () => {
+      const res = await listingsAPI.getAll({ type: 'HOUSE_RENTAL', limit: 6 });
+      const data = res.data?.data ?? res.data ?? [];
+      sessionCache.set('home-house', data, 10 * 60 * 1000);
+      return data;
+    },
+    initialData: () => sessionCache.get('home-house'),
+    select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
 
   const { data: roomData, isLoading: roomLoading } = useQuery({
     queryKey: ['home-room-listings'],
-    queryFn: () => listingsAPI.getAll({ type: 'ROOM_SHARING', limit: 6 }),
-    select: (res) => res.data?.data ?? res.data ?? [],
+    queryFn: async () => {
+      const res = await listingsAPI.getAll({ type: 'ROOM_SHARING', limit: 6 });
+      const data = res.data?.data ?? res.data ?? [];
+      sessionCache.set('home-room', data, 10 * 60 * 1000);
+      return data;
+    },
+    initialData: () => sessionCache.get('home-room'),
+    select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
 
   const { data: hostelData, isLoading: hostelLoading } = useQuery({
     queryKey: ['home-hostel-listings'],
-    queryFn: () => listingsAPI.getAll({ type: 'HOSTEL', limit: 6 }),
-    select: (res) => res.data?.data ?? res.data ?? [],
+    queryFn: async () => {
+      const res = await listingsAPI.getAll({ type: 'HOSTEL', limit: 6 });
+      const data = res.data?.data ?? res.data ?? [];
+      sessionCache.set('home-hostel', data, 10 * 60 * 1000);
+      return data;
+    },
+    initialData: () => sessionCache.get('home-hostel'),
+    select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
 
   const { data: landData, isLoading: landLoading } = useQuery({
     queryKey: ['home-land-listings'],
-    queryFn: () => listingsAPI.getAll({ type: 'LAND_SALE', limit: 6 }),
-    select: (res) => res.data?.data ?? res.data ?? [],
+    queryFn: async () => {
+      const res = await listingsAPI.getAll({ type: 'LAND_SALE', limit: 6 });
+      const data = res.data?.data ?? res.data ?? [];
+      sessionCache.set('home-land', data, 10 * 60 * 1000);
+      return data;
+    },
+    initialData: () => sessionCache.get('home-land'),
+    select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
 
@@ -175,7 +200,7 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════
           HERO SECTION
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-white pt-8 pb-20 sm:pt-12 sm:pb-28">
+      <section className="relative overflow-hidden bg-surface-50/50 pt-8 pb-20 sm:pt-12 sm:pb-28">
 
         {/* Animated dot-grid background */}
         <div
@@ -248,7 +273,7 @@ export default function HomePage() {
                   onClick={() => setListingType(value)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                     listingType === value
-                      ? 'bg-white text-primary-600 shadow-sm border border-surface-100'
+                      ? 'bg-surface-50/80 text-primary-600 shadow-sm border border-surface-100/60'
                       : 'text-surface-500 hover:text-surface-700'
                   }`}
                 >
@@ -283,18 +308,29 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          STATS BAR
+          MISSION + STATS BAR
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="bg-gradient-to-r from-primary-600 to-accent-500 py-6">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="grid grid-cols-3 divide-x divide-white/20">
-            {STATS.map(({ value, label, Icon }) => (
-              <div key={label} className="flex flex-col items-center gap-1 text-white px-4">
-                <Icon size={20} className="opacity-80" />
-                <span className="font-display font-bold text-2xl sm:text-3xl">{value}</span>
-                <span className="text-white/70 text-xs sm:text-sm font-medium">{label}</span>
-              </div>
-            ))}
+      <section className="py-12 px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto text-center mb-8">
+          <h2 className="font-display font-bold text-2xl sm:text-3xl text-surface-900 mb-3">
+            We aim to make finding a home <span className="gradient-text">effortless</span>
+          </h2>
+          <p className="text-surface-500 text-sm sm:text-base max-w-xl mx-auto">
+            No brokers, no hidden fees. Connect directly with owners, compare options, and move into your next home with confidence.
+          </p>
+        </div>
+        <div className="bg-gradient-to-r from-primary-600 to-accent-500 py-6 rounded-2xl">
+          <div className="max-w-4xl mx-auto px-4">
+            <p className="text-white/50 text-xs text-center mb-4 font-medium tracking-wide uppercase">Our Targets</p>
+            <div className="grid grid-cols-3 divide-x divide-white/20">
+              {STATS.map(({ value, label, Icon }) => (
+                <div key={label} className="flex flex-col items-center gap-1 text-white px-4">
+                  <Icon size={20} className="opacity-80" />
+                  <span className="font-display font-bold text-2xl sm:text-3xl">{value}</span>
+                  <span className="text-white/70 text-xs sm:text-sm font-medium">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -518,7 +554,7 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════
           HOW IT WORKS
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="py-20 px-4 sm:px-6 bg-white">
+      <section className="py-20 px-4 sm:px-6 bg-surface-50/50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="section-title text-3xl sm:text-4xl">How Houziee Works</h2>
@@ -578,13 +614,13 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             to="/register"
-            className="btn bg-white text-primary-700 hover:bg-primary-50 btn-lg shadow-xl font-semibold"
+            className="btn bg-surface-50/80 backdrop-blur-sm text-primary-700 hover:bg-primary-50 btn-lg shadow-xl font-semibold"
           >
             Post a Listing — It's Free
           </Link>
           <Link
             to="/search"
-            className="btn border-2 border-white/50 text-white hover:bg-white/10 btn-lg font-semibold"
+            className="btn border-2 border-white/30 text-white hover:bg-white/10 btn-lg font-semibold"
           >
             Browse Listings
           </Link>

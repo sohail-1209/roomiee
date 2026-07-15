@@ -174,7 +174,7 @@ export default function Navbar() {
     <>
       {/* ── Main bar ───────────────────────────────────────────────────────── */}
       <header
-        className={`fixed top-0 inset-x-0 z-40 bg-white/90 backdrop-blur-md border-b border-surface-100 transition-shadow duration-300 ${
+        className={`fixed top-0 inset-x-0 z-40 bg-surface-50/80 backdrop-blur-xl border-b border-surface-100/60 transition-shadow duration-300 ${
           scrolled ? 'shadow-md' : 'shadow-none'
         }`}
       >
@@ -340,13 +340,20 @@ export default function Navbar() {
             )}
 
             {/* Mobile hamburger */}
-            <button
-              className="md:hidden btn btn-ghost p-2 rounded-xl"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-            >
-              {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
+            <div className="flex items-center gap-1 md:hidden">
+              {showInstall && (
+                <button onClick={handleInstall} className="btn btn-ghost p-2 rounded-xl" aria-label="Install App">
+                  <Download size={20} />
+                </button>
+              )}
+              <button
+                className="btn btn-ghost p-2 rounded-xl"
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              >
+                {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
           </div>
         </nav>
       </header>
@@ -363,7 +370,7 @@ export default function Navbar() {
 
       {/* Drawer */}
       <aside
-        className={`fixed top-16 left-0 right-0 z-30 bg-white border-b border-surface-100 shadow-xl md:hidden transition-transform duration-300 ${
+        className={`fixed top-16 left-0 right-0 z-30 bg-surface-50/95 backdrop-blur-xl border-b border-surface-100/60 shadow-xl md:hidden transition-transform duration-300 ${
           mobileOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >

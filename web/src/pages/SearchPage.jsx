@@ -135,7 +135,7 @@ const SearchPage = () => {
                 onClick={() => setIsAiMode(false)}
                 className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   !isAiMode
-                    ? 'bg-white text-surface-900 shadow-sm'
+                    ? 'bg-surface-50/80 text-surface-900 shadow-sm'
                     : 'text-surface-500 hover:text-surface-900'
                 }`}
               >
@@ -284,7 +284,7 @@ const SearchPage = () => {
                     className={`w-9 h-9 rounded-xl text-sm font-semibold flex items-center justify-center border transition-all ${
                       currentPage === idx + 1
                         ? 'bg-primary-600 border-primary-600 text-white shadow-sm'
-                        : 'bg-white border-surface-200 text-surface-600 hover:bg-surface-50'
+                        : 'bg-surface-50/80 border-surface-200 text-surface-600 hover:bg-surface-50'
                     }`}
                   >
                     {idx + 1}
@@ -307,7 +307,7 @@ const SearchPage = () => {
       {/* Mobile Filters Modal */}
       {isFilterOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden bg-surface-950/40 backdrop-blur-sm animate-fade-in">
-          <div className="ml-auto w-full max-w-sm h-full bg-white shadow-xl flex flex-col animate-slide-up">
+          <div className="ml-auto w-full max-w-sm h-full bg-surface-50/95 backdrop-blur-xl shadow-xl flex flex-col animate-slide-up">
             <div className="p-4 border-b border-surface-100 flex items-center justify-between">
               <h3 className="font-display font-semibold text-lg text-surface-900">Filters</h3>
               <button

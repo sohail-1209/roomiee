@@ -117,7 +117,7 @@ export default function RequestsPage() {
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
               activeTab === tab.key
-                ? 'bg-white text-surface-900 shadow-sm'
+                ? 'bg-surface-50/80 text-surface-900 shadow-sm'
                 : 'text-surface-500 hover:text-surface-700'
             }`}
           >

@@ -20,7 +20,7 @@ const uploadListingPhotos = asyncHandler(async (req, res) => {
       const result = await cloudinary.uploader.upload_stream_promise(file.buffer, {
         folder: `roomiee/listings/${listingId}`,
         resource_type: 'image',
-        transformation: [{ width: 1200, height: 800, crop: 'fill', quality: 'auto:low', fetch_format: 'auto' }],
+        transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto:low', fetch_format: 'auto' }],
         format: 'jpg',
       });
 

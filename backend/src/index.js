@@ -21,6 +21,7 @@ const uploadRoutes = require('./routes/upload.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
+const pushRoutes = require('./routes/push.routes');
 
 const { errorHandler } = require('./middleware/error.middleware');
 
@@ -64,6 +65,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/push', pushRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));

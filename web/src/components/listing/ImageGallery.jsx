@@ -14,6 +14,7 @@ const ImageGallery = ({ photos = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
 
   const hasPhotos = photos.length > 0;
   const activePhoto = hasPhotos ? photos[activeIndex] : null;
@@ -56,7 +57,10 @@ const ImageGallery = ({ photos = [] }) => {
   const openLightbox = (index) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
+    setZoomed(false);
   };
+
+  const toggleZoom = () => setZoomed((z) => !z);
 
   /* ── No photos state ── */
   if (!hasPhotos) {
@@ -79,9 +83,10 @@ const ImageGallery = ({ photos = [] }) => {
             key={activePhoto.id ?? activeIndex}
             src={activePhoto.url}
             alt={`Photo ${activeIndex + 1}`}
-            className="w-full h-full object-cover transition-opacity duration-300"
+            className="w-full h-full object-contain transition-all duration-300 cursor-zoom-in"
             loading="lazy"
             onError={(e) => { e.currentTarget.src = PLACEHOLDER; }}
+            onDoubleClick={() => openLightbox(activeIndex)}
           />
 
           {/* Arrow nav (only if >1 photo) */}
@@ -198,8 +203,9 @@ const ImageGallery = ({ photos = [] }) => {
               key={lightboxIndex}
               src={photos[lightboxIndex].url}
               alt={`Full photo ${lightboxIndex + 1}`}
-              className="w-full max-h-[80vh] object-contain rounded-xl"
+              className={`w-full max-h-[80vh] object-contain rounded-xl transition-transform duration-300 cursor-zoom-in ${zoomed ? 'scale-150 cursor-zoom-out' : ''}`}
               onError={(e) => { e.currentTarget.src = PLACEHOLDER; }}
+              onDoubleClick={toggleZoom}
             />
 
             {/* Arrows */}

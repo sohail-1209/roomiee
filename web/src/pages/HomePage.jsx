@@ -1,11 +1,11 @@
-// HomePage — main landing page for Roomiee
+// HomePage — main landing page for Houziee
 // Sections: Hero, Popular Cities, Featured Rentals, Room Sharing, How It Works, Stats Bar
 import React, { useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search, MapPin, Home, Users, ArrowRight, ChevronLeft, ChevronRight,
-  Star, Shield, Zap, CheckCircle, TrendingUp, Building2,
+  Star, Shield, Zap, CheckCircle, TrendingUp, Building2, BedDouble, LandPlot,
 } from 'lucide-react';
 import { listingsAPI } from '../services/endpoints';
 import ListingCard from '../components/listing/ListingCard';
@@ -124,7 +124,7 @@ const ScrollCard = ({ listing }) => (
 export default function HomePage() {
   const navigate = useNavigate();
   const [city, setCity] = useState('');
-  const [listingType, setListingType] = useState('ALL'); // 'ALL' | 'HOUSE_RENTAL' | 'ROOM_SHARING'
+  const [listingType, setListingType] = useState('ALL'); // 'ALL' | 'HOUSE_RENTAL' | 'ROOM_SHARING' | 'HOSTEL'
 
   /* ── Data fetching ── */
   const { data: houseData, isLoading: houseLoading } = useQuery({
@@ -137,6 +137,20 @@ export default function HomePage() {
   const { data: roomData, isLoading: roomLoading } = useQuery({
     queryKey: ['home-room-listings'],
     queryFn: () => listingsAPI.getAll({ type: 'ROOM_SHARING', limit: 6 }),
+    select: (res) => res.data?.data ?? res.data ?? [],
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: hostelData, isLoading: hostelLoading } = useQuery({
+    queryKey: ['home-hostel-listings'],
+    queryFn: () => listingsAPI.getAll({ type: 'HOSTEL', limit: 6 }),
+    select: (res) => res.data?.data ?? res.data ?? [],
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: landData, isLoading: landLoading } = useQuery({
+    queryKey: ['home-land-listings'],
+    queryFn: () => listingsAPI.getAll({ type: 'LAND_SALE', limit: 6 }),
     select: (res) => res.data?.data ?? res.data ?? [],
     staleTime: 1000 * 60 * 5,
   });
@@ -222,9 +236,11 @@ export default function HomePage() {
             {/* Type toggle */}
             <div className="flex rounded-xl border border-surface-200 bg-surface-50 p-1 gap-1 shrink-0">
               {[
-                { value: 'ALL',          label: 'All',   Ic: null },
-                { value: 'HOUSE_RENTAL', label: 'House', Ic: Home },
-                { value: 'ROOM_SHARING', label: 'Room',  Ic: Users },
+                { value: 'ALL',          label: 'All',     Ic: null },
+                { value: 'HOUSE_RENTAL', label: 'House',   Ic: Home },
+                { value: 'ROOM_SHARING', label: 'Room',    Ic: Users },
+                { value: 'HOSTEL',       label: 'Hostel',  Ic: BedDouble },
+                { value: 'LAND_SALE',    label: 'Land',    Ic: LandPlot },
               ].map(({ value, label, Ic }) => (
                 <button
                   key={value}
@@ -409,12 +425,103 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════
+          HOSTELS / PG
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-12 px-4 sm:px-6 max-w-7xl mx-auto">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="section-title flex items-center gap-2">
+              <BedDouble size={22} className="text-primary-500" />
+              Hostels & PGs
+            </h2>
+            <p className="section-subtitle">Affordable shared accommodation with flexible tiers</p>
+          </div>
+          <Link
+            to="/search?type=HOSTEL"
+            className="btn-outline btn-sm gap-1.5 hidden sm:flex"
+          >
+            View all <ArrowRight size={15} />
+          </Link>
+        </div>
+
+        <HScrollRow isLoading={hostelLoading} skeletonCount={4}>
+          {(hostelData ?? []).map((listing) => (
+            <ScrollCard key={listing.id} listing={listing} />
+          ))}
+          {!hostelLoading && hostelData?.length > 0 && (
+            <div className="flex-none w-52 flex items-center justify-center">
+              <Link
+                to="/search?type=HOSTEL"
+                className="btn-outline btn-md flex-col gap-2 h-auto py-6 px-8 text-center"
+              >
+                <ArrowRight size={20} className="text-primary-500" />
+                <span className="text-sm font-medium">See all<br />Hostels & PGs</span>
+              </Link>
+            </div>
+          )}
+        </HScrollRow>
+
+        {/* Mobile CTA */}
+        <div className="mt-5 sm:hidden text-center">
+          <Link to="/search?type=HOSTEL" className="btn-outline btn-md gap-2">
+            See all Hostels & PGs <ArrowRight size={15} />
+          </Link>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LAND FOR SALE
+      ═══════════════════════════════════════════════════════════════════ */}
+      <section className="py-16 px-4 sm:px-6 bg-surface-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-surface-900 font-display flex items-center gap-2">
+                <LandPlot size={24} className="text-amber-500" /> Land for Sale
+              </h2>
+              <p className="text-surface-500 text-sm mt-1">Plots and land available for purchase</p>
+            </div>
+            <Link to="/search?type=LAND_SALE" className="hidden sm:flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700">
+              View all <ArrowRight size={15} />
+            </Link>
+          </div>
+
+          {landLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="card animate-pulse h-80" />
+              ))}
+            </div>
+          ) : (landData ?? []).length > 0 ? (
+            <div className="relative">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {(landData ?? []).slice(0, 6).map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-surface-400">
+              <LandPlot size={40} className="mx-auto mb-3 opacity-50" />
+              <p>No land listings yet. Check back soon!</p>
+            </div>
+          )}
+
+          <div className="mt-5 sm:hidden text-center">
+            <Link to="/search?type=LAND_SALE" className="btn-outline btn-md gap-2">
+              See all Land for Sale <ArrowRight size={15} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════════════════
           HOW IT WORKS
       ═══════════════════════════════════════════════════════════════════ */}
       <section className="py-20 px-4 sm:px-6 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="section-title text-3xl sm:text-4xl">How Roomiee Works</h2>
+            <h2 className="section-title text-3xl sm:text-4xl">How Houziee Works</h2>
             <p className="section-subtitle mt-2 text-base max-w-xl mx-auto">
               Find your perfect room in 3 simple steps — no broker, no hidden fees.
             </p>
@@ -486,7 +593,7 @@ export default function HomePage() {
 
       {/* ── Simple footer ── */}
       <footer className="bg-surface-900 text-surface-400 text-center py-6 text-sm">
-        © {new Date().getFullYear()} Roomiee · Made with ❤️ in India
+        © {new Date().getFullYear()} Houziee · Made with ❤️ in India
       </footer>
     </div>
   );

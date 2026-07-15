@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,7 +13,9 @@ export default function DashboardLayout({ children }) {
   const role = user?.role ?? 'TENANT';
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex bg-surface-50">
+    <>
+      <Navbar />
+      <div className="min-h-[calc(100vh-4rem)] flex bg-surface-50">
 
       {/* ── Desktop sidebar (always visible ≥ lg) ────────────────────────── */}
       <div className="hidden lg:flex lg:flex-shrink-0">
@@ -62,6 +65,7 @@ export default function DashboardLayout({ children }) {
         </main>
       </div>
     </div>
+    </>
   );
 }
 

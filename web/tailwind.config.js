@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary brand — deep indigo
+        // Primary brand — vibrant indigo (modern, energetic)
         primary: {
           50:  '#eef2ff',
           100: '#e0e7ff',
@@ -18,32 +18,44 @@ export default {
           900: '#312e81',
           950: '#1e1b4b',
         },
-        // Accent — warm amber
+        // Accent — warm amber (highlights, CTAs)
         accent: {
           50:  '#fffbeb',
           100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
           400: '#fbbf24',
           500: '#f59e0b',
           600: '#d97706',
+          700: '#b45309',
         },
         // Success green
         success: {
           50:  '#f0fdf4',
+          100: '#dcfce7',
           500: '#22c55e',
           600: '#16a34a',
         },
         // Danger
         danger: {
           50:  '#fef2f2',
+          100: '#fee2e2',
           500: '#ef4444',
           600: '#dc2626',
         },
-        // Dark surface
+        // Warning
+        warning: {
+          50:  '#fffbeb',
+          100: '#fef3c7',
+          500: '#f59e0b',
+          600: '#d97706',
+        },
+        // Neutral surface — warm cream scale
         surface: {
-          50:  '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
+          50:  '#FFFDF7',
+          100: '#FDF8ED',
+          200: '#F5F0E6',
+          300: '#E8E0D4',
           400: '#94a3b8',
           500: '#64748b',
           600: '#475569',

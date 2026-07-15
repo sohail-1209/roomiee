@@ -1,7 +1,7 @@
 // Navbar — fixed top, responsive, auth-aware with notification bell & avatar dropdown
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Home,
   Search,
@@ -14,9 +14,15 @@ import {
   LayoutDashboard,
   ListPlus,
   LogOut,
+  CheckCheck,
+  Download,
+  BedDouble,
+  LandPlot,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notificationsAPI } from '../../services/endpoints';
+import { timeAgo } from '../../utils/helpers';
+import Avatar from '../ui/Avatar';
 
 // ─── Desktop NavLink helper ────────────────────────────────────────────────
 const DesktopNavLink = ({ to, children }) => (
@@ -56,12 +62,54 @@ const MobileNavLink = ({ to, icon: Icon, children, onClick }) => (
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstallable, setIsInstallable] = useState(false);
 
   const dropdownRef = useRef(null);
+  const notifRef = useRef(null);
+
+  const isStandalone = typeof window !== 'undefined' && (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true);
+
+  // PWA install prompt — store globally for MobileDetect
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+      window.__deferredInstallPrompt = e;
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    const prompt = deferredPrompt || window.__deferredInstallPrompt;
+    if (prompt) {
+      prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === 'accepted') {
+        setIsInstallable(false);
+        window.__deferredInstallPrompt = null;
+        setDeferredPrompt(null);
+      }
+    } else {
+      // Fallback: show instructions
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes('Mac') && 'ontouchend' in window);
+      if (isIOS) {
+        alert('To install:\n1. Tap Share ⬇️\n2. "Add to Home Screen"');
+      } else {
+        alert('To install: tap ⋮ menu → "Add to Home screen"');
+      }
+    }
+  };
+
+  const showInstall = !isStandalone && (isInstallable || window.innerWidth < 768);
 
   // Shadow on scroll
   useEffect(() => {
@@ -75,6 +123,9 @@ export default function Navbar() {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
@@ -96,7 +147,18 @@ export default function Navbar() {
     enabled: !!user,
     refetchInterval: 60_000,
   });
-  const unreadCount = notifData?.filter((n) => !n.isRead).length ?? 0;
+  const unreadCount = notifData?.filter((n) => !n.read).length ?? 0;
+
+  // Mark as read mutation
+  const markAsRead = useMutation({
+    mutationFn: (id) => notificationsAPI.markRead(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const markAllAsRead = useMutation({
+    mutationFn: () => notificationsAPI.markAllRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
 
   const handleLogout = async () => {
     setDropdownOpen(false);
@@ -106,11 +168,6 @@ export default function Navbar() {
   };
 
   const isOwner = user?.role === 'OWNER';
-
-  // Avatar initials fallback
-  const initials = user?.name
-    ? user.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
 
   return (
     <>
@@ -127,14 +184,16 @@ export default function Navbar() {
             <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-600 text-white">
               <Home size={16} strokeWidth={2.5} />
             </span>
-            <span className="font-display font-bold text-xl gradient-text">Roomiee</span>
+            <span className="font-display font-bold text-xl gradient-text">Houziee</span>
           </Link>
 
           {/* Desktop nav links */}
           <div className="hidden md:flex items-center gap-7">
             <DesktopNavLink to="/">Home</DesktopNavLink>
             <DesktopNavLink to="/search">Search</DesktopNavLink>
-            <DesktopNavLink to="/room-sharing">Room Sharing</DesktopNavLink>
+            <DesktopNavLink to="/search?type=ROOM_SHARING">Room Sharing</DesktopNavLink>
+            <DesktopNavLink to="/search?type=HOSTEL">Hostels</DesktopNavLink>
+            <DesktopNavLink to="/search?type=LAND_SALE">Land Sale</DesktopNavLink>
           </div>
 
           {/* Right-side actions */}
@@ -143,18 +202,76 @@ export default function Navbar() {
             {user ? (
               <>
                 {/* Notification bell */}
-                <Link
-                  to="/dashboard/notifications"
-                  className="relative btn btn-ghost btn-sm p-2 rounded-xl"
-                  aria-label="Notifications"
-                >
-                  <Bell size={20} />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-danger-500 text-white text-[10px] font-bold px-1 leading-none">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </span>
+                <div className="relative" ref={notifRef}>
+                  <button
+                    className="relative btn btn-ghost btn-sm p-2 rounded-xl"
+                    aria-label="Notifications"
+                    onClick={() => setNotifOpen((v) => !v)}
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-danger-500 text-white text-[10px] font-bold px-1 leading-none">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Notifications dropdown */}
+                  {notifOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-80 max-h-96 card py-0 z-50 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-surface-100">
+                        <h3 className="font-semibold text-surface-900 text-sm">Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={() => markAllAsRead.mutate()}
+                            className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+                          >
+                            <CheckCheck size={14} />
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div className="overflow-y-auto max-h-72">
+                        {notifData?.length === 0 ? (
+                          <div className="px-4 py-8 text-center text-surface-400 text-sm">
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifData?.slice(0, 20).map((notif) => (
+                            <button
+                              key={notif.id}
+                              onClick={() => {
+                                markAsRead.mutate(notif.id);
+                                if (notif.data?.chatId) {
+                                  navigate(`/dashboard/chats/${notif.data.chatId}`);
+                                } else if (notif.data?.requestId) {
+                                  navigate('/dashboard/requests');
+                                } else if (notif.data?.listingId) {
+                                  navigate(`/listing/${notif.data.listingId}`);
+                                }
+                                setNotifOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-3 hover:bg-surface-50 transition-colors border-b border-surface-50 ${
+                                !notif.read ? 'bg-primary-50/40' : ''
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                                  !notif.read ? 'bg-primary-500' : 'bg-transparent'
+                                }`} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-semibold text-surface-900">{notif.title}</p>
+                                  <p className="text-sm text-surface-600 line-clamp-2 mt-0.5">{notif.body}</p>
+                                  <p className="text-xs text-surface-400 mt-1">{timeAgo(notif.createdAt)}</p>
+                                </div>
+                              </div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   )}
-                </Link>
+                </div>
 
                 {/* Avatar dropdown */}
                 <div className="relative" ref={dropdownRef}>
@@ -165,17 +282,7 @@ export default function Navbar() {
                     aria-haspopup="true"
                   >
                     {/* Avatar */}
-                    {user.profilePhoto ? (
-                      <img
-                        src={user.profilePhoto}
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full object-cover border-2 border-primary-100"
-                      />
-                    ) : (
-                      <span className="w-8 h-8 rounded-full bg-primary-600 text-white text-xs font-bold flex items-center justify-center border-2 border-primary-100">
-                        {initials}
-                      </span>
-                    )}
+                    <Avatar src={user.profileImage} name={user.name} size="sm" className="border-2 border-primary-100" />
                     <span className="hidden sm:block text-sm font-medium text-surface-800 max-w-[120px] truncate">
                       {user.name}
                     </span>
@@ -221,6 +328,11 @@ export default function Navbar() {
             ) : (
               /* Guest buttons */
               <div className="hidden md:flex items-center gap-2">
+                {showInstall && (
+                  <button onClick={handleInstall} className="btn-outline btn-md flex items-center gap-1.5">
+                    <Download size={15} /> Install App
+                  </button>
+                )}
                 <Link to="/login" className="btn-ghost btn-md">Login</Link>
                 <Link to="/register" className="btn-primary btn-md">Register</Link>
               </div>
@@ -257,10 +369,20 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 py-4 space-y-1">
           <MobileNavLink to="/" icon={Home} onClick={() => setMobileOpen(false)}>Home</MobileNavLink>
           <MobileNavLink to="/search" icon={Search} onClick={() => setMobileOpen(false)}>Search</MobileNavLink>
-          <MobileNavLink to="/room-sharing" icon={Users} onClick={() => setMobileOpen(false)}>Room Sharing</MobileNavLink>
+          <MobileNavLink to="/search?type=ROOM_SHARING" icon={Users} onClick={() => setMobileOpen(false)}>Room Sharing</MobileNavLink>
+          <MobileNavLink to="/search?type=HOSTEL" icon={BedDouble} onClick={() => setMobileOpen(false)}>Hostels</MobileNavLink>
+          <MobileNavLink to="/search?type=LAND_SALE" icon={LandPlot} onClick={() => setMobileOpen(false)}>Land Sale</MobileNavLink>
 
           {!user && (
             <div className="pt-3 border-t border-surface-100 flex flex-col gap-2">
+              {showInstall && (
+                <button
+                  onClick={() => { handleInstall(); setMobileOpen(false); }}
+                  className="btn-outline btn-md w-full justify-center flex items-center gap-2"
+                >
+                  <Download size={16} /> Install App
+                </button>
+              )}
               <Link
                 to="/login"
                 onClick={() => setMobileOpen(false)}
@@ -279,7 +401,16 @@ export default function Navbar() {
           )}
 
           {user && (
-            <div className="pt-3 border-t border-surface-100">
+            <div className="pt-3 border-t border-surface-100 space-y-2">
+              {showInstall && (
+                <button
+                  onClick={() => { handleInstall(); setMobileOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 transition-colors"
+                >
+                  <Download size={18} />
+                  Install App
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-danger-600 hover:bg-danger-50 transition-colors"

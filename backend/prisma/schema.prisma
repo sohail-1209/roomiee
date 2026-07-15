@@ -24,6 +24,8 @@ enum Role {
 enum ListingType {
   HOUSE_RENTAL
   ROOM_SHARING
+  HOSTEL
+  LAND_SALE
 }
 
 enum ListingStatus {
@@ -172,6 +174,9 @@ model Listing {
   // Room sharing specific fields (null for house rentals)
   roomSharing     RoomSharing?
 
+  // Hostel specific fields (null for non-hostel listings)
+  hostelSharing   HostelSharing?
+
   @@index([city])
   @@index([type])
   @@index([status])
@@ -197,6 +202,36 @@ model RoomSharing {
   totalRooms      Int        @default(1)
 
   @@map("room_sharing")
+}
+
+model HostelSharing {
+  id              String     @id @default(cuid())
+  listingId       String     @unique
+  listing         Listing    @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  
+  genderRequired  Gender     @default(ANY)
+  minAge          Int?
+  maxAge          Int?
+  smoking         Boolean    @default(false)
+  drinking        Boolean    @default(false)
+  vegOnly         Boolean    @default(false)
+  petsAllowed     Boolean    @default(false)
+
+  tiers           HostelSharingTier[]
+
+  @@map("hostel_sharing")
+}
+
+model HostelSharingTier {
+  id              String        @id @default(cuid())
+  hostelSharingId String
+  hostelSharing   HostelSharing @relation(fields: [hostelSharingId], references: [id], onDelete: Cascade)
+  
+  sharingSize     Int           // e.g. 2, 3, 4, 6
+  price           Int           // ₹ per month
+  available       Boolean       @default(true)
+
+  @@map("hostel_sharing_tiers")
 }
 
 model Amenity {

@@ -36,7 +36,7 @@ const uploadListingPhotos = asyncHandler(async (req, res) => {
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${file.originalname || 'photo.jpg'}`;
         const localPath = path.join(__dirname, '../../public/uploads', fileName);
         fs.writeFileSync(localPath, file.buffer);
-        url = `http://localhost:${process.env.PORT || 5000}/uploads/${fileName}`;
+        url = `/uploads/${fileName}`;
         publicId = `local-${fileName}`;
       }
 
@@ -97,7 +97,7 @@ const uploadProfilePhoto = asyncHandler(async (req, res) => {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}-profile.jpg`;
     const localPath = path.join(__dirname, '../../public/uploads', fileName);
     fs.writeFileSync(localPath, req.file.buffer);
-    url = `http://localhost:${process.env.PORT || 5000}/uploads/${fileName}`;
+    url = `/uploads/${fileName}`;
   }
 
   await prisma.user.update({

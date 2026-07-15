@@ -28,11 +28,14 @@ const SearchPage = () => {
     bedrooms: searchParams.get('bedrooms') || '',
     furnished: searchParams.get('furnished') || '',
     gender: searchParams.get('gender') || '',
-    wifi: searchParams.get('wifi') || '',
-    ac: searchParams.get('ac') || '',
-    parking: searchParams.get('parking') || '',
-    fridge: searchParams.get('fridge') || '',
-    kitchen: searchParams.get('kitchen') || '',
+    amenities: {
+      wifi: searchParams.get('wifi') === 'true',
+      ac: searchParams.get('ac') === 'true',
+      parking: searchParams.get('parking') === 'true',
+      fridge: searchParams.get('fridge') === 'true',
+      kitchen: searchParams.get('kitchen') === 'true',
+      gym: searchParams.get('gym') === 'true',
+    },
     page: searchParams.get('page') || '1',
     limit: '12',
   };
@@ -43,6 +46,13 @@ const SearchPage = () => {
     Object.keys(updated).forEach((key) => {
       if (!updated[key] || updated[key] === 'false') {
         searchParams.delete(key);
+      } else if (key === 'amenities' && typeof updated[key] === 'object') {
+        // Flatten amenities object into individual params
+        Object.entries(updated[key]).forEach(([ak, av]) => {
+          if (av) searchParams.set(ak, 'true');
+          else searchParams.delete(ak);
+        });
+        searchParams.delete('amenities');
       } else {
         searchParams.set(key, updated[key]);
       }

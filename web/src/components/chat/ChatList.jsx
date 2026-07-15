@@ -13,7 +13,7 @@ const ChatListItem = ({ chat, userId }) => {
 
   return (
     <Link
-      to={`/chat/${chat.id}`}
+      to={`/dashboard/chats/${chat.id}`}
       className="flex items-center gap-3 p-4 hover:bg-surface-50 rounded-xl transition-colors cursor-pointer"
     >
       <div className="relative flex-shrink-0">

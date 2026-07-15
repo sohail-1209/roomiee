@@ -121,6 +121,8 @@ const ListingManagement = () => {
     onSuccess: () => {
       toast.success('Listing verified and set active');
       qc.invalidateQueries({ queryKey: ['admin-listings'] });
+      qc.invalidateQueries({ queryKey: ['myListings'] });
+      qc.invalidateQueries({ queryKey: ['admin-analytics'] });
     },
     onError: () => toast.error('Verification failed'),
   });
@@ -195,6 +197,7 @@ const ReportManagement = () => {
     onSuccess: () => {
       toast.success('Report resolved');
       qc.invalidateQueries({ queryKey: ['admin-reports'] });
+      qc.invalidateQueries({ queryKey: ['admin-analytics'] });
     },
     onError: () => toast.error('Failed to resolve report'),
   });

@@ -1,10 +1,11 @@
 // TenantDashboard — home page for tenants after login
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Bookmark, Send, MessageSquare, Search, Heart, ArrowRight } from 'lucide-react';
+import { Bookmark, Send, MessageSquare, Search, Heart, ArrowRight, Plus } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { requestsAPI, savedAPI, chatAPI } from '../../services/endpoints';
+import { requestsAPI, savedAPI, chatAPI, listingsAPI } from '../../services/endpoints';
 import RequestCard from '../../components/RequestCard';
+import Avatar from '../../components/ui/Avatar';
 
 // ── Stat card ─────────────────────────────────────────────────────────────────
 const StatCard = ({ icon: Icon, label, value, color, isLoading }) => (
@@ -55,6 +56,7 @@ const RequestSkeleton = () => (
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function TenantDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: requestsData, isLoading: requestsLoading } = useQuery({
     queryKey: ['requests'],
@@ -74,27 +76,27 @@ export default function TenantDashboard() {
     staleTime: 1000 * 60 * 2,
   });
 
+  const { data: bookingsData, isLoading: bookingsLoading } = useQuery({
+    queryKey: ['myBookings'],
+    queryFn: () => listingsAPI.getMyBookings().then((r) => r.data.data),
+    staleTime: 1000 * 60 * 2,
+  });
+
   const requests = requestsData ?? [];
   const recentRequests = requests.slice(0, 3);
   const savedCount = savedData?.length ?? 0;
   const activeRequestsCount = requests.filter((r) => r.status === 'PENDING').length;
   const chatsCount = chatsData?.length ?? 0;
+  const bookings = bookingsData ?? [];
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
-  const avatarUrl =
-    user?.profilePhoto ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name ?? 'User')}&background=6366f1&color=fff&size=64`;
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
 
       {/* ── Welcome header ──────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
-        <img
-          src={avatarUrl}
-          alt={user?.name}
-          className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary-100 flex-shrink-0"
-        />
+        <Avatar src={user?.profileImage} name={user?.name} size="lg" className="ring-2 ring-primary-100" />
         <div>
           <h1 className="text-2xl font-bold text-surface-900 font-display">
             Welcome back, <span className="gradient-text">{firstName}!</span>
@@ -196,6 +198,39 @@ export default function TenantDashboard() {
           />
         </div>
       </section>
+
+      {/* ── My Bookings (Accepted) ──────────────────────────────────────────── */}
+      {bookings.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="section-title">My Bookings</h2>
+              <p className="section-subtitle">Your accepted bookings — create a room sharing listing from here</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {bookings.map((booking) => (
+              <div key={booking.id} className="card p-4 flex gap-4">
+                <img
+                  src={booking.photos?.[0]?.url || 'https://placehold.co/120x120?text=No+Photo'}
+                  alt={booking.title}
+                  className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-surface-800 text-sm truncate">{booking.title}</p>
+                  <p className="text-xs text-surface-400 truncate">{booking.city}</p>
+                  <button
+                    onClick={() => navigate('/dashboard/listings/new', { state: { fromBooking: booking } })}
+                    className="mt-2 text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  >
+                    <Plus size={13} /> Create Room Sharing
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
     </div>
   );

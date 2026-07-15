@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { requestsAPI, listingsAPI } from '../../services/endpoints';
 import RequestCard from '../../components/RequestCard';
 import { formatRent, getPrimaryPhoto, requestStatusClass } from '../../utils/helpers';
+import Avatar from '../../components/ui/Avatar';
 
 // ── Analytics card ─────────────────────────────────────────────────────────────
 const AnalyticsCard = ({ icon: Icon, label, value, color, sub, isLoading }) => (
@@ -124,9 +125,6 @@ export default function OwnerDashboard() {
   const recentListings = listings.slice(0, 3);
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
-  const avatarUrl =
-    user?.profilePhoto ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name ?? 'Owner')}&background=6366f1&color=fff&size=64`;
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -134,11 +132,7 @@ export default function OwnerDashboard() {
       {/* ── Welcome header ──────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <img
-            src={avatarUrl}
-            alt={user?.name}
-            className="w-14 h-14 rounded-2xl object-cover ring-2 ring-primary-100 flex-shrink-0"
-          />
+          <Avatar src={user?.profileImage} name={user?.name} size="lg" className="ring-2 ring-primary-100" />
           <div>
             <h1 className="text-2xl font-bold text-surface-900 font-display">
               Hello, <span className="gradient-text">{firstName}!</span>

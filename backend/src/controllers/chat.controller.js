@@ -2,6 +2,7 @@
 const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
+const { sendNotification } = require('../services/notification.service');
 
 // ─── GET /chats — list all chats for current user ─────
 const getChats = asyncHandler(async (req, res) => {
@@ -69,15 +70,41 @@ const getMessages = asyncHandler(async (req, res) => {
 const sendMessage = asyncHandler(async (req, res) => {
   const { content, imageUrl } = req.body;
 
-  const chat = await prisma.chat.findUnique({ where: { id: req.params.id } });
+  const chat = await prisma.chat.findUnique({
+    where: { id: req.params.id },
+    include: {
+      owner: { select: { id: true, name: true, fcmToken: true } },
+      tenant: { select: { id: true, name: true, fcmToken: true } },
+      listing: { select: { id: true, title: true, status: true } },
+    },
+  });
   if (!chat) throw new AppError('Chat not found', 404);
   if (chat.ownerId !== req.user.id && chat.tenantId !== req.user.id) {
     throw new AppError('Not authorized', 403);
   }
 
+  // Check if listing is still active
+  if (chat.listing && chat.listing.status !== 'ACTIVE') {
+    throw new AppError('This listing is no longer active. Messaging has been disabled.', 400);
+  }
+
   const message = await prisma.message.create({
     data: { chatId: req.params.id, senderId: req.user.id, content, imageUrl },
     include: { sender: { select: { id: true, name: true, profileImage: true } } },
+  });
+
+  // Notify the other user in the chat
+  const recipient = chat.ownerId === req.user.id ? chat.tenant : chat.owner;
+  const senderName = req.user.name;
+  const listingTitle = chat.listing?.title || 'your listing';
+
+  await sendNotification({
+    userId: recipient.id,
+    fcmToken: recipient.fcmToken,
+    title: '💬 New Message',
+    body: `${senderName} sent a message in "${listingTitle}"`,
+    type: 'NEW_MESSAGE',
+    data: { chatId: chat.id, messageId: message.id, listingId: chat.listingId },
   });
 
   res.status(201).json({ success: true, data: message });

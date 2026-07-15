@@ -2,11 +2,11 @@
 // Navigates to /listing/:id (house) or /room/:id (room sharing) on click.
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, BedDouble, Bath, Maximize2, Users, Star, CalendarDays } from 'lucide-react';
+import { MapPin, BedDouble, Bath, Maximize2, Users, Star, CalendarDays, LandPlot } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatRent, getPrimaryPhoto, timeAgo, truncate } from '../../utils/helpers';
 import SaveButton from './SaveButton';
-import AmenityBadge from './AmenityBadge';
+import Avatar from '../ui/Avatar';
 
 const PLACEHOLDER = '/images/listing-placeholder.svg';
 
@@ -29,7 +29,9 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
   if (!listing) return null;
 
   const isHouse = listing.type === 'HOUSE_RENTAL';
-  const detailPath = isHouse ? `/listing/${listing.id}` : `/room/${listing.id}`;
+  const isHostel = listing.type === 'HOSTEL';
+  const isLand = listing.type === 'LAND_SALE';
+  const detailPath = isLand ? `/land/${listing.id}` : isHouse ? `/listing/${listing.id}` : isHostel ? `/hostel/${listing.id}` : `/room/${listing.id}`;
   const photoUrl = getPrimaryPhoto(listing) || PLACEHOLDER;
 
   const handleCardClick = () => navigate(detailPath);
@@ -44,22 +46,29 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
       aria-label={`${listing.title} – ${formatRent(listing.rent)} per month`}
     >
       {/* ── Photo ── */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-surface-100">
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface-50 flex items-center justify-center">
         <img
           src={photoUrl}
           alt={listing.title}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           onError={(e) => { e.currentTarget.src = PLACEHOLDER; }}
         />
 
         {/* Type badge — top-left */}
         <span
           className={`absolute top-3 left-3 badge text-xs font-semibold shadow-sm
-            ${isHouse ? 'badge-primary' : 'bg-accent-100 text-accent-700 badge'}`}
+            ${isLand ? 'bg-amber-100 text-amber-700 badge' : isHouse ? 'badge-primary' : isHostel ? 'bg-emerald-100 text-emerald-700 badge' : 'bg-accent-100 text-accent-700 badge'}`}
         >
-          {isHouse ? 'House Rental' : 'Room Sharing'}
+          {isLand ? 'Land Sale' : isHouse ? 'House Rental' : isHostel ? 'Hostel / PG' : 'Room Sharing'}
         </span>
+
+        {/* Booked badge — top-center */}
+        {listing.status === 'RENTED' && (
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+            🏠 Booked
+          </span>
+        )}
 
         {/* Save button — top-right (auth-gated) */}
         {(user || true) /* render always; SaveButton handles auth redirect */ && (
@@ -103,7 +112,20 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         </div>
 
         {/* Stats row */}
-        {isHouse ? (
+        {isLand ? (
+          <div className="flex items-center gap-3 text-xs text-surface-600">
+            {listing.areaSqFt != null && (
+              <span className="flex items-center gap-1">
+                <Maximize2 size={13} className="text-amber-500" />
+                {listing.areaSqFt} sq.ft
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <LandPlot size={13} className="text-amber-500" />
+              For Sale
+            </span>
+          </div>
+        ) : isHouse ? (
           <div className="flex items-center gap-3 text-xs text-surface-600">
             {listing.bedrooms != null && (
               <span className="flex items-center gap-1">
@@ -123,6 +145,14 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
                 {listing.areaSqFt} sq.ft
               </span>
             )}
+          </div>
+        ) : isHostel && listing.hostelSharing?.tiers?.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {listing.hostelSharing.tiers.filter((t) => t.available).slice(0, 3).map((t) => (
+              <span key={t.id} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+                {t.sharingSize}-sharing · {formatRent(t.price)}
+              </span>
+            ))}
           </div>
         ) : (
           listing.genderPreference && (
@@ -152,26 +182,16 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         {/* Owner row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {listing.owner?.profilePhoto ? (
-              <img
-                src={listing.owner.profilePhoto}
-                alt={listing.owner.name}
-                className="w-7 h-7 rounded-full object-cover ring-2 ring-surface-100"
-              />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold uppercase">
-                {listing.owner?.name?.[0] ?? '?'}
-              </div>
-            )}
+            <Avatar src={listing.owner?.profileImage} name={listing.owner?.name} size="sm" />
             <span className="text-xs font-medium text-surface-700 truncate max-w-[100px]">
               {listing.owner?.name ?? 'Owner'}
             </span>
           </div>
 
-          {listing.owner?.rating != null && (
+          {listing.owner?.avgRating != null && listing.owner.avgRating > 0 && (
             <div className="flex items-center gap-0.5 text-xs text-amber-500 font-medium">
               <Star size={12} className="fill-amber-400 text-amber-400" />
-              {Number(listing.owner.rating).toFixed(1)}
+              {Number(listing.owner.avgRating).toFixed(1)}
             </div>
           )}
         </div>

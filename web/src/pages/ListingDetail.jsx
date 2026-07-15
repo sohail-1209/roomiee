@@ -5,8 +5,8 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   MapPin, Bed, Bath, Square, Car, Wind, Wifi, Refrigerator,
-  WashingMachine, Dumbbell, Shield, Star, Share2, Flag,
-  Calendar, Eye, Heart, Phone, MessageCircle
+  WashingMachine, Dumbbell, Shield, Share2, Flag,
+  Calendar, Eye, Heart, MessageCircle
 } from 'lucide-react';
 
 import { listingsAPI, requestsAPI, savedAPI } from '../services/endpoints';
@@ -15,8 +15,10 @@ import { formatRent, getAmenityList, timeAgo } from '../utils/helpers';
 import MapView from '../components/MapView';
 import NearbyPlaces from '../components/NearbyPlaces';
 import ReviewCard from '../components/ReviewCard';
+import ReviewForm from '../components/ReviewForm';
+import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
-import { Modal, Button, Badge, Avatar, Spinner } from '../components/ui';
+import { Modal, Button, Avatar, Spinner, StarRating } from '../components/ui';
 
 const amenityIcons = {
   WiFi: Wifi, AC: Wind, Parking: Car, Fridge: Refrigerator,
@@ -28,10 +30,10 @@ const ListingDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [activePhoto, setActivePhoto] = useState(0);
   const [requestMsg, setRequestMsg] = useState('');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['listing', id],
@@ -41,6 +43,8 @@ const ListingDetail = () => {
   const { mutate: sendRequest, isPending: requesting } = useMutation({
     mutationFn: () => requestsAPI.create({ listingId: id, message: requestMsg }),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['requests'] });
+      qc.invalidateQueries({ queryKey: ['listings'] });
       toast.success('Request sent! The owner will be notified.');
       setShowRequestModal(false);
     },
@@ -51,6 +55,7 @@ const ListingDetail = () => {
     mutationFn: () => data?.isSaved ? savedAPI.unsave(id) : savedAPI.save(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['listing', id] });
+      qc.invalidateQueries({ queryKey: ['saved'] });
       toast.success(data?.isSaved ? 'Removed from saved' : '❤️ Saved!');
     },
   });
@@ -78,35 +83,7 @@ const ListingDetail = () => {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ─ Photo Gallery ─────────────────────────────── */}
-        <div className="grid grid-cols-4 gap-2 rounded-2xl overflow-hidden h-80 sm:h-[420px] mb-8">
-          {/* Main photo */}
-          <div className="col-span-4 sm:col-span-3 relative">
-            <img
-              src={photos[activePhoto]?.url || 'https://placehold.co/800x420?text=No+Photo'}
-              alt={data.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute top-4 left-4 flex gap-2">
-              <Badge variant={data.type === 'HOUSE_RENTAL' ? 'primary' : 'warning'}>
-                {data.type === 'HOUSE_RENTAL' ? '🏠 House Rental' : '🤝 Room Sharing'}
-              </Badge>
-              {data.furnished && <Badge variant="success">Furnished</Badge>}
-            </div>
-          </div>
-          {/* Thumbnail strip */}
-          <div className="hidden sm:flex flex-col gap-2">
-            {photos.slice(0, 3).map((p, i) => (
-              <button key={p.id} onClick={() => setActivePhoto(i)} className={`flex-1 rounded-lg overflow-hidden border-2 transition-all ${activePhoto === i ? 'border-primary-500' : 'border-transparent'}`}>
-                <img src={p.url} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
-            {photos.length > 3 && (
-              <div className="flex-1 rounded-lg bg-surface-800 text-white flex items-center justify-center text-sm font-medium">
-                +{photos.length - 3}
-              </div>
-            )}
-          </div>
-        </div>
+        <ImageGallery photos={photos} title={data.title} />
 
         {/* ─ Main Content ──────────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -168,7 +145,11 @@ const ListingDetail = () => {
             <div className="card p-5">
               <h2 className="font-display font-semibold text-lg mb-4">Location</h2>
               <MapView lat={data.latitude} lng={data.longitude} title={data.title} className="h-64" />
-              <p className="text-xs text-surface-400 mt-2 text-center">Exact location shared after request is accepted</p>
+              {data.isLocationExact ? (
+                <p className="text-xs text-success-600 mt-2 text-center font-medium">📍 Exact location</p>
+              ) : (
+                <p className="text-xs text-amber-600 mt-2 text-center font-medium">📍 Approximate location — exact location shared after request is accepted</p>
+              )}
             </div>
 
             {/* Nearby Places */}
@@ -222,6 +203,12 @@ const ListingDetail = () => {
                     >
                       Edit Listing
                     </Button>
+                  ) : data.status !== 'ACTIVE' ? (
+                    <div className={`w-full mb-3 p-3 rounded-xl text-center text-sm font-medium ${
+                      data.status === 'RENTED' ? 'bg-primary-50 text-primary-700' : 'bg-amber-50 text-amber-700'
+                    }`}>
+                      {data.status === 'RENTED' ? '🏠 This listing is booked' : '⏸️ This listing is currently inactive'}
+                    </div>
                   ) : (
                     <Button
                       variant="primary"
@@ -262,15 +249,20 @@ const ListingDetail = () => {
               <h3 className="font-display font-semibold text-base mb-3">Listed by</h3>
               <div className="flex items-center gap-3">
                 <Avatar src={data.owner?.profileImage} name={data.owner?.name} size="md" />
-                <div>
+                <div className="flex-1">
                   <p className="font-semibold text-surface-900">{data.owner?.name}</p>
                   <div className="flex items-center gap-1 text-sm">
-                    <Star size={13} className="text-accent-400 fill-accent-400" />
+                    <StarRating value={data.owner?.avgRating || 0} size={13} />
                     <span className="font-medium">{data.owner?.avgRating?.toFixed(1) || 'New'}</span>
-                    <span className="text-surface-400">({data.owner?.totalRatings} reviews)</span>
+                    <span className="text-surface-400">({data.owner?.totalRatings || 0})</span>
                   </div>
                 </div>
               </div>
+              {user && user.id !== data.ownerId && (
+                <Button variant="outline" size="md" className="w-full mt-3" onClick={() => setShowReviewForm(true)}>
+                  Write a Review
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -302,6 +294,14 @@ const ListingDetail = () => {
       <Modal isOpen={showReportModal} onClose={() => setShowReportModal(false)} title="Report Listing" size="sm">
         <ReportForm listingId={id} onClose={() => setShowReportModal(false)} />
       </Modal>
+
+      <ReviewForm
+        isOpen={showReviewForm}
+        onClose={() => setShowReviewForm(false)}
+        receiverId={data?.ownerId}
+        listingId={id}
+        listingTitle={data?.title}
+      />
     </>
   );
 };

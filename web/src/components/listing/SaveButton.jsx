@@ -40,7 +40,7 @@ const SaveButton = ({ listingId, isSaved, onToggle }) => {
 
       // Simple toast notification via custom event
       window.dispatchEvent(
-        new CustomEvent('roomiee:toast', {
+        new CustomEvent('houziee:toast', {
           detail: {
             message: localSaved ? 'Removed from saved' : 'Saved!',
             type: 'success',
@@ -52,7 +52,7 @@ const SaveButton = ({ listingId, isSaved, onToggle }) => {
       // Revert optimistic update
       setLocalSaved((prev) => !prev);
       window.dispatchEvent(
-        new CustomEvent('roomiee:toast', {
+        new CustomEvent('houziee:toast', {
           detail: { message: 'Something went wrong', type: 'error' },
         })
       );

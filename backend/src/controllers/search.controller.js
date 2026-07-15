@@ -13,7 +13,7 @@ const search = asyncHandler(async (req, res) => {
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
   const where = {
-    status: 'ACTIVE',
+    status: { in: ['ACTIVE', 'RENTED'] },
     ...(type && { type }),
     ...(city && { city: { contains: city, mode: 'insensitive' } }),
     ...(minRent && { rent: { gte: parseInt(minRent) } }),
@@ -43,6 +43,7 @@ const search = asyncHandler(async (req, res) => {
         owner: { select: { id: true, name: true, profileImage: true, avgRating: true } },
         photos: { where: { isPrimary: true }, take: 1 },
         amenities: true,
+        hostelSharing: { include: { tiers: true } },
         _count: { select: { savedBy: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -70,7 +71,7 @@ const aiSearch = asyncHandler(async (req, res) => {
   // Run the parsed filters through normal search logic
   req.query = { ...filters };
   const where = {
-    status: 'ACTIVE',
+    status: { in: ['ACTIVE', 'RENTED'] },
     ...(filters.type && { type: filters.type }),
     ...(filters.city && { city: { contains: filters.city, mode: 'insensitive' } }),
     ...(filters.maxRent && { rent: { lte: parseInt(filters.maxRent) } }),
@@ -89,6 +90,7 @@ const aiSearch = asyncHandler(async (req, res) => {
       owner: { select: { id: true, name: true, profileImage: true, avgRating: true } },
       photos: { where: { isPrimary: true }, take: 1 },
       amenities: true,
+      hostelSharing: { include: { tiers: true } },
     },
     orderBy: { createdAt: 'desc' },
     take: 20,

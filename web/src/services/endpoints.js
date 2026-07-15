@@ -16,8 +16,11 @@ export const listingsAPI = {
   getOne: (id) => api.get(`/listings/${id}`),
   create: (data) => api.post('/listings', data),
   update: (id, data) => api.put(`/listings/${id}`, data),
+  updateStatus: (id, status) => api.patch(`/listings/${id}/status`, { status }),
   delete: (id) => api.delete(`/listings/${id}`),
   getMyListings: () => api.get('/listings/owner/me'),
+  getMyBookings: () => api.get('/listings/tenant/bookings'),
+  createFromBooking: (data) => api.post('/listings/from-booking', data),
 };
 
 // ─── Search ───────────────────────────────────────────

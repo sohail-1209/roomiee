@@ -1,11 +1,14 @@
 // Axios instance — single configured instance for all API calls
 import axios from 'axios';
 
+// Use relative URL - Vite proxy will forward to backend
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  withCredentials: true, // Send cookies
+  baseURL: '/api',
+  withCredentials: false,
   timeout: 15000,
 });
+
+console.log('🔌 API: Using proxy (same origin)');
 
 // ─── Request interceptor — attach access token ────────
 api.interceptors.request.use((config) => {

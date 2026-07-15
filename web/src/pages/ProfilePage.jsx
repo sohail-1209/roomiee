@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Camera, Star } from 'lucide-react';
 import { usersAPI, reviewsAPI, uploadAPI } from '../services/endpoints';
 import { useAuth } from '../context/AuthContext';
+import { compressImage } from '../utils/compressImage';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import ReviewCard from '../components/ReviewCard';
 import { Button, Input, Textarea, Avatar } from '../components/ui';
@@ -23,7 +24,11 @@ const ProfilePage = () => {
 
   const { mutate: updateProfile, isPending } = useMutation({
     mutationFn: () => usersAPI.updateProfile(form),
-    onSuccess: ({ data }) => { updateUser(data.data); toast.success('Profile updated!'); },
+    onSuccess: ({ data }) => {
+      updateUser(data.data);
+      qc.invalidateQueries({ queryKey: ['reviews', user?.id] });
+      toast.success('Profile updated!');
+    },
     onError: () => toast.error('Failed to update profile'),
   });
 
@@ -31,9 +36,10 @@ const ProfilePage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const fd = new FormData();
-    fd.append('photo', file);
     try {
+      const compressed = await compressImage(file, { maxWidth: 500, maxHeight: 500, quality: 0.8 });
+      const fd = new FormData();
+      fd.append('photo', compressed);
       const { data } = await uploadAPI.profilePhoto(fd);
       updateUser({ profileImage: data.data.url });
       toast.success('Photo updated!');

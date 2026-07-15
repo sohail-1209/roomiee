@@ -15,6 +15,7 @@ import {
 
 import { useAuth } from '../context/AuthContext';
 import { Button, Input } from '../components/ui/index.js';
+import Navbar from '../components/layout/Navbar';
 
 // ─── Static features list ──────────────────────────────────────────────────
 const FEATURES = [
@@ -88,7 +89,7 @@ const RegisterPage = () => {
         password: form.password,
         role: form.role,
       });
-      toast.success('Registration successful! Welcome to Roomiee.');
+      toast.success('Registration successful! Welcome to Houziee.');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Registration failed');
@@ -98,7 +99,9 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-surface-50 font-sans">
+    <>
+      <Navbar />
+      <div className="min-h-screen flex bg-surface-50 font-sans pt-16">
       {/* Left panel - Branding (Visible on large screens) */}
       <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-primary-700 via-primary-800 to-primary-950 p-12 relative overflow-hidden">
         {/* Blobs */}
@@ -112,7 +115,7 @@ const RegisterPage = () => {
               <Home size={20} className="text-white" />
             </div>
             <span className="text-white font-display font-bold text-2xl tracking-tight">
-              Roomiee
+              Houziee
             </span>
           </div>
           <p className="text-primary-200 text-sm font-medium mt-2">
@@ -128,7 +131,7 @@ const RegisterPage = () => {
             <span className="text-accent-300">smart home seekers</span>
           </h1>
           <p className="text-primary-200 mt-4 text-base leading-relaxed max-w-sm">
-            Whether you want to list your space as an Owner or find your next flat as a Tenant, Roomiee has got you covered.
+            Whether you want to list your space as an Owner or find your next flat as a Tenant, Houziee has got you covered.
           </p>
 
           <div className="mt-8 space-y-5">
@@ -292,6 +295,7 @@ const RegisterPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

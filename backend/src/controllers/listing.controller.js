@@ -2,6 +2,9 @@
 const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
+const cloudinary = require('../services/cloudinary.service');
+const fs = require('fs');
+const path = require('path');
 
 // ─── Shared listing select (reused in list + detail) ──
 const listingSelect = {
@@ -35,6 +38,7 @@ const listingSelect = {
   amenities: true,
   photos: { orderBy: { order: 'asc' } },
   roomSharing: true,
+  hostelSharing: { include: { tiers: true } },
   _count: { select: { savedBy: true, reviews: true, requests: true } },
 };
 
@@ -46,9 +50,14 @@ const getListings = asyncHandler(async (req, res) => {
   } = req.query;
 
   const where = {
-    status: 'ACTIVE',
+    status: { in: ['ACTIVE', 'RENTED'] },
     ...(type && { type }),
-    ...(city && { city: { contains: city, mode: 'insensitive' } }),
+    ...(city && {
+      OR: [
+        { city: { contains: city, mode: 'insensitive' } },
+        { address: { contains: city, mode: 'insensitive' } },
+      ],
+    }),
     ...(minRent && { rent: { gte: parseInt(minRent) } }),
     ...(maxRent && { rent: { lte: parseInt(maxRent) } }),
     ...(furnished !== undefined && { furnished: furnished === 'true' }),
@@ -110,14 +119,35 @@ const getListing = asyncHandler(async (req, res) => {
 
   // If authenticated, check if saved
   let isSaved = false;
+  let hasAcceptedRequest = false;
   if (req.user) {
     const saved = await prisma.savedListing.findUnique({
       where: { userId_listingId: { userId: req.user.id, listingId: listing.id } },
     });
     isSaved = !!saved;
+
+    // Check if user has an accepted request for this listing
+    const acceptedRequest = await prisma.request.findFirst({
+      where: { listingId: listing.id, tenantId: req.user.id, status: 'ACCEPTED' },
+    });
+    hasAcceptedRequest = !!acceptedRequest;
   }
 
-  res.json({ success: true, data: { ...listing, isSaved } });
+  // Blur location for house rentals unless owner or has accepted request
+  let { latitude, longitude } = listing;
+  const isOwner = req.user && listing.ownerId === req.user.id;
+  const isAdmin = req.user && req.user.role === 'ADMIN';
+  if (listing.type === 'HOUSE_RENTAL' && !isOwner && !isAdmin && !hasAcceptedRequest) {
+    // Add random offset up to ~0.005 degrees (~500m)
+    const offset = () => (Math.random() - 0.5) * 0.01;
+    latitude = listing.latitude + offset();
+    longitude = listing.longitude + offset();
+  }
+
+  res.json({
+    success: true,
+    data: { ...listing, latitude, longitude, isSaved, isLocationExact: listing.type !== 'HOUSE_RENTAL' || isOwner || isAdmin || hasAcceptedRequest },
+  });
 });
 
 // ─── POST /listings — create listing (owner only) ─────
@@ -126,7 +156,7 @@ const createListing = asyncHandler(async (req, res) => {
     title, description, type, rent, deposit, maintenance,
     address, city, state, pincode, latitude, longitude,
     bedrooms, bathrooms, balcony, parking, areaSqFt, furnished, availableFrom,
-    amenities, roomSharing,
+    amenities, roomSharing, hostelSharing,
   } = req.body;
 
   const listing = await prisma.listing.create({
@@ -147,8 +177,28 @@ const createListing = asyncHandler(async (req, res) => {
       ...(roomSharing && type === 'ROOM_SHARING' && {
         roomSharing: { create: roomSharing },
       }),
+      ...(hostelSharing && type === 'HOSTEL' && {
+        hostelSharing: {
+          create: {
+            genderRequired: hostelSharing.genderRequired || 'ANY',
+            minAge: hostelSharing.minAge ? parseInt(hostelSharing.minAge) : null,
+            maxAge: hostelSharing.maxAge ? parseInt(hostelSharing.maxAge) : null,
+            smoking: Boolean(hostelSharing.smoking),
+            drinking: Boolean(hostelSharing.drinking),
+            vegOnly: Boolean(hostelSharing.vegOnly),
+            petsAllowed: Boolean(hostelSharing.petsAllowed),
+            tiers: {
+              create: (hostelSharing.tiers || []).map((t) => ({
+                sharingSize: parseInt(t.sharingSize),
+                price: parseInt(t.price),
+                available: t.available !== false,
+              })),
+            },
+          },
+        },
+      }),
     },
-    include: { amenities: true, roomSharing: true },
+    include: { amenities: true, roomSharing: true, hostelSharing: { include: { tiers: true } } },
   });
 
   res.status(201).json({ success: true, data: listing });
@@ -162,7 +212,7 @@ const updateListing = asyncHandler(async (req, res) => {
     throw new AppError('Not authorized', 403);
   }
 
-  const { amenities, roomSharing, availableFrom, ...data } = req.body;
+  const { amenities, roomSharing, hostelSharing, availableFrom, ...data } = req.body;
 
   // Cast numeric inputs in data
   if (data.rent !== undefined) data.rent = parseInt(data.rent);
@@ -203,8 +253,44 @@ const updateListing = asyncHandler(async (req, res) => {
       totalRooms: parseInt(roomSharing.totalRooms || 1),
     };
     roomSharingUpsert = { upsert: { create: roomSharingClean, update: roomSharingClean } };
-  } else if (activeType === 'HOUSE_RENTAL') {
+  } else if (activeType !== 'ROOM_SHARING') {
     await prisma.roomSharing.deleteMany({ where: { listingId: req.params.id } });
+  }
+
+  // Parse hostelSharing only if type is HOSTEL
+  let hostelSharingUpsert = undefined;
+  if (activeType === 'HOSTEL' && hostelSharing) {
+    const hostelSharingClean = {
+      genderRequired: hostelSharing.genderRequired || 'ANY',
+      minAge: hostelSharing.minAge ? parseInt(hostelSharing.minAge) : null,
+      maxAge: hostelSharing.maxAge ? parseInt(hostelSharing.maxAge) : null,
+      smoking: Boolean(hostelSharing.smoking),
+      drinking: Boolean(hostelSharing.drinking),
+      vegOnly: Boolean(hostelSharing.vegOnly),
+      petsAllowed: Boolean(hostelSharing.petsAllowed),
+    };
+    // Delete existing tiers and recreate
+    await prisma.hostelSharingTier.deleteMany({
+      where: { hostelSharing: { listingId: req.params.id } },
+    });
+    await prisma.hostelSharing.deleteMany({ where: { listingId: req.params.id } });
+    hostelSharingUpsert = {
+      create: {
+        ...hostelSharingClean,
+        tiers: {
+          create: (hostelSharing.tiers || []).map((t) => ({
+            sharingSize: parseInt(t.sharingSize),
+            price: parseInt(t.price),
+            available: t.available !== false,
+          })),
+        },
+      },
+    };
+  } else if (activeType !== 'HOSTEL') {
+    await prisma.hostelSharingTier.deleteMany({
+      where: { hostelSharing: { listingId: req.params.id } },
+    });
+    await prisma.hostelSharing.deleteMany({ where: { listingId: req.params.id } });
   }
 
   const updated = await prisma.listing.update({
@@ -214,8 +300,9 @@ const updateListing = asyncHandler(async (req, res) => {
       availableFrom: availableFrom ? new Date(availableFrom) : null,
       ...(amenitiesUpsert && { amenities: amenitiesUpsert }),
       ...(roomSharingUpsert && { roomSharing: roomSharingUpsert }),
+      ...(hostelSharingUpsert && { hostelSharing: hostelSharingUpsert }),
     },
-    include: { amenities: true, roomSharing: true, photos: true },
+    include: { amenities: true, roomSharing: true, hostelSharing: { include: { tiers: true } }, photos: true },
   });
 
   res.json({ success: true, data: updated });
@@ -223,15 +310,66 @@ const updateListing = asyncHandler(async (req, res) => {
 
 // ─── DELETE /listings/:id ─────────────────────────────
 const deleteListing = asyncHandler(async (req, res) => {
+  const listing = await prisma.listing.findUnique({
+    where: { id: req.params.id },
+    include: { photos: true },
+  });
+  if (!listing) throw new AppError('Listing not found', 404);
+  if (listing.ownerId !== req.user.id && req.user.role !== 'ADMIN') {
+    throw new AppError('Not authorized', 403);
+  }
+
+  // Delete photos from Cloudinary/local storage
+  for (const photo of listing.photos) {
+    if (photo.publicId.startsWith('local-')) {
+      const fileName = photo.publicId.substring(6);
+      const localPath = path.join(__dirname, '../../public/uploads', fileName);
+      if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+    } else {
+      try {
+        await cloudinary.uploader.destroy(photo.publicId);
+      } catch (e) {
+        console.warn('Failed to delete photo from Cloudinary:', e.message);
+      }
+    }
+  }
+
+  // Delete related records in order
+  await prisma.photo.deleteMany({ where: { listingId: listing.id } });
+  await prisma.amenities.deleteMany({ where: { listingId: listing.id } });
+  await prisma.roomSharing.deleteMany({ where: { listingId: listing.id } });
+  await prisma.hostelSharingTier.deleteMany({ where: { hostelSharing: { listingId: listing.id } } });
+  await prisma.hostelSharing.deleteMany({ where: { listingId: listing.id } });
+  await prisma.savedListing.deleteMany({ where: { listingId: listing.id } });
+  await prisma.review.deleteMany({ where: { listingId: listing.id } });
+  await prisma.request.deleteMany({ where: { listingId: listing.id } });
+  await prisma.report.deleteMany({ where: { listingId: listing.id } });
+
+  // Hard delete the listing
+  await prisma.listing.delete({ where: { id: listing.id } });
+  res.json({ success: true, message: 'Listing deleted' });
+});
+
+// ─── PATCH /listings/:id/status — update listing status ──
+const updateListingStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  const validStatuses = ['ACTIVE', 'PAUSED', 'RENTED'];
+  if (!validStatuses.includes(status)) {
+    throw new AppError('Invalid status. Must be ACTIVE, PAUSED, or RENTED', 400);
+  }
+
   const listing = await prisma.listing.findUnique({ where: { id: req.params.id } });
   if (!listing) throw new AppError('Listing not found', 404);
   if (listing.ownerId !== req.user.id && req.user.role !== 'ADMIN') {
     throw new AppError('Not authorized', 403);
   }
 
-  // Soft delete
-  await prisma.listing.update({ where: { id: req.params.id }, data: { status: 'DELETED' } });
-  res.json({ success: true, message: 'Listing deleted' });
+  const updated = await prisma.listing.update({
+    where: { id: req.params.id },
+    data: { status },
+  });
+
+  res.json({ success: true, data: updated });
 });
 
 // ─── GET /listings/owner/me — owner's own listings ────
@@ -244,4 +382,74 @@ const getMyListings = asyncHandler(async (req, res) => {
   res.json({ success: true, data: listings });
 });
 
-module.exports = { getListings, getListing, createListing, updateListing, deleteListing, getMyListings };
+// ─── GET /listings/tenant/bookings — tenant's accepted bookings ──
+const getMyBookings = asyncHandler(async (req, res) => {
+  const requests = await prisma.request.findMany({
+    where: { tenantId: req.user.id, status: 'ACCEPTED' },
+    include: {
+      listing: {
+        select: {
+          id: true, title: true, address: true, city: true, state: true, pincode: true,
+          latitude: true, longitude: true, rent: true, deposit: true,
+          type: true, bedrooms: true, bathrooms: true,
+          photos: { where: { isPrimary: true }, take: 1 },
+          owner: { select: { id: true, name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json({ success: true, data: requests.map((r) => r.listing) });
+});
+
+// ─── POST /listings/from-booking — create room sharing from accepted booking ──
+const createFromBooking = asyncHandler(async (req, res) => {
+  const { bookingId, title, description, rent, deposit, maintenance,
+    bedrooms, bathrooms, balcony, parking, areaSqFt, furnished, availableFrom,
+    amenities, roomSharing } = req.body;
+
+  // Verify tenant has an accepted request on this listing
+  const request = await prisma.request.findFirst({
+    where: {
+      listingId: bookingId,
+      tenantId: req.user.id,
+      status: 'ACCEPTED',
+    },
+  });
+  if (!request) throw new AppError('No accepted booking found for this listing', 404);
+
+  // Get original listing for location data
+  const original = await prisma.listing.findUnique({ where: { id: bookingId } });
+  if (!original) throw new AppError('Original listing not found', 404);
+
+  const listing = await prisma.listing.create({
+    data: {
+      ownerId: req.user.id,
+      title, description: description || '',
+      type: 'ROOM_SHARING',
+      rent: parseInt(rent),
+      deposit: parseInt(deposit || 0),
+      maintenance: parseInt(maintenance || 0),
+      address: original.address,
+      city: original.city,
+      state: original.state,
+      pincode: original.pincode,
+      latitude: original.latitude,
+      longitude: original.longitude,
+      bedrooms: parseInt(bedrooms || 1),
+      bathrooms: parseInt(bathrooms || 1),
+      balcony: Boolean(balcony),
+      parking: Boolean(parking),
+      areaSqFt: areaSqFt ? parseInt(areaSqFt) : null,
+      furnished: Boolean(furnished),
+      availableFrom: availableFrom ? new Date(availableFrom) : null,
+      ...(amenities && { amenities: { create: amenities } }),
+      ...(roomSharing && { roomSharing: { create: roomSharing } }),
+    },
+    include: { amenities: true, roomSharing: true },
+  });
+
+  res.status(201).json({ success: true, data: listing });
+});
+
+module.exports = { getListings, getListing, createListing, updateListing, deleteListing, getMyListings, updateListingStatus, getMyBookings, createFromBooking };

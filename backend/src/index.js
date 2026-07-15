@@ -30,7 +30,7 @@ const httpServer = http.createServer(app);
 // ─── Socket.io ───────────────────────────────
 const io = new Server(httpServer, {
   cors: {
-    origin: [process.env.CLIENT_URL, process.env.MOBILE_URL],
+    origin: true, // Allow all origins for development
     credentials: true,
   },
 });
@@ -38,7 +38,7 @@ initSocket(io);
 
 // ─── Global middleware ────────────────────────
 app.use(cors({
-  origin: [process.env.CLIENT_URL, process.env.MOBILE_URL],
+  origin: true, // Allow all origins for development
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -70,11 +70,41 @@ app.use('/api/admin', adminRoutes);
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
+// Debug endpoint to verify connection
+app.get('/api/ping', (req, res) => {
+  res.json({ 
+    message: 'pong', 
+    origin: req.headers.origin,
+    host: req.headers.host,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // ─── Error handler (must be last) ─────────────
 app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Roomiee API running on port ${PORT}`);
+
+// Get network IP
+const getNetworkIP = () => {
+  const os = require('os');
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+};
+
+httpServer.listen(PORT, '0.0.0.0', () => {
+  const networkIP = getNetworkIP();
+  console.log('');
+  console.log('  🚀 Roomiee API running at:');
+  console.log(`  → Local:   http://localhost:${PORT}`);
+  console.log(`  → Network: http://${networkIP}:${PORT}`);
+  console.log('');
 });

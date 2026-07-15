@@ -39,7 +39,7 @@ export const getAmenityList = (amenities) => {
 
 // Listing type label
 export const listingTypeLabel = (type) =>
-  type === 'HOUSE_RENTAL' ? 'House Rental' : 'Room Sharing';
+  ({ HOUSE_RENTAL: 'House Rental', ROOM_SHARING: 'Room Sharing', HOSTEL: 'Hostel / PG', LAND_SALE: 'Land Sale' })[type] || type;
 
 // Request status color class
 export const requestStatusClass = (status) => ({

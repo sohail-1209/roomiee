@@ -11,6 +11,12 @@ node_modules
 dist
 dist-ssr
 *.local
+certs/
+ca.key
+ca.crt
+*.env
+*.env.example
+
 
 # Editor directories and files
 .vscode/*

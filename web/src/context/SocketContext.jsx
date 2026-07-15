@@ -19,7 +19,9 @@ export const SocketProvider = ({ children }) => {
     }
 
     const token = localStorage.getItem('accessToken');
-    socketRef.current = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000', {
+    
+    // Use current origin - Vite proxy will handle WebSocket
+    socketRef.current = io(window.location.origin, {
       auth: { token },
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,

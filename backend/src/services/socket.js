@@ -1,6 +1,7 @@
 // Socket.io service — real-time chat
 // All socket logic in one place — no duplication
 const prisma = require('../utils/prisma');
+const { sendNotification } = require('./notification.service');
 
 const initSocket = (io) => {
   // Auth middleware for socket
@@ -37,9 +38,21 @@ const initSocket = (io) => {
     socket.on('send_message', async ({ chatId, content, imageUrl }, callback) => {
       try {
         // Verify access
-        const chat = await prisma.chat.findUnique({ where: { id: chatId } });
+        const chat = await prisma.chat.findUnique({
+          where: { id: chatId },
+          include: {
+            owner: { select: { id: true, name: true, fcmToken: true } },
+            tenant: { select: { id: true, name: true, fcmToken: true } },
+            listing: { select: { id: true, title: true, status: true } },
+          },
+        });
         if (!chat || (chat.ownerId !== socket.userId && chat.tenantId !== socket.userId)) {
           return callback?.({ error: 'Unauthorized' });
+        }
+
+        // Check if listing is still active
+        if (chat.listing && chat.listing.status !== 'ACTIVE') {
+          return callback?.({ error: 'This listing is no longer active. Messaging has been disabled.' });
         }
 
         const message = await prisma.message.create({
@@ -51,6 +64,21 @@ const initSocket = (io) => {
 
         // Broadcast to all in the chat room
         io.to(`chat:${chatId}`).emit('new_message', message);
+
+        // Notify the other user
+        const recipient = chat.ownerId === socket.userId ? chat.tenant : chat.owner;
+        const senderName = message.sender?.name || 'Someone';
+        const listingTitle = chat.listing?.title || 'your listing';
+
+        await sendNotification({
+          userId: recipient.id,
+          fcmToken: recipient.fcmToken,
+          title: '💬 New Message',
+          body: `${senderName} sent a message in "${listingTitle}"`,
+          type: 'NEW_MESSAGE',
+          data: { chatId: chat.id, messageId: message.id, listingId: chat.listingId },
+        });
+
         callback?.({ success: true, data: message });
       } catch (err) {
         callback?.({ error: err.message });

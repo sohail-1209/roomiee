@@ -6,12 +6,10 @@ import {
   SendHorizontal,
   MessageSquare,
   User,
-  Settings,
   ListChecks,
   PlusSquare,
   BarChart2,
   Users,
-  FileText,
   Flag,
 } from 'lucide-react';
 
@@ -19,11 +17,12 @@ import {
 const MENUS = {
   TENANT: [
     { to: '/dashboard',               icon: LayoutDashboard, label: 'Dashboard'      },
+    { to: '/dashboard/my-listings',   icon: ListChecks,      label: 'My Listings'    },
+    { to: '/dashboard/listings/new',  icon: PlusSquare,      label: 'Add Listing'    },
     { to: '/dashboard/saved',         icon: Heart,           label: 'Saved Listings' },
     { to: '/dashboard/requests',      icon: SendHorizontal,  label: 'My Requests'    },
     { to: '/dashboard/chats',         icon: MessageSquare,   label: 'Chats'          },
     { to: '/dashboard/profile',       icon: User,            label: 'Profile'        },
-    { to: '/dashboard/settings',      icon: Settings,        label: 'Settings'       },
   ],
   OWNER: [
     { to: '/dashboard',               icon: LayoutDashboard, label: 'Dashboard'      },
@@ -35,11 +34,11 @@ const MENUS = {
     { to: '/dashboard/profile',       icon: User,            label: 'Profile'        },
   ],
   ADMIN: [
-    { to: '/dashboard',               icon: LayoutDashboard, label: 'Dashboard'      },
-    { to: '/dashboard/users',         icon: Users,           label: 'Users'          },
-    { to: '/dashboard/listings',      icon: ListChecks,      label: 'Listings'       },
-    { to: '/dashboard/reports',       icon: Flag,            label: 'Reports'        },
-    { to: '/dashboard/analytics',     icon: BarChart2,       label: 'Analytics'      },
+    { to: '/admin',                   icon: LayoutDashboard, label: 'Dashboard'      },
+    { to: '/admin',                   icon: Users,           label: 'Users'          },
+    { to: '/admin',                   icon: ListChecks,      label: 'Listings'       },
+    { to: '/admin',                   icon: Flag,            label: 'Reports'        },
+    { to: '/admin',                   icon: BarChart2,       label: 'Analytics'      },
   ],
 };
 

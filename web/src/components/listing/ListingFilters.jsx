@@ -11,6 +11,8 @@ const LISTING_TYPES = [
   { value: 'ALL', label: 'All' },
   { value: 'HOUSE_RENTAL', label: 'House Rental' },
   { value: 'ROOM_SHARING', label: 'Room Sharing' },
+  { value: 'HOSTEL', label: 'Hostel' },
+  { value: 'LAND_SALE', label: 'Land Sale' },
 ];
 
 const BEDROOM_OPTIONS = ['1', '2', '3', '4+'];
@@ -57,10 +59,10 @@ const ToggleButton = ({ active, onClick, children }) => (
   <button
     type="button"
     onClick={onClick}
-    className={`btn btn-sm flex-1 transition-all ${
+    className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
       active
-        ? 'btn-primary'
-        : 'btn-secondary text-surface-600'
+        ? 'bg-primary-600 text-white shadow-sm'
+        : 'bg-surface-100 text-surface-600 hover:bg-surface-200'
     }`}
   >
     {children}
@@ -96,6 +98,8 @@ const ListingFilters = ({ filters = DEFAULT_FILTERS, onChange }) => {
 
   const isRoomSharing =
     filters.type === 'ROOM_SHARING';
+  const isHostel = filters.type === 'HOSTEL';
+  const showGenderFilter = isRoomSharing || isHostel;
 
   const hasActiveFilters =
     filters.city ||
@@ -150,7 +154,7 @@ const ListingFilters = ({ filters = DEFAULT_FILTERS, onChange }) => {
           onToggle={() => toggleSection('type')}
         />
         {sections.type && (
-          <div className="flex gap-2 mt-2">
+          <div className="grid grid-cols-3 gap-1.5 mt-2">
             {LISTING_TYPES.map(({ value, label }) => (
               <ToggleButton
                 key={value}
@@ -194,7 +198,7 @@ const ListingFilters = ({ filters = DEFAULT_FILTERS, onChange }) => {
       </div>
 
       {/* Bedrooms (house rental only) */}
-      {!isRoomSharing && (
+      {!isRoomSharing && !isHostel && (
         <div className="py-3">
           <SectionHeader
             title="Bedrooms"
@@ -254,8 +258,8 @@ const ListingFilters = ({ filters = DEFAULT_FILTERS, onChange }) => {
         )}
       </div>
 
-      {/* Gender (room sharing only) */}
-      {isRoomSharing && (
+      {/* Gender (room sharing / hostel only) */}
+      {showGenderFilter && (
         <div className="py-3">
           <SectionHeader
             title="Gender Preference"

@@ -90,7 +90,7 @@ const RequestCard = ({ request, userRole }) => {
 
           {/* Tenant: go to chat if accepted */}
           {userRole === 'TENANT' && request.status === 'ACCEPTED' && request.chat?.id && (
-            <Link to={`/chat/${request.chat.id}`} className="ml-auto btn-primary btn-sm px-3 py-1 text-xs rounded-lg">
+            <Link to={`/dashboard/chats/${request.chat.id}`} className="ml-auto btn-primary btn-sm px-3 py-1 text-xs rounded-lg">
               Open Chat
             </Link>
           )}

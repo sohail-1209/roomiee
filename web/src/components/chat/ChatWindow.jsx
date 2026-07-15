@@ -48,7 +48,7 @@ const TypingIndicator = () => (
   </div>
 );
 
-const ChatWindow = ({ chatId, otherUser }) => {
+const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
   const { user } = useAuth();
   const { socket } = useSocket();
   const [messages, setMessages] = useState([]);
@@ -124,8 +124,9 @@ const ChatWindow = ({ chatId, otherUser }) => {
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-surface-100">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-surface-100 bg-white">
+      {/* Header — hidden on mobile when parent provides its own */}
+      {!hideHeader && (
+      <div className="hidden md:flex items-center gap-3 px-5 py-4 border-b border-surface-100 bg-white">
         <img
           src={otherUser?.profileImage || `https://ui-avatars.com/api/?name=${otherUser?.name}&background=6366f1&color=fff`}
           alt={otherUser?.name}
@@ -136,6 +137,7 @@ const ChatWindow = ({ chatId, otherUser }) => {
           <p className="text-xs text-success-500">● Online</p>
         </div>
       </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">

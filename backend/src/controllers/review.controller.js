@@ -2,6 +2,7 @@
 const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
+const { sendNotification } = require('../services/notification.service');
 
 // ─── POST /reviews ────────────────────────────────────
 const createReview = asyncHandler(async (req, res) => {
@@ -9,8 +10,21 @@ const createReview = asyncHandler(async (req, res) => {
   if (rating < 1 || rating > 5) throw new AppError('Rating must be 1-5', 400);
   if (receiverId === req.user.id) throw new AppError('Cannot review yourself', 400);
 
+  // Prevent duplicate reviews (same reviewer + same receiver + same listing)
+  const existing = await prisma.review.findFirst({
+    where: {
+      reviewerId: req.user.id,
+      receiverId,
+      listingId: listingId || null,
+    },
+  });
+  if (existing) throw new AppError('You have already reviewed this user for this listing', 409);
+
   const review = await prisma.review.create({
     data: { reviewerId: req.user.id, receiverId, listingId, rating, comment },
+    include: {
+      listing: { select: { id: true, title: true } },
+    },
   });
 
   // Update receiver's average rating
@@ -19,9 +33,22 @@ const createReview = asyncHandler(async (req, res) => {
     _avg: { rating: true },
     _count: { rating: true },
   });
-  await prisma.user.update({
+
+  const receiver = await prisma.user.update({
     where: { id: receiverId },
     data: { avgRating: stats._avg.rating || 0, totalRatings: stats._count.rating },
+    select: { id: true, fcmToken: true },
+  });
+
+  // Notify the review receiver
+  const stars = '⭐'.repeat(rating);
+  await sendNotification({
+    userId: receiverId,
+    fcmToken: receiver.fcmToken,
+    title: '⭐ New Review',
+    body: `${req.user.name} left you a ${rating}-star review${review.listing ? ` for "${review.listing.title}"` : ''}`,
+    type: 'NEW_REVIEW',
+    data: { reviewId: review.id, listingId, reviewerId: req.user.id },
   });
 
   res.status(201).json({ success: true, data: review });

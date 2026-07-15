@@ -1,4 +1,4 @@
-// LoginPage — split layout auth page for Roomiee
+// LoginPage — split layout auth page for Houziee
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ import {
 
 import { useAuth } from '../context/AuthContext';
 import { Button, Input } from '../components/ui/index.js';
+import Navbar from '../components/layout/Navbar';
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ const LeftPanel = () => (
           <Home size={20} className="text-white" />
         </div>
         <span className="text-white font-display font-bold text-2xl tracking-tight">
-          Roomiee
+          Houziee
         </span>
       </div>
       <p className="text-primary-200 text-sm font-medium mt-2">
@@ -205,7 +206,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <>
+      <Navbar />
+      <div className="min-h-screen flex">
       {/* ── Left panel ── */}
       <div className="lg:w-[52%] xl:w-[55%]">
         <LeftPanel />
@@ -218,7 +221,7 @@ export default function LoginPage() {
           <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
             <Home size={16} className="text-white" />
           </div>
-          <span className="font-display font-bold text-xl text-primary-700">Roomiee</span>
+          <span className="font-display font-bold text-xl text-primary-700">Houziee</span>
         </div>
 
         {/* Glass card */}
@@ -229,7 +232,7 @@ export default function LoginPage() {
               Welcome back
             </h2>
             <p className="text-surface-500 text-sm mt-1.5">
-              Sign in to your Roomiee account
+              Sign in to your Houziee account
             </p>
           </div>
 
@@ -378,5 +381,6 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }

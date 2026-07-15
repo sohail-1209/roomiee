@@ -1,10 +1,9 @@
-// Room Detail Page — reuses same components as ListingDetail but for Room Sharing
-// Shares MapView, NearbyPlaces, ReviewCard, Navbar components
+// Hostel Detail Page — shows sharing tiers, rules, and booking
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
-import { MapPin, Heart, MessageCircle } from 'lucide-react';
+import { MapPin, BedDouble, Heart, MessageCircle } from 'lucide-react';
 import { listingsAPI, requestsAPI, savedAPI } from '../services/endpoints';
 import { useAuth } from '../context/AuthContext';
 import { formatRent } from '../utils/helpers';
@@ -22,13 +21,14 @@ const RuleTag = ({ label, allowed }) => (
   </div>
 );
 
-const RoomDetail = () => {
+const HostelDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [requestMsg, setRequestMsg] = useState('');
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [selectedTier, setSelectedTier] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
 
   const { data, isLoading } = useQuery({
@@ -58,7 +58,9 @@ const RoomDetail = () => {
 
   if (isLoading) return <><Navbar /><div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" /></div></>;
 
-  const rs = data?.roomSharing;
+  const hs = data?.hostelSharing;
+  const tiers = hs?.tiers || [];
+  const availableTiers = tiers.filter((t) => t.available);
   const photos = data?.photos || [];
 
   return (
@@ -73,8 +75,8 @@ const RoomDetail = () => {
           <div className="lg:col-span-2 space-y-6">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="warning">🤝 Room Sharing</Badge>
-                {rs?.genderRequired !== 'ANY' && <Badge variant="primary">{rs?.genderRequired === 'FEMALE' ? '👩 Female Only' : '👨 Male Only'}</Badge>}
+                <Badge variant="success">🏨 Hostel / PG</Badge>
+                {hs?.genderRequired !== 'ANY' && <Badge variant="primary">{hs?.genderRequired === 'FEMALE' ? '👩 Female Only' : '👨 Male Only'}</Badge>}
               </div>
               <h1 className="font-display font-bold text-3xl text-surface-900 mb-2">{data?.title}</h1>
               <div className="flex items-center gap-2 text-surface-500 text-sm">
@@ -82,20 +84,42 @@ const RoomDetail = () => {
               </div>
             </div>
 
-            {/* Roommate preferences */}
-            {rs && (
+            {/* Sharing Tiers */}
+            {availableTiers.length > 0 && (
               <div className="card p-5">
-                <h2 className="font-display font-semibold text-lg mb-4">Roommate Preferences</h2>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {rs.minAge && <div className="text-sm"><span className="text-surface-400">Age:</span> <span className="font-medium">{rs.minAge}–{rs.maxAge || '∞'}</span></div>}
-                  {rs.occupationPref !== 'ANY' && <div className="text-sm"><span className="text-surface-400">Occupation:</span> <span className="font-medium">{rs.occupationPref}</span></div>}
-                  <div className="text-sm"><span className="text-surface-400">Current occupants:</span> <span className="font-medium">{rs.currentOccupants}/{rs.totalRooms}</span></div>
+                <h2 className="font-display font-semibold text-lg mb-4">Sharing Options</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {availableTiers.map((tier) => (
+                    <div
+                      key={tier.id}
+                      onClick={() => setSelectedTier(tier)}
+                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all text-center ${
+                        selectedTier?.id === tier.id
+                          ? 'border-primary-500 bg-primary-50'
+                          : 'border-surface-200 hover:border-primary-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-1 mb-2">
+                        <BedDouble size={16} className="text-primary-500" />
+                        <span className="font-bold text-lg text-surface-900">{tier.sharingSize}</span>
+                      </div>
+                      <p className="text-xs text-surface-500 mb-1">sharing</p>
+                      <p className="font-display font-bold text-primary-600">{formatRent(tier.price)}<span className="text-xs font-normal text-surface-400">/mo</span></p>
+                    </div>
+                  ))}
                 </div>
+              </div>
+            )}
+
+            {/* Rules */}
+            {hs && (
+              <div className="card p-5">
+                <h2 className="font-display font-semibold text-lg mb-4">House Rules</h2>
                 <div className="grid grid-cols-2 gap-2">
-                  <RuleTag label="Smoking" allowed={rs.smoking} />
-                  <RuleTag label="Drinking" allowed={rs.drinking} />
-                  <RuleTag label="Veg Only" allowed={rs.vegOnly} />
-                  <RuleTag label="Pets" allowed={rs.petsAllowed} />
+                  <RuleTag label="Smoking" allowed={hs.smoking} />
+                  <RuleTag label="Drinking" allowed={hs.drinking} />
+                  <RuleTag label="Veg Only" allowed={hs.vegOnly} />
+                  <RuleTag label="Pets" allowed={hs.petsAllowed} />
                 </div>
               </div>
             )}
@@ -127,13 +151,35 @@ const RoomDetail = () => {
           {/* Right */}
           <div>
             <div className="card p-6 sticky top-24 space-y-4">
+              {/* Price range */}
               <div>
-                <span className="font-display font-bold text-3xl text-surface-900">{formatRent(data?.rent)}</span>
-                <span className="text-surface-400 text-sm">/month</span>
+                {availableTiers.length > 0 ? (
+                  <div>
+                    <span className="text-sm text-surface-400">Starting from</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="font-display font-bold text-3xl text-surface-900">
+                        {formatRent(Math.min(...availableTiers.map((t) => t.price)))}
+                      </span>
+                      <span className="text-surface-400 text-sm">/mo</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="font-display font-bold text-3xl text-surface-900">{formatRent(data?.rent)}</span>
+                    <span className="text-surface-400 text-sm">/month</span>
+                  </div>
+                )}
               </div>
+
               <div className="text-sm text-surface-600 space-y-1">
                 <div className="flex justify-between"><span>Deposit</span><span className="font-medium">{formatRent(data?.deposit)}</span></div>
                 <div className="flex justify-between"><span>Available From</span><span className="font-medium">{new Date(data?.availableFrom).toLocaleDateString('en-IN')}</span></div>
+                {selectedTier && (
+                  <div className="flex justify-between text-primary-600 font-medium pt-2 border-t border-surface-100">
+                    <span>Selected</span>
+                    <span>{selectedTier.sharingSize}-sharing · {formatRent(selectedTier.price)}/mo</span>
+                  </div>
+                )}
               </div>
 
               {user ? (
@@ -146,7 +192,7 @@ const RoomDetail = () => {
                     <div className={`w-full p-3 rounded-xl text-center text-sm font-medium ${
                       data?.status === 'RENTED' ? 'bg-primary-50 text-primary-700' : 'bg-amber-50 text-amber-700'
                     }`}>
-                      {data?.status === 'RENTED' ? '🏠 This listing is booked' : '⏸️ This listing is currently inactive'}
+                      {data?.status === 'RENTED' ? '🏠 This listing is fully booked' : '⏸️ This listing is currently inactive'}
                     </div>
                   ) : (
                     <Button variant="primary" size="lg" className="w-full" onClick={() => setShowRequestModal(true)}>
@@ -184,8 +230,13 @@ const RoomDetail = () => {
         </div>
       </div>
 
-      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title="Request to Share Room" size="sm">
+      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title="Request to Stay" size="sm">
         <div className="space-y-4">
+          {selectedTier && (
+            <div className="p-3 bg-primary-50 rounded-xl text-sm text-primary-700 font-medium">
+              Selected: {selectedTier.sharingSize}-sharing at {formatRent(selectedTier.price)}/mo
+            </div>
+          )}
           <textarea value={requestMsg} onChange={(e) => setRequestMsg(e.target.value)} placeholder="Introduce yourself — occupation, lifestyle, move-in date..." rows={4} className="input resize-none" />
           <div className="flex gap-3">
             <Button variant="secondary" size="md" className="flex-1" onClick={() => setShowRequestModal(false)}>Cancel</Button>
@@ -205,4 +256,4 @@ const RoomDetail = () => {
   );
 };
 
-export default RoomDetail;
+export default HostelDetail;

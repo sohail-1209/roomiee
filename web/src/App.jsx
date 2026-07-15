@@ -7,6 +7,7 @@ import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
+import MobileDetect from './components/layout/MobileDetect';
 
 // Pages — lazy loaded for performance
 import { lazy, Suspense } from 'react';
@@ -14,6 +15,8 @@ const HomePage       = lazy(() => import('./pages/HomePage'));
 const SearchPage     = lazy(() => import('./pages/SearchPage'));
 const ListingDetail  = lazy(() => import('./pages/ListingDetail'));
 const RoomDetail     = lazy(() => import('./pages/RoomDetail'));
+const HostelDetail   = lazy(() => import('./pages/HostelDetail'));
+const LandDetail     = lazy(() => import('./pages/LandDetail'));
 const LoginPage      = lazy(() => import('./pages/LoginPage'));
 const RegisterPage   = lazy(() => import('./pages/RegisterPage'));
 const ChatPage       = lazy(() => import('./pages/ChatPage'));
@@ -74,6 +77,8 @@ export default function App() {
                 <Route path="/search"   element={<SearchPage />} />
                 <Route path="/listing/:id" element={<ListingDetail />} />
                 <Route path="/room/:id"    element={<RoomDetail />} />
+                <Route path="/hostel/:id"  element={<HostelDetail />} />
+                <Route path="/land/:id"    element={<LandDetail />} />
                 <Route path="/login"    element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
 
@@ -101,6 +106,11 @@ export default function App() {
                       <SavedPage />
                     </ProtectedRoute>
                   } />
+                  <Route path="/dashboard/my-listings" element={
+                    <ProtectedRoute allowedRoles={['TENANT']}>
+                      <MyListingsPage />
+                    </ProtectedRoute>
+                  } />
 
                   {/* Owner */}
                   <Route path="/dashboard/owner" element={
@@ -114,12 +124,12 @@ export default function App() {
                     </ProtectedRoute>
                   } />
                   <Route path="/dashboard/listings/new" element={
-                    <ProtectedRoute allowedRoles={['OWNER']}>
+                    <ProtectedRoute allowedRoles={['OWNER', 'TENANT']}>
                       <CreateListing />
                     </ProtectedRoute>
                   } />
                   <Route path="/dashboard/listings/:id/edit" element={
-                    <ProtectedRoute allowedRoles={['OWNER']}>
+                    <ProtectedRoute allowedRoles={['OWNER', 'TENANT']}>
                       <CreateListing />
                     </ProtectedRoute>
                   } />
@@ -172,6 +182,9 @@ export default function App() {
                 style: { fontFamily: 'Inter, sans-serif', fontSize: '14px', borderRadius: '12px' },
               }}
             />
+
+            {/* Mobile detection — toast + auto location */}
+            <MobileDetect />
           </BrowserRouter>
         </SocketProvider>
       </AuthProvider>

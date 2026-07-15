@@ -1,14 +1,15 @@
 // Axios instance — single configured instance for all API calls
 import axios from 'axios';
 
-// Use relative URL - Vite proxy will forward to backend
-const api = axios.create({
-  baseURL: '/api',
-  withCredentials: false,
-  timeout: 15000,
-});
+// In production, VITE_API_URL points to the deployed backend.
+// In development, '/api' is proxied by Vite to localhost:5000.
+const baseURL = import.meta.env.VITE_API_URL || '/api';
 
-console.log('🔌 API: Using proxy (same origin)');
+const api = axios.create({
+  baseURL,
+  withCredentials: false,
+  timeout: 30000,
+});
 
 // ─── Request interceptor — attach access token ────────
 api.interceptors.request.use((config) => {
@@ -30,10 +31,10 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
-    
+
     // Do not attempt token refresh for login, register or refresh requests
-    const isAuthRequest = original.url?.includes('/auth/login') || 
-                          original.url?.includes('/auth/register') || 
+    const isAuthRequest = original.url?.includes('/auth/login') ||
+                          original.url?.includes('/auth/register') ||
                           original.url?.includes('/auth/refresh');
 
     if (error.response?.status === 401 && !original._retry && !isAuthRequest) {

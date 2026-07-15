@@ -1,4 +1,4 @@
-import { api } from '../services/api';
+import api from '../services/api';
 
 // Convert VAPID key from URL-safe base64 to Uint8Array
 function urlBase64ToUint8Array(base64String) {

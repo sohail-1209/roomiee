@@ -1,26 +1,19 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let transporter = null;
+let resend = null;
 
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 15000,
-      greetingTimeout: 15000,
-    });
+function getResendClient() {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
   }
-  return transporter;
+  return resend;
 }
 
 async function sendVerificationEmail(email, name, otp) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    throw new Error('EMAIL_USER or EMAIL_PASS not configured');
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY not configured');
   }
+
   const html = `
     <!DOCTYPE html>
     <html>
@@ -47,8 +40,8 @@ async function sendVerificationEmail(email, name, otp) {
     </html>
   `;
 
-  await getTransporter().sendMail({
-    from: '"Quikden" <no-reply@quikden.com>',
+  await getResendClient().emails.send({
+    from: 'Quikden <onboarding@resend.dev>',
     to: email,
     subject: `Your Quikden verification code: ${otp}`,
     html,

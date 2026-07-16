@@ -417,3 +417,6 @@
 /* ─── Leaflet Map ───────────────────────────── */
 .leaflet-container { border-radius: var(--md-sys-shape-corner-lg); z-index: 0; }
 .leaflet-control-attribution { display: none; }
+
+/* ─── Safe Area (iOS notch) ─────────────────── */
+.safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }

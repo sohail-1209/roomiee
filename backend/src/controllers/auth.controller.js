@@ -77,8 +77,9 @@ const register = asyncHandler(async (req, res) => {
       new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 15000)),
     ]);
     emailSent = true;
+    console.log(`✅ OTP email sent to ${email}`);
   } catch (err) {
-    console.error('Failed to send verification email:', err.message);
+    console.error('❌ Failed to send OTP email:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
   }
 
   res.status(201).json({

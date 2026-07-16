@@ -18,6 +18,9 @@ function getTransporter() {
 }
 
 async function sendVerificationEmail(email, name, otp) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    throw new Error('EMAIL_USER or EMAIL_PASS not configured');
+  }
   const html = `
     <!DOCTYPE html>
     <html>

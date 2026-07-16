@@ -1,17 +1,8 @@
-const { Resend } = require('resend');
-
-let resend = null;
-
-function getResendClient() {
-  if (!resend) {
-    resend = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resend;
-}
+const BREVO_API = 'https://api.brevo.com/v3/smtp/email';
 
 async function sendVerificationEmail(email, name, otp) {
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error('RESEND_API_KEY not configured');
+  if (!process.env.BREVO_API_KEY) {
+    throw new Error('BREVO_API_KEY not configured');
   }
 
   const html = `
@@ -40,12 +31,25 @@ async function sendVerificationEmail(email, name, otp) {
     </html>
   `;
 
-  await getResendClient().emails.send({
-    from: 'Quikden <onboarding@resend.dev>',
-    to: email,
-    subject: `Your Quikden verification code: ${otp}`,
-    html,
+  const res = await fetch(BREVO_API, {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'content-type': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender: { name: 'Quikden', email: 'no-reply@quikden.com' },
+      to: [{ email, name: name || email }],
+      subject: `Your Quikden verification code: ${otp}`,
+      htmlContent: html,
+    }),
   });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Brevo error: ${res.status}`);
+  }
 }
 
 module.exports = { sendVerificationEmail };

@@ -1,11 +1,14 @@
 // LoginPage — clean centered card design for Quikden
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+
+// Google Client ID — replace with your actual client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 // ─── Google Icon SVG ─────────────────────────────────────────────────────────
 const GoogleIcon = (props) => (
@@ -92,7 +95,7 @@ function ToggleSwitch({ checked, onChange }) {
 const INITIAL_FORM = { email: '', password: '', remember: false };
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, googleAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -100,13 +103,72 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const googleBtnRef = useRef(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
+  };
 
   const from = location.state?.from?.pathname ?? '/dashboard';
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
+  // Initialize Google Sign-In
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const initializeGoogleSignIn = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+        });
+      }
+    };
+
+    // Load Google Identity Services script
+    if (!document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.head.appendChild(script);
+    } else if (window.google?.accounts?.id) {
+      initializeGoogleSignIn();
+    }
+  }, []);
+
+  const handleGoogleCallback = async (response) => {
+    if (!response.credential) return;
+    setGoogleLoading(true);
+    try {
+      const result = await googleAuth(response.credential);
+      if (result.needsProfile) {
+        toast.success('Please complete your profile');
+        navigate('/complete-profile', { replace: true });
+      } else {
+        toast.success('Welcome back! 👋');
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Google login failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    if (!GOOGLE_CLIENT_ID) {
+      toast('Google login not configured yet', { icon: '⚠️' });
+      return;
+    }
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    } else {
+      toast('Google Sign-In is loading, please try again', { icon: '⏳' });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -130,10 +192,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    toast('Google login coming soon!', { icon: '🚀' });
   };
 
   return (
@@ -189,13 +247,18 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-between border border-surface-200 rounded-xl px-3 py-2 text-[13px] font-medium text-surface-700 bg-white hover:bg-surface-50 hover:border-surface-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 active:scale-[0.99]"
+            disabled={googleLoading}
+            className="w-full flex items-center justify-between border border-surface-200 rounded-xl px-3 py-2 text-[13px] font-medium text-surface-700 bg-white hover:bg-surface-50 hover:border-surface-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <div className="flex items-center gap-2.5">
-              <GoogleIcon />
-              <span>Continue with Google</span>
+              {googleLoading ? (
+                <div className="w-4 h-4 border-2 border-surface-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              <span>{googleLoading ? 'Signing in...' : 'Continue with Google'}</span>
             </div>
-            <ArrowRight size={14} className="text-surface-400" />
+            {!googleLoading && <ArrowRight size={14} className="text-surface-400" />}
           </button>
 
           {/* Divider */}

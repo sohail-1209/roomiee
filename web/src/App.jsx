@@ -18,6 +18,7 @@ const HostelDetail   = lazy(() => import('./pages/HostelDetail'));
 const LandDetail     = lazy(() => import('./pages/LandDetail'));
 const LoginPage      = lazy(() => import('./pages/LoginPage'));
 const RegisterPage   = lazy(() => import('./pages/RegisterPage'));
+const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
 const ChatPage       = lazy(() => import('./pages/ChatPage'));
 const ProfilePage    = lazy(() => import('./pages/ProfilePage'));
 
@@ -83,6 +84,11 @@ export default function App() {
                 <Route path="/land/:id"    element={<LandDetail />} />
                 <Route path="/login"    element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/complete-profile" element={
+                  <ProtectedRoute allowedRoles={['TENANT', 'OWNER']}>
+                    <CompleteProfilePage />
+                  </ProtectedRoute>
+                } />
 
                 {/* ─ Dashboard redirect ─ */}
                 <Route path="/dashboard" element={

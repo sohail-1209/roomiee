@@ -8,6 +8,10 @@ export const authAPI = {
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   updateFcmToken: (fcmToken) => api.patch('/auth/fcm-token', { fcmToken }),
+  googleAuth: (idToken) => api.post('/auth/google', { idToken }),
+  completeProfile: (data) => api.post('/auth/complete-profile', data),
+  sendVerification: () => api.post('/auth/send-verification'),
+  verifyEmail: (token) => api.post('/auth/verify-email', { token }),
 };
 
 // ─── Listings ─────────────────────────────────────────

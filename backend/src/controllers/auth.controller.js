@@ -1,9 +1,16 @@
-// Auth controller — register, login, refresh, logout
+// Auth controller — register, login, refresh, logout, google, email verification
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
+const {
+  verifyGoogleToken,
+  handleGoogleAuth,
+  completeGoogleProfile,
+  generateVerificationToken,
+  verifyEmailToken,
+} = require('../services/auth.service');
 
 // ─── Token helpers ────────────────────────────
 const signAccessToken = (id) =>
@@ -128,4 +135,89 @@ const updateFcmToken = asyncHandler(async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = { register, login, refresh, logout, getMe, updateFcmToken };
+// ─── Google OAuth Login/Register ───────────────
+const googleAuth = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) throw new AppError('Google ID token required', 400);
+
+  const googleUser = await verifyGoogleToken(idToken);
+  const { user, isNew, needsProfile } = await handleGoogleAuth(googleUser);
+
+  if (user.isBanned) throw new AppError('Account banned', 403);
+
+  if (needsProfile) {
+    // Return partial user data — frontend will redirect to complete profile
+    const { password: _, ...safeUser } = user;
+    return res.status(200).json({
+      success: true,
+      data: {
+        user: safeUser,
+        isNew: true,
+        needsProfile: true,
+        accessToken: signAccessToken(user.id),
+      },
+    });
+  }
+
+  await sendTokens(user, res);
+});
+
+// ─── Complete Google user profile ──────────────
+const completeProfile = asyncHandler(async (req, res) => {
+  const { phone, role } = req.body;
+
+  const allowedRole = ['TENANT', 'OWNER'].includes(role) ? role : 'TENANT';
+
+  const user = await completeGoogleProfile(req.user.id, {
+    phone: phone || undefined,
+    role: allowedRole,
+  });
+
+  await sendTokens(user, res);
+});
+
+// ─── Send email verification ───────────────────
+const sendVerificationEmail = asyncHandler(async (req, res) => {
+  const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+  if (!user) throw new AppError('User not found', 404);
+
+  if (user.isVerified) {
+    return res.json({ success: true, message: 'Email already verified' });
+  }
+
+  const { token } = await generateVerificationToken(user.id);
+
+  // In production, send email here. For now, return the verification URL
+  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${token}`;
+
+  console.log(`📧 Email verification URL: ${verificationUrl}`);
+
+  res.json({
+    success: true,
+    message: 'Verification email sent',
+    // Remove this in production — only for development
+    verificationUrl,
+  });
+});
+
+// ─── Verify email with token ───────────────────
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+  if (!token) throw new AppError('Verification token required', 400);
+
+  const user = await verifyEmailToken(token);
+  await sendTokens(user, res);
+});
+
+module.exports = {
+  register,
+  login,
+  refresh,
+  logout,
+  getMe,
+  updateFcmToken,
+  googleAuth,
+  completeProfile,
+  sendVerificationEmail,
+  verifyEmail,
+};

@@ -1,5 +1,16 @@
 const router = require('express').Router();
-const { register, login, refresh, logout, getMe, updateFcmToken } = require('../controllers/auth.controller');
+const {
+  register,
+  login,
+  refresh,
+  logout,
+  getMe,
+  updateFcmToken,
+  googleAuth,
+  completeProfile,
+  sendVerificationEmail,
+  verifyEmail,
+} = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validate.middleware');
@@ -20,5 +31,13 @@ router.post('/refresh', refresh);
 router.post('/logout', logout);
 router.get('/me', protect, getMe);
 router.patch('/fcm-token', protect, updateFcmToken);
+
+// Google OAuth
+router.post('/google', googleAuth);
+router.post('/complete-profile', protect, completeProfile);
+
+// Email verification
+router.post('/send-verification', protect, sendVerificationEmail);
+router.post('/verify-email', verifyEmail);
 
 module.exports = router;

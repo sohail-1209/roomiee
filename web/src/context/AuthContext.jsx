@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
     authAPI.getMe()
       .then(({ data }) => {
         setUser(data.data);
-        // Subscribe to push if user is already logged in
         subscribeToPush().catch(() => {});
       })
       .catch(() => localStorage.removeItem('accessToken'))
@@ -28,7 +27,6 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.login(credentials);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
-    // Subscribe to push on login (welcome already sent at registration)
     subscribeToPush().catch(() => {});
     return data.data.user;
   };
@@ -37,10 +35,46 @@ export const AuthProvider = ({ children }) => {
     const { data } = await authAPI.register(payload);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
-    // Subscribe to push and send welcome notifications (only on first registration)
     subscribeToPush().then(() => {
       localStorage.setItem('welcomeNotifSent', data.data.user.id);
     }).catch(() => {});
+    return data.data.user;
+  };
+
+  const googleAuth = async (idToken) => {
+    const { data } = await authAPI.googleAuth(idToken);
+    const { user: userData, accessToken, needsProfile } = data.data;
+
+    if (needsProfile) {
+      // Store token and return partial user — frontend will redirect to complete profile
+      localStorage.setItem('accessToken', accessToken);
+      setUser(userData);
+      return { user: userData, needsProfile: true };
+    }
+
+    localStorage.setItem('accessToken', accessToken);
+    setUser(userData);
+    subscribeToPush().catch(() => {});
+    return { user: userData, needsProfile: false };
+  };
+
+  const completeProfile = async (profileData) => {
+    const { data } = await authAPI.completeProfile(profileData);
+    const userData = data.data.user;
+    setUser(userData);
+    subscribeToPush().catch(() => {});
+    return userData;
+  };
+
+  const sendVerificationEmail = async () => {
+    const { data } = await authAPI.sendVerification();
+    return data;
+  };
+
+  const verifyEmail = async (token) => {
+    const { data } = await authAPI.verifyEmail(token);
+    localStorage.setItem('accessToken', data.data.accessToken);
+    setUser(data.data.user);
     return data.data.user;
   };
 
@@ -53,7 +87,10 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (updates) => setUser((prev) => ({ ...prev, ...updates }));
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{
+      user, loading, login, register, logout, updateUser,
+      googleAuth, completeProfile, sendVerificationEmail, verifyEmail,
+    }}>
       {children}
     </AuthContext.Provider>
   );

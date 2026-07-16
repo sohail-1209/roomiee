@@ -1,11 +1,14 @@
 // RegisterPage — clean centered card design matching login page
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { User, Mail, Lock, Phone, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Phone, ArrowRight, Eye, EyeOff, CheckCircle, Send } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+
+// Google Client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 // ─── House Illustration SVG ──────────────────────────────────────────────────
 const HouseIllustration = () => (
@@ -82,13 +85,72 @@ function PasswordInput({ label, name, value, onChange, placeholder, error, id })
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const RegisterPage = () => {
-  const { register } = useAuth();
+  const { register, googleAuth, sendVerificationEmail } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '', confirmPassword: '', role: 'TENANT', terms: false,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [step, setStep] = useState('form'); // 'form' | 'verify-email'
+  const [verificationUrl, setVerificationUrl] = useState('');
+
+  // Initialize Google Sign-In
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const initializeGoogleSignIn = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCallback,
+        });
+      }
+    };
+
+    if (!document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleSignIn;
+      document.head.appendChild(script);
+    } else if (window.google?.accounts?.id) {
+      initializeGoogleSignIn();
+    }
+  }, []);
+
+  const handleGoogleCallback = async (response) => {
+    if (!response.credential) return;
+    setGoogleLoading(true);
+    try {
+      const result = await googleAuth(response.credential);
+      if (result.needsProfile) {
+        toast.success('Please complete your profile');
+        navigate('/complete-profile', { replace: true });
+      } else {
+        toast.success('Welcome! 👋');
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Google signup failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = () => {
+    if (!GOOGLE_CLIENT_ID) {
+      toast('Google signup not configured yet', { icon: '⚠️' });
+      return;
+    }
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt();
+    } else {
+      toast('Google Sign-In is loading, please try again', { icon: '⏳' });
+    }
+  };
 
   const validate = () => {
     const e = {};
@@ -109,9 +171,14 @@ const RegisterPage = () => {
     if (!validate()) return;
     setLoading(true);
     try {
-      await register({ name: form.name, email: form.email, phone: form.phone, password: form.password, role: form.role });
-      toast.success('Registration successful! Welcome to Quikden.');
-      navigate('/dashboard');
+      const user = await register({ name: form.name, email: form.email, phone: form.phone, password: form.password, role: form.role });
+      // Send verification email
+      const verData = await sendVerificationEmail();
+      if (verData.verificationUrl) {
+        setVerificationUrl(verData.verificationUrl);
+      }
+      setStep('verify-email');
+      toast.success('Account created! Please verify your email.');
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Registration failed');
     } finally {
@@ -161,6 +228,65 @@ const RegisterPage = () => {
               </p>
             </div>
           </div>
+
+          {step === 'verify-email' ? (
+            /* Email Verification Step */
+            <div className="text-center py-4">
+              <div className="w-14 h-14 mx-auto mb-3 bg-primary-50 rounded-full flex items-center justify-center">
+                <Mail size={28} className="text-primary-500" />
+              </div>
+              <h2 className="font-display font-bold text-lg text-surface-900 mb-1">Check your email</h2>
+              <p className="text-surface-500 text-xs mb-4">
+                We've sent a verification link to<br />
+                <span className="font-medium text-surface-700">{form.email}</span>
+              </p>
+
+              {verificationUrl && (
+                <div className="bg-surface-50 rounded-lg p-3 mb-4">
+                  <p className="text-[10px] text-surface-400 mb-1">For development, click the link below:</p>
+                  <a href={verificationUrl} target="_blank" rel="noopener noreferrer"
+                    className="text-[10px] text-primary-600 hover:underline break-all">
+                    {verificationUrl}
+                  </a>
+                </div>
+              )}
+
+              <button onClick={() => setStep('form')}
+                className="text-xs text-primary-600 hover:underline font-medium">
+                ← Back to registration
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Google SSO */}
+              <button
+                type="button"
+                onClick={handleGoogleSignup}
+                disabled={googleLoading}
+                className="w-full flex items-center justify-between border border-surface-200 rounded-xl px-3 py-2 text-[13px] font-medium text-surface-700 bg-white hover:bg-surface-50 hover:border-surface-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:ring-offset-2 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed mb-2"
+              >
+                <div className="flex items-center gap-2.5">
+                  {googleLoading ? (
+                    <div className="w-4 h-4 border-2 border-surface-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" width="16" height="16">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                  )}
+                  <span>{googleLoading ? 'Signing up...' : 'Continue with Google'}</span>
+                </div>
+                {!googleLoading && <ArrowRight size={14} className="text-surface-400" />}
+              </button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-2">
+                <div className="flex-1 h-px bg-surface-200" />
+                <span className="text-[10px] text-surface-400 font-medium">or</span>
+                <div className="flex-1 h-px bg-surface-200" />
+              </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-2 sm:space-y-2.5">
             {/* Full Name */}
@@ -249,6 +375,8 @@ const RegisterPage = () => {
             Already have an account?{' '}
             <Link to="/login" className="text-primary-600 hover:underline font-semibold">Sign In</Link>
           </p>
+          </>
+          )}
         </div>
       </div>
     </>

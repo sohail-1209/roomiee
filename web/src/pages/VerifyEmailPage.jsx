@@ -3,34 +3,52 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { MailCheck, XCircle, Loader2 } from 'lucide-react';
 
+import { auth, applyActionCode, checkActionCode } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { verifyEmail } = useAuth();
-  const [status, setStatus] = useState('loading'); // loading | success | error
+  const { confirmEmailVerified } = useAuth();
+  const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (!token) {
+    const mode = searchParams.get('mode');
+    const oobCode = searchParams.get('oobCode');
+
+    if (!mode || !oobCode) {
       setStatus('error');
-      setMessage('No verification token found.');
+      setMessage('Invalid verification link.');
       return;
     }
 
-    verifyEmail(token)
-      .then(() => {
+    const verify = async () => {
+      try {
+        // Check the action code first
+        await checkActionCode(auth, oobCode);
+        // Apply it to verify the email
+        const info = await applyActionCode(auth, oobCode);
+        const email = info.data.email;
+
+        // Confirm with our backend
+        await confirmEmailVerified(email);
+
         setStatus('success');
         toast.success('Email verified! Welcome to Quikden.');
         setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
-      })
-      .catch((err) => {
+      } catch (err) {
         setStatus('error');
-        setMessage(err.response?.data?.message || 'Verification failed or link expired.');
-      });
+        if (err.code === 'auth/invalid-action-code') {
+          setMessage('This verification link has expired or already been used.');
+        } else {
+          setMessage(err.message || 'Verification failed.');
+        }
+      }
+    };
+
+    verify();
   }, [searchParams]);
 
   return (

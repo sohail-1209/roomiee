@@ -12,6 +12,7 @@ export const authAPI = {
   completeProfile: (data) => api.post('/auth/complete-profile', data),
   sendVerification: () => api.post('/auth/send-verification'),
   verifyEmail: (otp) => api.post('/auth/verify-email', { otp }),
+  confirmEmailVerified: (email) => api.post('/auth/confirm-email-verified', { email }),
 };
 
 // ─── Listings ─────────────────────────────────────────

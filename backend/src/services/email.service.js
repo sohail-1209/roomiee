@@ -1,20 +1,12 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-let transporter = null;
+let client = null;
 
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: 'sohailpashe@gmail.com',
-        pass: 'ksxvtzcuxuhdcldf',
-      },
-    });
+function getClient() {
+  if (!client) {
+    client = new Resend(process.env.RESEND_API_KEY);
   }
-  return transporter;
+  return client;
 }
 
 async function sendVerificationEmail(email, name, otp) {
@@ -44,14 +36,12 @@ async function sendVerificationEmail(email, name, otp) {
     </html>
   `;
 
-  const result = await getTransporter().sendMail({
-    from: '"Quikden" <sohailpashe@gmail.com>',
+  await getClient().emails.send({
+    from: 'Quikden <onboarding@resend.dev>',
     to: email,
     subject: `Your Quikden verification code: ${otp}`,
     html,
   });
-
-  return result;
 }
 
 module.exports = { sendVerificationEmail };

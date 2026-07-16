@@ -80,6 +80,14 @@ export const AuthProvider = ({ children }) => {
     return data.data.user;
   };
 
+  const confirmEmailVerified = async (email) => {
+    const { data } = await authAPI.confirmEmailVerified(email);
+    localStorage.setItem('accessToken', data.data.accessToken);
+    setUser(data.data.user);
+    subscribeToPush().catch(() => {});
+    return data.data.user;
+  };
+
   const logout = async () => {
     await authAPI.logout().catch(() => {});
     localStorage.removeItem('accessToken');
@@ -91,7 +99,7 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       user, loading, login, register, logout, updateUser,
-      googleAuth, completeProfile, sendVerificationEmail, verifyEmail,
+      googleAuth, completeProfile, sendVerificationEmail, verifyEmail, confirmEmailVerified,
     }}>
       {children}
     </AuthContext.Provider>

@@ -10,6 +10,7 @@ const {
   completeProfile,
   sendVerificationEmail,
   verifyEmail,
+  confirmEmailVerified,
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 const { body } = require('express-validator');
@@ -39,5 +40,6 @@ router.post('/complete-profile', completeProfile);
 // Email verification
 router.post('/send-verification', protect, sendVerificationEmail);
 router.post('/verify-email', verifyEmail);
+router.post('/confirm-email-verified', confirmEmailVerified);
 
 module.exports = router;

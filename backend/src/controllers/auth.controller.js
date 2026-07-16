@@ -50,7 +50,7 @@ const sendTokens = async (user, res, statusCode = 200) => {
   });
 };
 
-// ─── Register ─────────────────────────────────
+// ─── Register (Firebase handles email verification) ──
 const register = asyncHandler(async (req, res) => {
   const { name, email, phone, password, role } = req.body;
 
@@ -63,29 +63,13 @@ const register = asyncHandler(async (req, res) => {
 
   const hashed = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { name, email, phone, password: hashed, role: allowedRole },
+    data: { name, email, phone, password: hashed, role: allowedRole, isVerified: false },
   });
-
-  // Generate verification OTP — do NOT send tokens yet
-  const { token: otp } = await generateVerificationToken(user.id);
-
-  // Send verification email (non-blocking)
-  let emailSent = false;
-  try {
-    await Promise.race([
-      sendEmail(email, name, otp),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 15000)),
-    ]);
-    emailSent = true;
-    console.log(`✅ OTP email sent to ${email}`);
-  } catch (err) {
-    console.error('❌ Failed to send OTP email:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
-  }
 
   res.status(201).json({
     success: true,
-    message: emailSent ? 'Account created. Please check your email for OTP.' : 'Account created. Email could not be sent.',
-    otp: emailSent ? undefined : otp,
+    message: 'Account created. Please verify your email.',
+    data: { userId: user.id },
   });
 });
 
@@ -255,6 +239,22 @@ const verifyEmail = asyncHandler(async (req, res) => {
   await sendTokens(user, res);
 });
 
+// ─── Confirm Firebase email verification ────────
+const confirmEmailVerified = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) throw new AppError('Email required', 400);
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new AppError('User not found', 404);
+
+  if (user.isVerified) {
+    return await sendTokens(user, res);
+  }
+
+  await prisma.user.update({ where: { id: user.id }, data: { isVerified: true } });
+  await sendTokens(user, res);
+});
+
 module.exports = {
   register,
   login,
@@ -266,4 +266,5 @@ module.exports = {
   completeProfile,
   sendVerificationEmail: sendVerificationEmailHandler,
   verifyEmail,
+  confirmEmailVerified,
 };

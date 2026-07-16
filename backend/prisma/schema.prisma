@@ -376,6 +376,7 @@ model Report {
   status     ReportStatus @default(OPEN)
   createdAt  DateTime     @default(now())
 
+  @@unique([listingId, reporterId])
   @@map("reports")
 }
 

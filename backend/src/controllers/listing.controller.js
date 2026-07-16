@@ -295,7 +295,7 @@ const updateListing = asyncHandler(async (req, res) => {
     where: { id: req.params.id },
     data: {
       ...data,
-      availableFrom: availableFrom ? new Date(availableFrom) : null,
+      ...(req.body.availableFrom !== undefined && { availableFrom: new Date(req.body.availableFrom) }),
       ...(amenitiesUpsert && { amenities: amenitiesUpsert }),
       ...(roomSharingUpsert && { roomSharing: roomSharingUpsert }),
       ...(hostelSharingUpsert && { hostelSharing: hostelSharingUpsert }),
@@ -423,7 +423,7 @@ const createFromBooking = asyncHandler(async (req, res) => {
       parking: Boolean(parking),
       areaSqFt: areaSqFt ? parseInt(areaSqFt) : null,
       furnished: Boolean(furnished),
-      availableFrom: availableFrom ? new Date(availableFrom) : null,
+      ...(req.body.availableFrom !== undefined && { availableFrom: new Date(req.body.availableFrom) }),
       ...(amenities && { amenities: { create: amenities } }),
       ...(roomSharing && { roomSharing: { create: roomSharing } }),
     },

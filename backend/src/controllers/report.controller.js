@@ -9,6 +9,11 @@ const createReport = asyncHandler(async (req, res) => {
   const listing = await prisma.listing.findUnique({ where: { id: listingId } });
   if (!listing) throw new AppError('Listing not found', 404);
 
+  const existing = await prisma.report.findUnique({
+    where: { listingId_reporterId: { listingId, reporterId: req.user.id } },
+  });
+  if (existing) throw new AppError('You have already reported this listing', 409);
+
   const report = await prisma.report.create({
     data: { listingId, reporterId: req.user.id, reason, details },
   });

@@ -328,6 +328,10 @@
   border: 2px solid #0d9488;
 }
 
+/* ─── No scrollbar utility ──────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* ─── Leaflet map override ───────────────────── */
 .leaflet-container { border-radius: 1rem; z-index: 0; }
 .leaflet-control-attribution { display: none; }

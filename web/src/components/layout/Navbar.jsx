@@ -1,54 +1,67 @@
-// Navbar — app-shell style: minimal top + bottom nav on mobile
-import { useState, useEffect, useRef } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+// Navbar — clean minimal with category hover dropdowns
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
 import {
   Home, Search, Bell, Menu, X, ChevronDown, User,
   LayoutDashboard, ListPlus, LogOut, CheckCheck,
-  Download, BedDouble, LandPlot, Users, MessageCircle,
-  Heart, PlusCircle,
+  BedDouble, LandPlot, Users, MessageCircle,
+  PlusCircle, Building2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notificationsAPI } from '../../services/endpoints';
 import { timeAgo } from '../../utils/helpers';
 import Avatar from '../ui/Avatar';
 
-const MobileNavLink = ({ to, icon: Icon, label, badge }) => {
-  const location = useLocation();
-  const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
-  return (
-    <NavLink
-      to={to}
-      className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-all duration-200 ${
-        isActive ? 'text-primary-600' : 'text-surface-400'
-      }`}
-    >
-      <div className="relative">
-        <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-        {badge > 0 && (
-          <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 flex items-center justify-center rounded-full bg-danger-500 text-white text-[9px] font-bold px-1">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        )}
-      </div>
-      <span className={`text-[10px] font-medium ${isActive ? 'text-primary-600' : ''}`}>{label}</span>
-    </NavLink>
-  );
-};
+const NAV_ITEMS = [
+  { label: 'Houses', baseType: 'HOUSE_RENTAL', icon: Home, children: [
+    { label: '1 BHK', query: { type: 'HOUSE_RENTAL', bhk: '1' } },
+    { label: '2 BHK', query: { type: 'HOUSE_RENTAL', bhk: '2' } },
+    { label: '3 BHK', query: { type: 'HOUSE_RENTAL', bhk: '3' } },
+    { label: '4+ BHK', query: { type: 'HOUSE_RENTAL', bhk: '4' } },
+    { label: 'All Houses', query: { type: 'HOUSE_RENTAL' } },
+  ]},
+  { label: 'Rooms', baseType: 'ROOM_SHARING', icon: Users, children: [
+    { label: '1 Person', query: { type: 'ROOM_SHARING', sharing: '1' } },
+    { label: '2 Person', query: { type: 'ROOM_SHARING', sharing: '2' } },
+    { label: '3+ Person', query: { type: 'ROOM_SHARING', sharing: '3' } },
+    { label: 'All Rooms', query: { type: 'ROOM_SHARING' } },
+  ]},
+  { label: 'Hostels', baseType: 'HOSTEL', icon: BedDouble, children: [
+    { label: '1 Sharing', query: { type: 'HOSTEL', sharing: '1' } },
+    { label: '2 Sharing', query: { type: 'HOSTEL', sharing: '2' } },
+    { label: '3+ Sharing', query: { type: 'HOSTEL', sharing: '3' } },
+    { label: 'All Hostels', query: { type: 'HOSTEL' } },
+  ]},
+  { label: 'Land', baseType: 'LAND_SALE', icon: LandPlot, children: [
+    { label: 'Residential Plot', query: { type: 'LAND_SALE', category: 'residential' } },
+    { label: 'Commercial Plot', query: { type: 'LAND_SALE', category: 'commercial' } },
+    { label: 'Farm Land', query: { type: 'LAND_SALE', category: 'farm' } },
+    { label: 'All Land', query: { type: 'LAND_SALE' } },
+  ]},
+];
+
+function buildSearchURL(params) {
+  const sp = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => { if (v) sp.set(k, v); });
+  return `/search?${sp.toString()}`;
+}
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [hoveredNav, setHoveredNav] = useState(null);
 
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
+  const hoverTimerRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -64,6 +77,21 @@ export default function Navbar() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const handleNavEnter = useCallback((idx) => {
+    clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => setHoveredNav(idx), 200);
+  }, []);
+
+  const handleNavLeave = useCallback(() => {
+    clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => setHoveredNav(null), 300);
+  }, []);
+
+  const isNavActive = useCallback((baseType) => {
+    const sp = new URLSearchParams(location.search);
+    return sp.get('type') === baseType;
+  }, [location.search]);
 
   const { data: notifData } = useQuery({
     queryKey: ['notifications'],
@@ -91,14 +119,16 @@ export default function Navbar() {
     navigate('/');
   };
 
+  const activeType = new URLSearchParams(location.search).get('type');
+
   return (
     <>
-      {/* ── Top Bar ──────────────────────────────────────────────────── */}
+      {/* ── Top Bar ──────────────────────────────────── */}
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/90 backdrop-blur-xl shadow-soft border-b border-surface-100/50'
-            : 'bg-white/70 backdrop-blur-lg'
+            ? 'bg-white/95 backdrop-blur-xl shadow-soft border-b border-surface-100/50'
+            : 'bg-white/80 backdrop-blur-lg'
         }`}
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
@@ -111,7 +141,7 @@ export default function Navbar() {
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          {/* Center: Logo */}
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2 shrink-0">
             <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-sm">
               <Home size={15} strokeWidth={2.5} />
@@ -119,34 +149,69 @@ export default function Navbar() {
             <span className="font-display font-bold text-lg text-surface-900 hidden sm:block">Houziee</span>
           </Link>
 
-          {/* Center: Desktop nav */}
-          <div className="hidden md:flex items-center gap-1 bg-surface-100/80 rounded-full px-1.5 py-1">
-            {[
-              { to: '/', label: 'Home' },
-              { to: '/search?type=HOUSE_RENTAL', label: 'House' },
-              { to: '/search?type=ROOM_SHARING', label: 'Rooms' },
-              { to: '/search?type=HOSTEL', label: 'Hostels' },
-              { to: '/search?type=LAND_SALE', label: 'Land' },
-            ].map(({ to, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    isActive ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
+          {/* Desktop nav with hover dropdowns */}
+          <div className="hidden md:flex items-center gap-1 bg-surface-100/80 rounded-full px-1.5 py-1 relative">
+            <Link
+              to="/"
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                location.pathname === '/' && !location.search ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800'
+              }`}
+            >
+              Home
+            </Link>
+
+            {NAV_ITEMS.map((item, idx) => {
+              const active = isNavActive(item.baseType);
+              return (
+                <div
+                  key={item.baseType}
+                  className="relative"
+                  onMouseEnter={() => handleNavEnter(idx)}
+                  onMouseLeave={handleNavLeave}
+                >
+                  <Link
+                    to={buildSearchURL({ type: item.baseType })}
+                    className={`flex items-center gap-1 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                      active ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800'
+                    }`}
+                  >
+                    {item.label}
+                    <ChevronDown size={12} className={`transition-transform duration-200 ${hoveredNav === idx ? 'rotate-180' : ''}`} />
+                  </Link>
+
+                  {/* Dropdown */}
+                  {hoveredNav === idx && (
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 top-full mt-1 w-48 bg-white rounded-2xl border border-surface-200/60 shadow-soft-lg py-1.5 z-50"
+                      onMouseEnter={() => handleNavEnter(idx)}
+                      onMouseLeave={handleNavLeave}
+                    >
+                      <div className="px-3 py-2 border-b border-surface-100 mb-1">
+                        <p className="text-xs font-semibold text-surface-400 uppercase tracking-wider">{item.label}</p>
+                      </div>
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.label}
+                          to={buildSearchURL(child.query)}
+                          onClick={() => setHoveredNav(null)}
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm text-surface-600 hover:bg-primary-50 hover:text-primary-700 transition-colors"
+                        >
+                          <item.icon size={14} className="text-surface-400" />
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
-          {/* Right: actions */}
+          {/* Right actions */}
           <div className="flex items-center gap-1.5">
             {user ? (
               <>
-                {/* Notification */}
+                {/* Notifications */}
                 <div className="relative" ref={notifRef}>
                   <button
                     className="relative p-2 rounded-xl hover:bg-surface-100 transition-colors"
@@ -252,30 +317,30 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* ── Mobile Drawer ─────────────────────────────────────────── */}
+      {/* ── Mobile Drawer ─────────────────────────────────── */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside className="absolute top-14 left-0 right-0 bg-white border-b border-surface-100 shadow-soft-lg p-4 space-y-1 z-50">
             {[
-              { to: '/', icon: Home, label: 'Home' },
-              { to: '/search', icon: Search, label: 'Search' },
-              { to: '/search?type=ROOM_SHARING', icon: Users, label: 'Room Sharing' },
-              { to: '/search?type=HOSTEL', icon: BedDouble, label: 'Hostels' },
-              { to: '/search?type=LAND_SALE', icon: LandPlot, label: 'Land Sale' },
-            ].map(({ to, icon: Icon, label }) => (
-              <NavLink
+              { to: '/', label: 'Home', icon: Home },
+              { to: '/search?type=HOUSE_RENTAL', label: 'Houses', icon: Building2 },
+              { to: '/search?type=ROOM_SHARING', label: 'Rooms', icon: Users },
+              { to: '/search?type=HOSTEL', label: 'Hostels', icon: BedDouble },
+              { to: '/search?type=LAND_SALE', label: 'Land', icon: LandPlot },
+            ].map(({ to, label, icon: Icon }) => (
+              <Link
                 key={to}
                 to={to}
                 onClick={() => setMobileOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    isActive ? 'bg-primary-50 text-primary-700' : 'text-surface-700 hover:bg-surface-50'
-                  }`
-                }
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  activeType === new URLSearchParams(to.split('?')[1]).get('type')
+                    ? 'bg-primary-50 text-primary-700'
+                    : 'text-surface-700 hover:bg-surface-50'
+                }`}
               >
                 <Icon size={18} /> {label}
-              </NavLink>
+              </Link>
             ))}
             {!user && (
               <div className="pt-3 border-t border-surface-100 flex flex-col gap-2">
@@ -287,15 +352,31 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* ── Bottom Nav (mobile, logged in) ────────────────────────── */}
+      {/* ── Bottom Nav (mobile, logged in) ──────────────────── */}
       {user && (
         <nav className="fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-xl border-t border-surface-100 md:hidden safe-area-bottom">
           <div className="flex items-center justify-around h-16 px-2">
-            <MobileNavLink to="/" icon={Home} label="Home" />
-            <MobileNavLink to="/search" icon={Search} label="Search" />
-            <MobileNavLink to="/dashboard/listings/new" icon={PlusCircle} label="List" />
-            <MobileNavLink to="/dashboard/chats" icon={MessageCircle} label="Chats" />
-            <MobileNavLink to="/dashboard" icon={LayoutDashboard} label="Account" />
+            {[
+              { to: '/', icon: Home, label: 'Home' },
+              { to: '/search', icon: Search, label: 'Search' },
+              { to: '/dashboard/listings/new', icon: PlusCircle, label: 'List' },
+              { to: '/dashboard/chats', icon: MessageCircle, label: 'Chats' },
+              { to: '/dashboard', icon: LayoutDashboard, label: 'Account' },
+            ].map(({ to, icon: Icon, label }) => {
+              const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-all duration-200 ${
+                    isActive ? 'text-primary-600' : 'text-surface-400'
+                  }`}
+                >
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                  <span className="text-[10px] font-medium">{label}</span>
+                </Link>
+              );
+            })}
           </div>
         </nav>
       )}

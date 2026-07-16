@@ -69,12 +69,10 @@ const register = asyncHandler(async (req, res) => {
   // Generate verification token — do NOT send tokens yet
   const { token } = await generateVerificationToken(user.id);
 
-  // Send verification email
-  try {
-    await sendEmail(email, name, token);
-  } catch (err) {
+  // Send verification email (non-blocking — don't let email failure block registration)
+  sendEmail(email, name, token).catch((err) => {
     console.error('Failed to send verification email:', err.message);
-  }
+  });
 
   res.status(201).json({
     success: true,

@@ -7,12 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "build": "./node_modules/.bin/prisma generate",
+    "build": "node node_modules/prisma/build/index.js generate",
     "db:push": "npx prisma db push",
     "db:generate": "npx prisma generate",
     "db:studio": "npx prisma studio",
     "db:migrate": "npx prisma migrate dev",
-    "postinstall": "./node_modules/.bin/prisma generate"
+    "postinstall": "node node_modules/prisma/build/index.js generate"
   },
   "engines": {
     "node": ">=18"

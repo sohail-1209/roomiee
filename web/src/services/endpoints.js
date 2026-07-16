@@ -11,7 +11,7 @@ export const authAPI = {
   googleAuth: (idToken) => api.post('/auth/google', { idToken }),
   completeProfile: (data) => api.post('/auth/complete-profile', data),
   sendVerification: () => api.post('/auth/send-verification'),
-  verifyEmail: (token) => api.post('/auth/verify-email', { token }),
+  verifyEmail: (otp) => api.post('/auth/verify-email', { otp }),
 };
 
 // ─── Listings ─────────────────────────────────────────

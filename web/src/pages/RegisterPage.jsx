@@ -1,5 +1,5 @@
 // RegisterPage — clean centered card design matching login page
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { User, Mail, Lock, Phone, ArrowRight, Eye, EyeOff, CheckCircle, Send } from 'lucide-react';
@@ -85,7 +85,7 @@ function PasswordInput({ label, name, value, onChange, placeholder, error, id })
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 const RegisterPage = () => {
-  const { register, googleAuth, sendVerificationEmail } = useAuth();
+  const { register, googleAuth, sendVerificationEmail, verifyEmail } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '', confirmPassword: '', role: 'TENANT', terms: false,
@@ -93,8 +93,12 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [step, setStep] = useState('form'); // 'form' | 'verify-email'
-  const [verificationUrl, setVerificationUrl] = useState('');
+  const [step, setStep] = useState('form'); // 'form' | 'otp'
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [fallbackOtp, setFallbackOtp] = useState('');
+  const otpRefs = useRef([]);
 
   // Initialize Google Sign-In
   useEffect(() => {
@@ -172,15 +176,89 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       const result = await register({ name: form.name, email: form.email, phone: form.phone, password: form.password, role: form.role });
-      if (result.verificationUrl) {
-        setVerificationUrl(result.verificationUrl);
-      }
-      setStep('verify-email');
-      toast.success(result.message || 'Account created! Please check your email.');
+      if (result.otp) setFallbackOtp(result.otp);
+      setStep('otp');
+      setResendTimer(60);
+      toast.success(result.message || 'Account created! Check your email for OTP.');
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Registration failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Resend timer countdown
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const t = setInterval(() => setResendTimer((v) => v - 1), 1000);
+    return () => clearInterval(t);
+  }, [resendTimer]);
+
+  // Auto-focus first OTP input when step changes
+  useEffect(() => {
+    if (step === 'otp') {
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    }
+  }, [step]);
+
+  const handleOtpChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+    if (newOtp.every((d) => d !== '')) {
+      handleVerifyOtp(newOtp.join(''));
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const newOtp = pasted.split('').concat(Array(6).fill('')).slice(0, 6);
+    setOtp(newOtp);
+    if (pasted.length === 6) {
+      handleVerifyOtp(pasted);
+    } else {
+      otpRefs.current[pasted.length]?.focus();
+    }
+  };
+
+  const handleVerifyOtp = async (otpValue) => {
+    setOtpLoading(true);
+    try {
+      await verifyEmail(otpValue);
+      toast.success('Email verified! Welcome to Quikden.');
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Invalid OTP');
+      setOtp(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    try {
+      const result = await sendVerificationEmail();
+      if (result.otp) setFallbackOtp(result.otp);
+      setResendTimer(60);
+      setOtp(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+      toast.success('OTP resent!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to resend OTP');
     }
   };
 
@@ -227,33 +305,65 @@ const RegisterPage = () => {
             </div>
           </div>
 
-          {step === 'verify-email' ? (
-            /* Email Verification Step */
-            <div className="text-center py-4">
+          {step === 'otp' ? (
+            /* OTP Verification Step */
+            <div className="text-center py-3">
               <div className="w-14 h-14 mx-auto mb-3 bg-primary-50 rounded-full flex items-center justify-center">
                 <Mail size={28} className="text-primary-500" />
               </div>
-              <h2 className="font-display font-bold text-lg text-surface-900 mb-1">Check your email</h2>
+              <h2 className="font-display font-bold text-lg text-surface-900 mb-1">Enter verification code</h2>
               <p className="text-surface-500 text-xs mb-4">
-                We've sent a verification link to<br />
+                We've sent a 6-digit OTP to<br />
                 <span className="font-medium text-surface-700">{form.email}</span>
               </p>
 
-              <p className="text-[11px] text-surface-400 mb-4">
-                Click the link in the email to verify your account and sign in.
-              </p>
-
-              {verificationUrl && (
-                <div className="bg-surface-50 rounded-lg p-3 mb-4">
-                  <p className="text-[10px] text-surface-400 mb-1">Email could not be delivered. Use this link to verify:</p>
-                  <a href={verificationUrl} target="_blank" rel="noopener noreferrer"
-                    className="text-[10px] text-primary-600 hover:underline break-all">
-                    {verificationUrl}
-                  </a>
+              {fallbackOtp && (
+                <div className="bg-surface-50 rounded-lg p-2 mb-3">
+                  <p className="text-[10px] text-surface-400">Email could not be delivered. Your OTP:</p>
+                  <p className="text-lg font-mono font-bold text-primary-600 tracking-widest">{fallbackOtp}</p>
                 </div>
               )}
 
-              <button onClick={() => setStep('form')}
+              {/* OTP Input */}
+              <div className="flex justify-center gap-2 mb-4">
+                {otp.map((digit, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => (otpRefs.current[i] = el)}
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    onPaste={i === 0 ? handleOtpPaste : undefined}
+                    className="w-10 h-12 text-center text-lg font-bold rounded-lg border bg-surface-50/50 text-surface-900 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 transition-all"
+                    style={{ borderColor: digit ? '#0d9488' : '#e2e8f0' }}
+                    disabled={otpLoading}
+                  />
+                ))}
+              </div>
+
+              {otpLoading && (
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs text-surface-500">Verifying...</span>
+                </div>
+              )}
+
+              {/* Resend */}
+              <p className="text-xs text-surface-500 mb-3">
+                Didn't receive the code?{' '}
+                {resendTimer > 0 ? (
+                  <span className="text-surface-400">Resend in {resendTimer}s</span>
+                ) : (
+                  <button onClick={handleResendOtp} className="text-primary-600 font-semibold hover:underline">
+                    Resend OTP
+                  </button>
+                )}
+              </p>
+
+              <button onClick={() => { setStep('form'); setOtp(['', '', '', '', '', '']); }}
                 className="text-xs text-primary-600 hover:underline font-medium">
                 ← Back to registration
               </button>

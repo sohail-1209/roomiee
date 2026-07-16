@@ -73,8 +73,8 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const verifyEmail = async (token) => {
-    const { data } = await authAPI.verifyEmail(token);
+  const verifyEmail = async (otp) => {
+    const { data } = await authAPI.verifyEmail(otp);
     localStorage.setItem('accessToken', data.data.accessToken);
     setUser(data.data.user);
     return data.data.user;

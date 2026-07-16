@@ -66,15 +66,14 @@ const register = asyncHandler(async (req, res) => {
     data: { name, email, phone, password: hashed, role: allowedRole },
   });
 
-  // Generate verification token — do NOT send tokens yet
-  const { token } = await generateVerificationToken(user.id);
-  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${token}`;
+  // Generate verification OTP — do NOT send tokens yet
+  const { token: otp } = await generateVerificationToken(user.id);
 
-  // Send verification email (non-blocking — don't let email failure block registration)
+  // Send verification email (non-blocking)
   let emailSent = false;
   try {
     await Promise.race([
-      sendEmail(email, name, token),
+      sendEmail(email, name, otp),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 15000)),
     ]);
     emailSent = true;
@@ -84,8 +83,8 @@ const register = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     success: true,
-    message: emailSent ? 'Account created. Please verify your email.' : 'Account created. Email could not be sent.',
-    ...(emailSent ? {} : { verificationUrl }),
+    message: emailSent ? 'Account created. Please check your email for OTP.' : 'Account created. Email could not be sent.',
+    otp: emailSent ? undefined : otp,
   });
 });
 
@@ -226,23 +225,32 @@ const sendVerificationEmailHandler = asyncHandler(async (req, res) => {
     return res.json({ success: true, message: 'Email already verified' });
   }
 
-  const { token } = await generateVerificationToken(user.id);
+  const { token: otp } = await generateVerificationToken(user.id);
 
+  let emailSent = false;
   try {
-    await sendEmail(user.email, user.name, token);
+    await Promise.race([
+      sendEmail(user.email, user.name, otp),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Email timeout')), 15000)),
+    ]);
+    emailSent = true;
   } catch (err) {
     console.error('Failed to send verification email:', err.message);
   }
 
-  res.json({ success: true, message: 'Verification email sent' });
+  res.json({
+    success: true,
+    message: emailSent ? 'Verification OTP sent' : 'Email could not be sent',
+    otp: emailSent ? undefined : otp,
+  });
 });
 
-// ─── Verify email with token ───────────────────
+// ─── Verify email with OTP ───────────────────
 const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.body;
-  if (!token) throw new AppError('Verification token required', 400);
+  const { otp } = req.body;
+  if (!otp) throw new AppError('OTP required', 400);
 
-  const user = await verifyEmailToken(token);
+  const user = await verifyEmailToken(otp);
   await sendTokens(user, res);
 });
 

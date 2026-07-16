@@ -107,7 +107,7 @@ async function completeGoogleProfile(userId, { name, phone, role }) {
 }
 
 /**
- * Generate email verification token
+ * Generate 6-digit OTP for email verification
  */
 async function generateVerificationToken(userId) {
   // Delete old tokens for this user
@@ -115,8 +115,8 @@ async function generateVerificationToken(userId) {
     where: { userId, type: 'EMAIL_VERIFICATION' },
   });
 
-  const token = crypto.randomBytes(32).toString('hex');
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  const token = String(Math.floor(100000 + Math.random() * 900000));
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
   await prisma.emailVerificationToken.create({
     data: {
@@ -131,7 +131,7 @@ async function generateVerificationToken(userId) {
 }
 
 /**
- * Verify email token
+ * Verify email with OTP
  */
 async function verifyEmailToken(token) {
   const record = await prisma.emailVerificationToken.findUnique({
@@ -140,15 +140,15 @@ async function verifyEmailToken(token) {
   });
 
   if (!record) {
-    throw new AppError('Invalid verification token', 400);
+    throw new AppError('Invalid OTP', 400);
   }
 
   if (record.type !== 'EMAIL_VERIFICATION') {
-    throw new AppError('Invalid token type', 400);
+    throw new AppError('Invalid code type', 400);
   }
 
   if (record.expiresAt < new Date()) {
-    throw new AppError('Verification token expired', 400);
+    throw new AppError('OTP expired. Please request a new one.', 400);
   }
 
   // Mark user as verified

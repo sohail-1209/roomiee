@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -26,22 +26,70 @@
   ::selection { @apply bg-primary-100 text-primary-800; }
 }
 
+/* ─── Animations ────────────────────────────── */
+@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px rgba(13,148,136,0.2); } 50% { box-shadow: 0 0 40px rgba(13,148,136,0.35); } }
+@keyframes slide-in-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide-in-left { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes scale-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes bounce-in { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+@keyframes typing-dot { 0%, 60%, 100% { opacity: 0.3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-4px); } }
+
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-delay { animation: float 6s ease-in-out 1s infinite; }
+.animate-float-delay-2 { animation: float 6s ease-in-out 2s infinite; }
+.animate-shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.4) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
+.animate-glow { animation: glow-pulse 3s ease-in-out infinite; }
+.animate-slide-up { animation: slide-in-up 0.6s ease-out forwards; }
+.animate-slide-left { animation: slide-in-left 0.5s ease-out forwards; }
+.animate-scale-in { animation: scale-in 0.4s ease-out forwards; }
+.animate-bounce-in { animation: bounce-in 0.6s ease-out forwards; }
+.animate-gradient { background-size: 200% 200%; animation: gradient-shift 4s ease infinite; }
+
+/* Stagger children animations */
+.stagger-children > * { opacity: 0; animation: slide-in-up 0.5s ease-out forwards; }
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+
 /* ─── Component Utilities ───────────────────── */
 @layer components {
-  /* Cards — clean modern */
+  /* Cards — interactive modern */
   .card {
-    @apply rounded-2xl transition-all duration-300;
+    @apply rounded-2xl transition-all duration-300 ease-out;
     background: #ffffff;
     border: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
   }
   .card-hover {
-    @apply card hover:-translate-y-0.5;
+    @apply card;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
   }
   .card-hover:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 8px 32px rgba(15,118,110,0.06);
-    border-color: rgba(20, 184, 166, 0.2);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08), 0 12px 40px rgba(15,118,110,0.08);
+    border-color: rgba(20, 184, 166, 0.25);
+  }
+
+  /* Interactive card with shine effect */
+  .card-shine {
+    @apply card-hover relative overflow-hidden;
+  }
+  .card-shine::after {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.2) 50%, transparent 55%);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+  .card-shine:hover::after {
+    transform: translateX(100%);
   }
 
   /* Glass effect */
@@ -52,33 +100,60 @@
     border: 1px solid rgba(255, 255, 255, 0.5);
   }
 
-  /* Buttons */
+  /* Ripple effect container */
+  .ripple-container {
+    @apply relative overflow-hidden;
+  }
+  .ripple-container .ripple {
+    @apply absolute rounded-full bg-white/30 pointer-events-none;
+    animation: ripple 0.6s linear;
+  }
+
+  /* Buttons — interactive */
   .btn {
     @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl
            transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
-           disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98];
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    position: relative;
+    overflow: hidden;
   }
+  .btn::after {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(255,255,255,0.3) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .btn:active::after { opacity: 1; }
+  .btn:active { transform: scale(0.97); }
+
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700
-           focus:ring-primary-500;
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
     box-shadow: 0 2px 8px rgba(13,148,136,0.3);
   }
   .btn-primary:hover {
-    box-shadow: 0 4px 16px rgba(13,148,136,0.4);
+    box-shadow: 0 6px 20px rgba(13,148,136,0.4);
+    transform: translateY(-1px);
   }
+  .btn-primary:active { transform: translateY(0) scale(0.97); }
+
   .btn-secondary {
     @apply btn bg-surface-100 text-surface-700 hover:bg-surface-200 focus:ring-surface-300;
   }
   .btn-outline {
     @apply btn border-2 border-primary-500 text-primary-600 hover:bg-primary-50 focus:ring-primary-400;
   }
+  .btn-outline:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13,148,136,0.15);
+  }
   .btn-accent {
-    @apply btn bg-accent-600 text-white hover:bg-accent-700
-           focus:ring-accent-500;
+    @apply btn bg-accent-600 text-white hover:bg-accent-700 focus:ring-accent-500;
     box-shadow: 0 2px 8px rgba(3,105,161,0.3);
   }
   .btn-accent:hover {
-    box-shadow: 0 4px 16px rgba(3,105,161,0.4);
+    box-shadow: 0 6px 20px rgba(3,105,161,0.4);
+    transform: translateY(-1px);
   }
   .btn-danger {
     @apply btn bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-500;
@@ -91,14 +166,18 @@
   .btn-lg  { @apply px-6 py-3 text-base; }
   .btn-xl  { @apply px-8 py-4 text-lg; }
 
-  /* Inputs */
+  /* Inputs — interactive focus */
   .input {
     @apply w-full border border-surface-200 rounded-xl px-4 py-3 text-sm
            text-surface-900 placeholder-surface-400
-           transition-all duration-200 min-h-[48px]
+           transition-all duration-300 min-h-[48px]
            focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400
+           focus:shadow-glow-primary
            disabled:opacity-50 disabled:cursor-not-allowed;
     background: #ffffff;
+  }
+  .input:hover:not(:focus) {
+    border-color: rgba(148, 163, 184, 0.6);
   }
   .input-error { @apply border-danger-500 focus:ring-danger-500; }
   .label { @apply block text-sm font-medium text-surface-700 mb-1.5; }
@@ -107,7 +186,9 @@
   /* Badge */
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+    transition: transform 0.2s ease;
   }
+  .badge:hover { transform: scale(1.05); }
   .badge-primary  { @apply badge bg-primary-100 text-primary-700; }
   .badge-success  { @apply badge bg-success-50 text-success-600; }
   .badge-danger   { @apply badge bg-danger-50 text-danger-500; }
@@ -122,18 +203,88 @@
 
   /* Skeleton */
   .skeleton {
-    @apply animate-pulse bg-surface-100 rounded-xl;
+    @apply bg-surface-100 rounded-xl;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
   }
 
   /* Gradient text */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500 bg-clip-text text-transparent;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #0d9488, #14b8a6, #0ea5e9);
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
   }
 
   /* Gradient background */
   .gradient-bg {
     @apply bg-gradient-to-br from-primary-600 via-primary-500 to-accent-600;
+    background-size: 200% 200%;
+    animation: gradient-shift 6s ease infinite;
   }
+
+  /* Interactive link underline */
+  .link-underline {
+    @apply relative;
+  }
+  .link-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 h-0.5 bg-primary-500 rounded-full transition-all duration-300;
+    width: 0;
+  }
+  .link-underline:hover::after { width: 100%; }
+
+  /* Hover lift */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2;
+  }
+}
+
+/* ─── Scroll Reveal ─────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* ─── Leaflet map override ───────────────────── */

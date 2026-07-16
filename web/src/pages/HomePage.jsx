@@ -97,13 +97,13 @@ export default function HomePage() {
 
       {/* HERO — Liquid glass with aurora */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-500 to-accent-500 animate-aurora" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-400 via-primary-300 to-accent-300 animate-aurora" />
         <div className="absolute top-10 left-[10%] w-48 sm:w-72 h-48 sm:h-72 bg-white/20 rounded-full blur-3xl animate-liquid-float" />
         <div className="absolute bottom-10 right-[15%] w-40 sm:w-64 h-40 sm:h-64 bg-accent-300/30 rounded-full blur-3xl animate-liquid-float" style={{ animationDelay: '2s' }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 sm:w-96 h-64 sm:h-96 bg-primary-300/25 rounded-full blur-[80px] sm:blur-[100px] animate-liquid-float" style={{ animationDelay: '4s' }} />
         <div className="absolute -top-16 sm:-top-20 -right-16 sm:-right-20 w-56 sm:w-80 h-56 sm:h-80 bg-white/10 animate-morph" />
 
-        <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-10 sm:pb-14 transition-all duration-700 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+        <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-16 sm:pb-20 transition-all duration-700 ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
           <div className="text-center mb-6 sm:mb-8">
             <div className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full glass text-white text-[11px] sm:text-xs font-medium mb-4">
               <Sparkles size={12} />
@@ -161,7 +161,7 @@ export default function HomePage() {
       </section>
 
       {/* CATEGORY CARDS — Floating glass */}
-      <section className="relative -mt-4 z-20 max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 -mt-2">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
           {CATEGORIES.filter((c) => c.type).map(({ type, label, icon: Icon, color }) => (
             <Link

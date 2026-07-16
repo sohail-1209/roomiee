@@ -55,8 +55,9 @@ async function handleGoogleAuth({ googleId, email, name, profileImage }) {
       email,
       name,
       profileImage,
-      isVerified: true, // Google emails are pre-verified
-      password: null, // No password for Google users
+      role: 'TENANT',
+      isVerified: true,
+      password: null,
     },
   });
 

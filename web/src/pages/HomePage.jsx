@@ -136,7 +136,7 @@ export default function HomePage() {
       sessionCache.set('home-house', data, 10 * 60 * 1000);
       return data;
     },
-    initialData: () => sessionCache.get('home-house'),
+    initialData: () => sessionCache.get('home-house') ?? undefined,
     select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
@@ -149,7 +149,7 @@ export default function HomePage() {
       sessionCache.set('home-room', data, 10 * 60 * 1000);
       return data;
     },
-    initialData: () => sessionCache.get('home-room'),
+    initialData: () => sessionCache.get('home-room') ?? undefined,
     select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
@@ -162,7 +162,7 @@ export default function HomePage() {
       sessionCache.set('home-hostel', data, 10 * 60 * 1000);
       return data;
     },
-    initialData: () => sessionCache.get('home-hostel'),
+    initialData: () => sessionCache.get('home-hostel') ?? undefined,
     select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });
@@ -175,7 +175,7 @@ export default function HomePage() {
       sessionCache.set('home-land', data, 10 * 60 * 1000);
       return data;
     },
-    initialData: () => sessionCache.get('home-land'),
+    initialData: () => sessionCache.get('home-land') ?? undefined,
     select: (data) => data ?? [],
     staleTime: 1000 * 60 * 5,
   });

@@ -1,10 +1,23 @@
-const BREVO_API = 'https://api.brevo.com/v3/smtp/email';
+const nodemailer = require('nodemailer');
+
+let transporter = null;
+
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'sohailpashe@gmail.com',
+        pass: 'ksxvtzcuxuhdcldf',
+      },
+    });
+  }
+  return transporter;
+}
 
 async function sendVerificationEmail(email, name, otp) {
-  if (!process.env.BREVO_API_KEY) {
-    throw new Error('BREVO_API_KEY not configured');
-  }
-
   const html = `
     <!DOCTYPE html>
     <html>
@@ -31,25 +44,14 @@ async function sendVerificationEmail(email, name, otp) {
     </html>
   `;
 
-  const res = await fetch(BREVO_API, {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'content-type': 'application/json',
-      'api-key': process.env.BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender: { name: 'Quikden', email: 'no-reply@quikden.com' },
-      to: [{ email, name: name || email }],
-      subject: `Your Quikden verification code: ${otp}`,
-      htmlContent: html,
-    }),
+  const result = await getTransporter().sendMail({
+    from: '"Quikden" <sohailpashe@gmail.com>',
+    to: email,
+    subject: `Your Quikden verification code: ${otp}`,
+    html,
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `Brevo error: ${res.status}`);
-  }
+  return result;
 }
 
 module.exports = { sendVerificationEmail };

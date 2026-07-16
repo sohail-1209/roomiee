@@ -363,6 +363,7 @@
   }
   .glass-card {
     @apply relative overflow-hidden;
+    border-radius: var(--md-sys-shape-corner-lg);
     background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(16px) saturate(1.6);
     -webkit-backdrop-filter: blur(16px) saturate(1.6);

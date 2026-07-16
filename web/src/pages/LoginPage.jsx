@@ -1,4 +1,4 @@
-// LoginPage — split layout auth page for Houziee
+// LoginPage — split layout auth page for Quikden
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -58,9 +58,9 @@ const LeftPanel = () => (
     {/* Brand */}
     <div className="relative z-10">
       <div className="flex items-center gap-3 mb-1">
-        <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784193764/animal_cypuzl.png" alt="Houziee" className="w-10 h-10 rounded-xl object-cover border border-white/20" />
-        <span className="text-white font-display font-bold text-2xl tracking-tight">
-          Houziee
+        <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+        <span className="text-white font-cinzel font-bold text-2xl tracking-tight">
+          Quikden
         </span>
       </div>
       <p className="text-primary-200 text-sm font-medium mt-2">
@@ -219,7 +219,7 @@ export default function LoginPage() {
           <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
             <Home size={16} className="text-white" />
           </div>
-          <span className="font-display font-bold text-xl text-surface-900">Houziee</span>
+          <span className="font-cinzel font-bold text-xl text-surface-900">Quikden</span>
         </div>
 
         {/* Glass card */}
@@ -230,7 +230,7 @@ export default function LoginPage() {
               Welcome back
             </h2>
             <p className="text-surface-500 text-sm mt-1.5">
-              Sign in to your Houziee account
+              Sign in to your Quikden account
             </p>
           </div>
 

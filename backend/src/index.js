@@ -1,4 +1,4 @@
-// Entry point — Houziee Backend
+// Entry point — Quikden Backend
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -32,7 +32,7 @@ const httpServer = http.createServer(app);
 const allowedOrigins = [
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
-  'https://houziee.vercel.app',
+  'https://quikden.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
 ].filter(Boolean);
@@ -97,7 +97,7 @@ initSocket(io);
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, '0.0.0.0', () => {
   console.log('');
-  console.log('  🚀 Houziee API running at:');
+  console.log('  🚀 Quikden API running at:');
   console.log(`  → Port:    ${PORT}`);
   console.log(`  → Env:     ${process.env.NODE_ENV || 'development'}`);
   console.log(`  → CORS:    ${allowedOrigins.join(', ')}`);

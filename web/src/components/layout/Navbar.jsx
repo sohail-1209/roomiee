@@ -14,31 +14,39 @@ import { timeAgo } from '../../utils/helpers';
 import Avatar from '../ui/Avatar';
 
 const NAV_ITEMS = [
-  { label: 'Houses', baseType: 'HOUSE_RENTAL', icon: Home, children: [
-    { label: '1 BHK', query: { type: 'HOUSE_RENTAL', bhk: '1' } },
-    { label: '2 BHK', query: { type: 'HOUSE_RENTAL', bhk: '2' } },
-    { label: '3 BHK', query: { type: 'HOUSE_RENTAL', bhk: '3' } },
-    { label: '4+ BHK', query: { type: 'HOUSE_RENTAL', bhk: '4' } },
-    { label: 'All Houses', query: { type: 'HOUSE_RENTAL' } },
-  ]},
-  { label: 'Rooms', baseType: 'ROOM_SHARING', icon: Users, children: [
-    { label: '1 Person', query: { type: 'ROOM_SHARING', sharing: '1' } },
-    { label: '2 Person', query: { type: 'ROOM_SHARING', sharing: '2' } },
-    { label: '3+ Person', query: { type: 'ROOM_SHARING', sharing: '3' } },
-    { label: 'All Rooms', query: { type: 'ROOM_SHARING' } },
-  ]},
-  { label: 'Hostels', baseType: 'HOSTEL', icon: BedDouble, children: [
-    { label: '1 Sharing', query: { type: 'HOSTEL', sharing: '1' } },
-    { label: '2 Sharing', query: { type: 'HOSTEL', sharing: '2' } },
-    { label: '3+ Sharing', query: { type: 'HOSTEL', sharing: '3' } },
-    { label: 'All Hostels', query: { type: 'HOSTEL' } },
-  ]},
-  { label: 'Land', baseType: 'LAND_SALE', icon: LandPlot, children: [
-    { label: 'Residential Plot', query: { type: 'LAND_SALE', category: 'residential' } },
-    { label: 'Commercial Plot', query: { type: 'LAND_SALE', category: 'commercial' } },
-    { label: 'Farm Land', query: { type: 'LAND_SALE', category: 'farm' } },
-    { label: 'All Land', query: { type: 'LAND_SALE' } },
-  ]},
+  {
+    label: 'Houses', baseType: 'HOUSE_RENTAL', icon: Home, children: [
+      { label: '1 BHK', query: { type: 'HOUSE_RENTAL', bhk: '1' } },
+      { label: '2 BHK', query: { type: 'HOUSE_RENTAL', bhk: '2' } },
+      { label: '3 BHK', query: { type: 'HOUSE_RENTAL', bhk: '3' } },
+      { label: '4+ BHK', query: { type: 'HOUSE_RENTAL', bhk: '4' } },
+      { label: 'All Houses', query: { type: 'HOUSE_RENTAL' } },
+    ]
+  },
+  {
+    label: 'Rooms', baseType: 'ROOM_SHARING', icon: Users, children: [
+      { label: '1 Person', query: { type: 'ROOM_SHARING', sharing: '1' } },
+      { label: '2 Person', query: { type: 'ROOM_SHARING', sharing: '2' } },
+      { label: '3+ Person', query: { type: 'ROOM_SHARING', sharing: '3' } },
+      { label: 'All Rooms', query: { type: 'ROOM_SHARING' } },
+    ]
+  },
+  {
+    label: 'Hostels', baseType: 'HOSTEL', icon: BedDouble, children: [
+      { label: '1 Sharing', query: { type: 'HOSTEL', sharing: '1' } },
+      { label: '2 Sharing', query: { type: 'HOSTEL', sharing: '2' } },
+      { label: '3+ Sharing', query: { type: 'HOSTEL', sharing: '3' } },
+      { label: 'All Hostels', query: { type: 'HOSTEL' } },
+    ]
+  },
+  {
+    label: 'Land', baseType: 'LAND_SALE', icon: LandPlot, children: [
+      { label: 'Residential Plot', query: { type: 'LAND_SALE', category: 'residential' } },
+      { label: 'Commercial Plot', query: { type: 'LAND_SALE', category: 'commercial' } },
+      { label: 'Farm Land', query: { type: 'LAND_SALE', category: 'farm' } },
+      { label: 'All Land', query: { type: 'LAND_SALE' } },
+    ]
+  },
 ];
 
 function buildSearchURL(params) {
@@ -179,34 +187,31 @@ export default function Navbar() {
 
       {/* ── Top Bar ──────────────────────────────── */}
       <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-md border-b border-surface-100/50'
-            : 'bg-white/80 backdrop-blur-md'
-        }`}
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled
+          ? 'bg-white/95 backdrop-blur-xl shadow-md border-b border-surface-100/50'
+          : 'bg-white/80 backdrop-blur-md'
+          }`}
       >
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 -ml-2 rounded-xl hover:bg-surface-100 active:bg-surface-200 transition-colors"
-            onClick={(e) => { createRipple(e); setMobileOpen((v) => !v); }}
-          >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
+        <nav className="px-4 sm:px-6 h-14 flex items-center justify-between gap-4">          {/* Left: hamburger + logo */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              className="md:hidden p-2 -ml-2 rounded-xl hover:bg-surface-100 active:bg-surface-200 transition-colors"
+              onClick={(e) => { createRipple(e); setMobileOpen((v) => !v); }}
+            >
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
 
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0 group">
-            <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784193764/animal_cypuzl.png" alt="Houziee" className="w-9 h-9 rounded-xl object-cover shadow-md group-hover:shadow-lg transition-shadow" />
-            <span className="font-display font-bold text-lg text-surface-900 hidden sm:block tracking-tight">Houziee</span>
-          </Link>
+            <Link to="/" className="shrink-0 group">
+              <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-12 h-12 rounded-xl object-cover shadow-md group-hover:shadow-lg transition-shadow" />
+            </Link>
+          </div>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-0.5 bg-surface-100/70 rounded-full px-1.5 py-1">
             <Link
               to="/"
-              className={`ripple-container px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                location.pathname === '/' && !location.search ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800 hover:bg-white/50'
-              }`}
+              className={`ripple-container px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${location.pathname === '/' && !location.search ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800 hover:bg-white/50'
+                }`}
             >
               Home
             </Link>
@@ -224,9 +229,8 @@ export default function Navbar() {
                   <Link
                     to={buildSearchURL({ type: item.baseType })}
                     onClick={createRipple}
-                    className={`ripple-container flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                      active ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800 hover:bg-white/50'
-                    }`}
+                    className={`ripple-container flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${active ? 'bg-white text-primary-600 shadow-sm' : 'text-surface-500 hover:text-surface-800 hover:bg-white/50'
+                      }`}
                   >
                     {item.label}
                     <ChevronDown size={13} className="chevron-icon" />
@@ -393,9 +397,8 @@ export default function Navbar() {
                   key={to}
                   to={to}
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    activeType === toType ? 'bg-primary-50 text-primary-700' : 'text-surface-700 hover:bg-surface-50 active:bg-surface-100'
-                  }`}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${activeType === toType ? 'bg-primary-50 text-primary-700' : 'text-surface-700 hover:bg-surface-50 active:bg-surface-100'
+                    }`}
                   style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 40}ms both` }}
                 >
                   <Icon size={18} /> {label}
@@ -428,9 +431,8 @@ export default function Navbar() {
                 <Link
                   key={to}
                   to={to}
-                  className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all duration-200 rounded-xl ${
-                    isActive ? 'text-primary-600' : 'text-surface-400 active:text-surface-600'
-                  }`}
+                  className={`flex flex-col items-center gap-0.5 py-1 px-2 transition-all duration-200 rounded-xl ${isActive ? 'text-primary-600' : 'text-surface-400 active:text-surface-600'
+                    }`}
                 >
                   <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
                   <span className="text-[10px] font-medium">{label}</span>

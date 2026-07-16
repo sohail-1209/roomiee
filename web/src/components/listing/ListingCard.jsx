@@ -1,7 +1,7 @@
 // ListingCard — Google M3 style with hover elevation, ripple, smooth transitions
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, BedDouble, Bath, Maximize2, Users, Star, CalendarDays, LandPlot } from 'lucide-react';
+import { MapPin, BedDouble, Bath, Maximize2, Users, Star, CalendarDays, LandPlot, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatRent, getPrimaryPhoto, timeAgo, truncate } from '../../utils/helpers';
 import SaveButton from './SaveButton';
@@ -40,6 +40,7 @@ function createRipple(e) {
 const ListingCard = ({ listing, onSave, isSaved = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
 
   if (!listing) return null;
 
@@ -57,7 +58,7 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
 
   return (
     <article
-      className="glass-card glass-shimmer cursor-pointer group overflow-hidden flex flex-col"
+      className="glass-card glass-shimmer cursor-pointer group overflow-hidden flex flex-col h-full"
       onClick={handleCardClick}
       role="link"
       tabIndex={0}
@@ -123,73 +124,89 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
           </span>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-xs text-surface-600 flex-wrap">
-          {isLand ? (
-            <>
-              {listing.areaSqFt != null && (
+        {/* Expandable content area */}
+        <div className={`relative flex-1 overflow-hidden transition-all duration-300 ${expanded ? '' : 'max-h-[80px]'}`}>
+          {/* Stats */}
+          <div className="flex items-center gap-3 text-xs text-surface-600 flex-wrap">
+            {isLand ? (
+              <>
+                {listing.areaSqFt != null && (
+                  <span className="flex items-center gap-1">
+                    <Maximize2 size={12} className="text-amber-500" />
+                    {listing.areaSqFt} sq.ft
+                  </span>
+                )}
                 <span className="flex items-center gap-1">
-                  <Maximize2 size={12} className="text-amber-500" />
-                  {listing.areaSqFt} sq.ft
+                  <LandPlot size={12} className="text-amber-500" />
+                  For Sale
                 </span>
-              )}
-              <span className="flex items-center gap-1">
-                <LandPlot size={12} className="text-amber-500" />
-                For Sale
-              </span>
-            </>
-          ) : isHouse ? (
-            <>
-              {listing.bedrooms != null && (
-                <span className="flex items-center gap-1">
-                  <BedDouble size={12} className="text-primary-400" />
-                  {listing.bedrooms} {listing.bedrooms === 1 ? 'Bed' : 'Beds'}
+              </>
+            ) : isHouse ? (
+              <>
+                {listing.bedrooms != null && (
+                  <span className="flex items-center gap-1">
+                    <BedDouble size={12} className="text-primary-400" />
+                    {listing.bedrooms} {listing.bedrooms === 1 ? 'Bed' : 'Beds'}
+                  </span>
+                )}
+                {listing.bathrooms != null && (
+                  <span className="flex items-center gap-1">
+                    <Bath size={12} className="text-primary-400" />
+                    {listing.bathrooms} {listing.bathrooms === 1 ? 'Bath' : 'Baths'}
+                  </span>
+                )}
+                {listing.areaSqFt != null && (
+                  <span className="flex items-center gap-1">
+                    <Maximize2 size={12} className="text-primary-400" />
+                    {listing.areaSqFt} sq.ft
+                  </span>
+                )}
+              </>
+            ) : isHostel && listing.hostelSharing?.tiers?.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {listing.hostelSharing.tiers.filter((t) => t.available).slice(0, 3).map((t) => (
+                  <span key={t.id} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
+                    {t.sharingSize}-sharing · {formatRent(t.price)}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              listing.genderPreference && (
+                <span className={`badge text-[11px] ${GENDER_COLOR[listing.genderPreference] || 'badge-gray'}`}>
+                  <Users size={11} />
+                  {GENDER_LABEL[listing.genderPreference] ?? listing.genderPreference}
                 </span>
-              )}
-              {listing.bathrooms != null && (
-                <span className="flex items-center gap-1">
-                  <Bath size={12} className="text-primary-400" />
-                  {listing.bathrooms} {listing.bathrooms === 1 ? 'Bath' : 'Baths'}
-                </span>
-              )}
-              {listing.areaSqFt != null && (
-                <span className="flex items-center gap-1">
-                  <Maximize2 size={12} className="text-primary-400" />
-                  {listing.areaSqFt} sq.ft
-                </span>
-              )}
-            </>
-          ) : isHostel && listing.hostelSharing?.tiers?.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {listing.hostelSharing.tiers.filter((t) => t.available).slice(0, 3).map((t) => (
-                <span key={t.id} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
-                  {t.sharingSize}-sharing · {formatRent(t.price)}
-                </span>
-              ))}
+              )
+            )}
+          </div>
+
+          {/* Available from */}
+          {listing.availableFrom && (
+            <div className="flex items-center gap-1 text-xs text-surface-500 mt-1.5">
+              <CalendarDays size={11} className="text-primary-400" />
+              Available from{' '}
+              {new Date(listing.availableFrom).toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'short', year: 'numeric',
+              })}
             </div>
-          ) : (
-            listing.genderPreference && (
-              <span className={`badge text-[11px] ${GENDER_COLOR[listing.genderPreference] || 'badge-gray'}`}>
-                <Users size={11} />
-                {GENDER_LABEL[listing.genderPreference] ?? listing.genderPreference}
-              </span>
-            )
+          )}
+
+          {/* Fade overlay when collapsed */}
+          {!expanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white/90 to-transparent pointer-events-none" />
           )}
         </div>
 
-        {/* Available from */}
-        {listing.availableFrom && (
-          <div className="flex items-center gap-1 text-xs text-surface-500">
-            <CalendarDays size={11} className="text-primary-400" />
-            Available from{' '}
-            {new Date(listing.availableFrom).toLocaleDateString('en-IN', {
-              day: 'numeric', month: 'short', year: 'numeric',
-            })}
-          </div>
-        )}
+        {/* Expand/Collapse arrow */}
+        <button
+          onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+          className={`flex items-center justify-center gap-1 text-[11px] font-medium text-primary-500 hover:text-primary-600 transition-all duration-200 py-0.5 rounded-lg hover:bg-primary-50/50 ${expanded ? 'rotate-180' : ''}`}
+        >
+          <ChevronDown size={14} />
+        </button>
 
         {/* Divider + Owner */}
-        <div className="border-t border-surface-100 mt-auto pt-2.5 flex items-center justify-between">
+        <div className="border-t border-surface-100 pt-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Avatar src={listing.owner?.profileImage} name={listing.owner?.name} size="sm" />
             <span className="text-xs font-medium text-surface-700 truncate max-w-[100px]">

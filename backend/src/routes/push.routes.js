@@ -73,15 +73,15 @@ router.post('/welcome', protect, asyncHandler(async (req, res) => {
 
   // Staggered welcome notifications
   setTimeout(() => {
-    sendPushToUser(req.user.id, 'Welcome to Houziee! 🏠', 'Find your perfect home on campus.', { url: '/' });
+    sendPushToUser(req.user.id, 'Welcome to Quikden! 🏠', `Hey${user.name ? ' ' + user.name : ''}! Find your perfect home, room, or flatmate — all verified, zero brokers.`, { url: '/' });
   }, 2000);
 
   setTimeout(() => {
-    sendPushToUser(req.user.id, 'Explore Listings', 'Browse thousands of student-friendly rentals.', { url: '/search' });
+    sendPushToUser(req.user.id, 'Explore Listings ✨', 'Browse thousands of student-friendly rentals near you.', { url: '/search' });
   }, 30000);
 
   setTimeout(() => {
-    sendPushToUser(req.user.id, 'Complete Your Profile', 'Add a photo and bio to build trust with owners.', { url: '/dashboard/profile' });
+    sendPushToUser(req.user.id, 'Complete Your Profile 📸', 'Add a photo and bio to build trust with owners.', { url: '/dashboard/profile' });
   }, 120000);
 
   res.json({ success: true });

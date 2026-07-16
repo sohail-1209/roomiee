@@ -20,7 +20,7 @@ const parseAIQuery = async (query) => {
     return simpleParse(query);
   }
 
-  const systemPrompt = `You are a search query parser for a rental housing platform in India called Houziee.
+  const systemPrompt = `You are a search query parser for a rental housing platform in India called Quikden.
 Parse the user's natural language query into structured search filters AND extract keywords for text matching.
 
 Respond ONLY with a valid JSON object. No explanation, no markdown.
@@ -93,7 +93,7 @@ Output: {"city":"Bangalore","type":"HOSTEL","wifi":true,"keywords":["Bangalore U
       headers: {
         Authorization: `Bearer ${OPENROUTER_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://houziee.vercel.app',
+        'HTTP-Referer': 'https://quikden.vercel.app',
         'X-Title': 'Roomiee AI Search',
       },
       body: JSON.stringify({

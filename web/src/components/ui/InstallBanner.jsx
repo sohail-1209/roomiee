@@ -9,13 +9,13 @@ export default function InstallBanner() {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem('houziee-install-dismissed');
-    const welcomed = localStorage.getItem('houziee-welcomed');
+    const dismissed = localStorage.getItem('quikden-install-dismissed');
+    const welcomed = localStorage.getItem('quikden-welcomed');
 
     if (!welcomed && ('standalone' in window.navigator || window.matchMedia('(display-mode: standalone)').matches)) {
-      localStorage.setItem('houziee-welcomed', '1');
+      localStorage.setItem('quikden-welcomed', '1');
       setTimeout(() => {
-        toast.success('Welcome to Houziee! Find your perfect home.', {
+        toast.success('Welcome to Quikden! Find your perfect home.', {
           duration: 5000,
           icon: <Sparkles size={18} className="text-primary-500" />,
         });
@@ -41,8 +41,8 @@ export default function InstallBanner() {
     window.addEventListener('beforeinstallprompt', handler);
     window.addEventListener('appinstalled', () => {
       setShowBanner(false);
-      localStorage.setItem('houziee-welcomed', '1');
-      toast.success('Houziee installed! Welcome aboard.', {
+      localStorage.setItem('quikden-welcomed', '1');
+      toast.success('Quikden installed! Welcome aboard.', {
         duration: 5000,
         icon: <Sparkles size={18} className="text-primary-500" />,
       });
@@ -61,7 +61,7 @@ export default function InstallBanner() {
 
   const handleDismiss = () => {
     setShowBanner(false);
-    localStorage.setItem('houziee-install-dismissed', '1');
+    localStorage.setItem('quikden-install-dismissed', '1');
   };
 
   if (!showBanner) return null;
@@ -81,7 +81,7 @@ export default function InstallBanner() {
             {isIOS ? <Smartphone size={18} className="text-white" /> : <Download size={18} className="text-white" />}
           </div>
           <div className="flex-1 min-w-0 pr-6">
-            <p className="text-sm font-semibold text-surface-900">Install Houziee</p>
+            <p className="text-sm font-semibold text-surface-900">Install Quikden</p>
             <p className="text-xs text-surface-500 mt-0.5">
               {isIOS
                 ? 'Tap the share button then "Add to Home Screen"'

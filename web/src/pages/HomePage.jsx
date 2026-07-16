@@ -22,11 +22,11 @@ const CATEGORIES = [
 const CITIES = ['Hyderabad', 'Bangalore', 'Mumbai', 'Pune', 'Delhi', 'Chennai'];
 
 const HERO_QUOTES = [
-  'where stories begin',
-  'your next adventure starts',
-  'life finds its place',
-  'comfort meets trust',
-  'dreams become homes',
+  'room in your city',
+  'home without brokers',
+  'perfect flatmate',
+  'cozy PG or hostel',
+  'dream rental home',
 ];
 
 function AnimatedCounter({ target, duration = 1500, suffix = '' }) {
@@ -303,7 +303,7 @@ export default function HomePage() {
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} index={i} />)
             : listings.map((listing, i) => (
-                <div key={listing.id} style={{ animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms both` }}>
+                <div key={listing.id} className="h-full" style={{ animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms both` }}>
                   <ListingCard listing={listing} />
                 </div>
               ))
@@ -369,7 +369,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-surface-100 py-6 px-4 text-center text-xs text-surface-400 bg-white">
-        <p>&copy; {new Date().getFullYear()} Houziee &middot; Made with care in India</p>
+        <p>&copy; {new Date().getFullYear()} Quikden &middot; Made with care in India</p>
       </footer>
 
       <InstallBanner />

@@ -1,4 +1,4 @@
-# Houziee — Complete Product Plan & Documentation
+# Quikden — Complete Product Plan & Documentation
 
 ## Goal
 

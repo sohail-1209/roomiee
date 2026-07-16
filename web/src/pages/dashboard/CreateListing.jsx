@@ -675,7 +675,7 @@ const CreateListing = () => {
             </div>
             <div>
               <p className="font-semibold text-surface-900 text-sm">Other Room</p>
-              <p className="text-xs text-surface-400 mt-0.5">List a room that isn't in Houziee yet</p>
+              <p className="text-xs text-surface-400 mt-0.5">List a room that isn't in Quikden yet</p>
             </div>
           </button>
         </div>

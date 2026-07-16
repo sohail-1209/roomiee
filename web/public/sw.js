@@ -1,4 +1,4 @@
-const CACHE_NAME = 'houziee-v6';
+const CACHE_NAME = 'quikden-v7';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -52,15 +52,15 @@ self.addEventListener('fetch', (event) => {
 
 // ── Push Notifications ──
 self.addEventListener('push', (event) => {
-  let data = { title: 'Houziee', body: 'You have a new notification' };
+  let data = { title: 'Quikden', body: 'You have a new notification' };
   if (event.data) {
     try { data = event.data.json(); } catch { data.body = event.data.text(); }
   }
 
   const options = {
     body: data.body,
-    icon: '/icons/icon-192x192.svg',
-    badge: '/icons/icon-192x192.svg',
+    icon: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
+    badge: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
     vibrate: [200, 100, 200],
     data: data.data || {},
     actions: [

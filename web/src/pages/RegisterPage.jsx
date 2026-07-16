@@ -89,7 +89,7 @@ const RegisterPage = () => {
         password: form.password,
         role: form.role,
       });
-      toast.success('Registration successful! Welcome to Houziee.');
+      toast.success('Registration successful! Welcome to Quikden.');
       navigate('/dashboard');
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Registration failed');
@@ -111,9 +111,9 @@ const RegisterPage = () => {
         {/* Logo */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-1">
-            <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784193764/animal_cypuzl.png" alt="Houziee" className="w-10 h-10 rounded-xl object-cover border border-white/20" />
-            <span className="text-white font-display font-bold text-2xl tracking-tight">
-              Houziee
+            <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+            <span className="text-white font-cinzel font-bold text-2xl tracking-tight">
+              Quikden
             </span>
           </div>
           <p className="text-primary-200 text-sm font-medium mt-2">
@@ -129,7 +129,7 @@ const RegisterPage = () => {
             <span className="text-accent-300">smart home seekers</span>
           </h1>
           <p className="text-primary-200 mt-4 text-base leading-relaxed max-w-sm">
-            Whether you want to list your space as an Owner or find your next flat as a Tenant, Houziee has got you covered.
+            Whether you want to list your space as an Owner or find your next flat as a Tenant, Quikden has got you covered.
           </p>
 
           <div className="mt-8 space-y-5">

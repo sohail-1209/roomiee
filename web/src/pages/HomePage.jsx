@@ -1,5 +1,4 @@
 // HomePage — main landing page for Houziee
-// Sections: Hero, Popular Cities, Featured Rentals, Room Sharing, How It Works, Stats Bar
 import React, { useRef, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -12,15 +11,13 @@ import ListingCard from '../components/listing/ListingCard';
 import Navbar from '../components/layout/Navbar';
 import { sessionCache } from '../utils/sessionCache';
 
-// ─── Data ────────────────────────────────────────────────────────────────────
-
 const CITIES = [
-  { name: 'Hyderabad', emoji: '🌆', count: '120+', bg: 'from-blue-500/20 to-cyan-400/10' },
-  { name: 'Bangalore', emoji: '🌳', count: '180+', bg: 'from-green-500/20 to-emerald-400/10' },
-  { name: 'Mumbai',    emoji: '🌊', count: '95+',  bg: 'from-indigo-500/20 to-blue-400/10' },
-  { name: 'Pune',      emoji: '🏛️', count: '60+',  bg: 'from-amber-500/20 to-orange-400/10' },
-  { name: 'Delhi',     emoji: '🕌', count: '75+',  bg: 'from-rose-500/20 to-red-400/10' },
-  { name: 'Chennai',   emoji: '🌴', count: '50+',  bg: 'from-teal-500/20 to-cyan-400/10' },
+  { name: 'Hyderabad', emoji: '🌆', count: '120+', bg: 'from-primary-500/10 to-primary-600/5' },
+  { name: 'Bangalore', emoji: '🌳', count: '180+', bg: 'from-emerald-500/10 to-emerald-600/5' },
+  { name: 'Mumbai',    emoji: '🌊', count: '95+',  bg: 'from-accent-500/10 to-accent-600/5' },
+  { name: 'Pune',      emoji: '🏛️', count: '60+',  bg: 'from-amber-500/10 to-amber-600/5' },
+  { name: 'Delhi',     emoji: '🕌', count: '75+',  bg: 'from-rose-500/10 to-rose-600/5' },
+  { name: 'Chennai',   emoji: '🌴', count: '50+',  bg: 'from-teal-500/10 to-teal-600/5' },
 ];
 
 const HOW_IT_WORKS = [
@@ -29,14 +26,14 @@ const HOW_IT_WORKS = [
     Icon: Search,
     title: 'Search',
     desc: 'Browse thousands of verified rooms and houses across India. Filter by city, budget, and amenities.',
-    color: 'text-primary-600 bg-primary-100',
+    color: 'text-primary-600 bg-primary-50',
   },
   {
     step: '02',
     Icon: Zap,
     title: 'Request',
     desc: 'Send a rental request to the owner directly. Get their contact once they accept.',
-    color: 'text-accent-600 bg-accent-100',
+    color: 'text-accent-600 bg-accent-50',
   },
   {
     step: '03',
@@ -53,9 +50,6 @@ const STATS = [
   { value: '100%', label: 'Free to Use', Icon: Star },
 ];
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-/** Horizontal scroll row with prev/next arrow controls */
 const HScrollRow = ({ children, isLoading, skeletonCount = 4 }) => {
   const scrollRef = useRef(null);
 
@@ -84,10 +78,9 @@ const HScrollRow = ({ children, isLoading, skeletonCount = 4 }) => {
 
   return (
     <div className="relative group/scroll">
-      {/* Left arrow */}
       <button
         onClick={() => scroll(-1)}
-        className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-50/80 backdrop-blur-sm shadow-lg border border-surface-100/60 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
+        className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm shadow-soft border border-surface-200/60 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
         aria-label="Scroll left"
       >
         <ChevronLeft size={18} />
@@ -101,10 +94,9 @@ const HScrollRow = ({ children, isLoading, skeletonCount = 4 }) => {
         {children}
       </div>
 
-      {/* Right arrow */}
       <button
         onClick={() => scroll(1)}
-        className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-surface-50/80 backdrop-blur-sm shadow-lg border border-surface-100/60 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
+        className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm shadow-soft border border-surface-200/60 flex items-center justify-center text-surface-600 hover:text-primary-600 hover:border-primary-300 transition-all opacity-0 group-hover/scroll:opacity-100 focus:opacity-100"
         aria-label="Scroll right"
       >
         <ChevronRight size={18} />
@@ -113,21 +105,17 @@ const HScrollRow = ({ children, isLoading, skeletonCount = 4 }) => {
   );
 };
 
-/** Wraps a listing inside a fixed-width flex-none container for horizontal scroll */
 const ScrollCard = ({ listing }) => (
   <div className="flex-none w-72">
     <ListingCard listing={listing} />
   </div>
 );
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
-
 export default function HomePage() {
   const navigate = useNavigate();
   const [city, setCity] = useState('');
-  const [listingType, setListingType] = useState('ALL'); // 'ALL' | 'HOUSE_RENTAL' | 'ROOM_SHARING' | 'HOSTEL'
+  const [listingType, setListingType] = useState('ALL');
 
-  /* ── Data fetching ── */
   const { data: houseData, isLoading: houseLoading } = useQuery({
     queryKey: ['home-house-listings'],
     queryFn: async () => {
@@ -180,7 +168,6 @@ export default function HomePage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  /* ── Handlers ── */
   const handleSearch = (e) => {
     e.preventDefault();
     const params = new URLSearchParams();
@@ -200,25 +187,25 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════
           HERO SECTION
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-surface-50/50 pt-8 pb-20 sm:pt-12 sm:pb-28">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary-50/50 via-surface-50 to-surface-50 pt-8 pb-20 sm:pt-12 sm:pb-28">
 
-        {/* Animated dot-grid background */}
+        {/* Subtle dot grid */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          className="pointer-events-none absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)',
-            backgroundSize: '28px 28px',
+            backgroundImage: 'radial-gradient(circle, #0d9488 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
           }}
         />
 
-        {/* Gradient blobs */}
-        <div className="pointer-events-none absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-primary-400/20 to-accent-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full bg-gradient-to-tr from-accent-400/15 to-primary-300/10 blur-3xl" />
+        {/* Gradient orbs */}
+        <div className="pointer-events-none absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-primary-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full bg-accent-400/10 blur-3xl" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
 
-          {/* Eyebrow badge */}
-          <div className="inline-flex items-center gap-2 badge badge-primary px-4 py-1.5 text-sm font-medium mb-6 shadow-sm">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 badge bg-primary-100/80 text-primary-700 px-4 py-1.5 text-sm font-medium mb-6">
             <TrendingUp size={14} />
             India's Fastest Growing Room Finder
           </div>
@@ -242,7 +229,6 @@ export default function HomePage() {
             onSubmit={handleSearch}
             className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto"
           >
-            {/* City input */}
             <div className="relative flex-1">
               <MapPin
                 size={17}
@@ -250,16 +236,15 @@ export default function HomePage() {
               />
               <input
                 type="text"
-                className="input pl-10 pr-4 h-12 text-sm shadow-sm"
-                placeholder="Enter city — Hyderabad, Bangalore…"
+                className="input pl-10 pr-4 h-12 text-sm shadow-soft"
+                placeholder="Enter city — Hyderabad, Bangalore..."
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 aria-label="City"
               />
             </div>
 
-            {/* Type toggle */}
-            <div className="flex rounded-xl border border-surface-200 bg-surface-50 p-1 gap-1 shrink-0">
+            <div className="flex rounded-xl border border-surface-200 bg-white p-1 gap-1 shrink-0">
               {[
                 { value: 'ALL',          label: 'All',     Ic: null },
                 { value: 'HOUSE_RENTAL', label: 'House',   Ic: Home },
@@ -271,10 +256,10 @@ export default function HomePage() {
                   key={value}
                   type="button"
                   onClick={() => setListingType(value)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     listingType === value
-                      ? 'bg-surface-50/80 text-primary-600 shadow-sm border border-surface-100/60'
-                      : 'text-surface-500 hover:text-surface-700'
+                      ? 'bg-primary-50 text-primary-700 shadow-sm border border-primary-200/60'
+                      : 'text-surface-500 hover:text-surface-700 hover:bg-surface-50'
                   }`}
                 >
                   {Ic && <Ic size={14} />}
@@ -283,8 +268,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Submit */}
-            <button type="submit" className="btn-primary btn-lg shrink-0 h-12 px-6 shadow-md hover:shadow-lg">
+            <button type="submit" className="btn-primary btn-lg shrink-0 h-12 px-6 shadow-glow-primary">
               <Search size={18} />
               Search
             </button>
@@ -298,7 +282,7 @@ export default function HomePage() {
                 key={c}
                 type="button"
                 onClick={() => handleCityClick(c)}
-                className="badge badge-gray hover:bg-primary-100 hover:text-primary-700 transition-colors cursor-pointer"
+                className="badge bg-surface-100 text-surface-600 hover:bg-primary-50 hover:text-primary-700 transition-colors cursor-pointer"
               >
                 {c}
               </button>
@@ -319,7 +303,7 @@ export default function HomePage() {
             No brokers, no hidden fees. Connect directly with owners, compare options, and move into your next home with confidence.
           </p>
         </div>
-        <div className="bg-gradient-to-r from-primary-600 to-accent-500 py-6 rounded-2xl">
+        <div className="gradient-bg py-6 rounded-2xl shadow-soft-lg">
           <div className="max-w-4xl mx-auto px-4">
             <p className="text-white/50 text-xs text-center mb-4 font-medium tracking-wide uppercase">Our Targets</p>
             <div className="grid grid-cols-3 divide-x divide-white/20">
@@ -358,13 +342,13 @@ export default function HomePage() {
               key={name}
               type="button"
               onClick={() => handleCityClick(name)}
-              className={`card card-hover group p-5 flex flex-col items-center gap-2 text-center bg-gradient-to-br ${bg} border-0`}
+              className={`card card-hover group p-5 flex flex-col items-center gap-2 text-center bg-gradient-to-br ${bg} border-0 cursor-pointer`}
             >
               <span className="text-3xl group-hover:scale-110 transition-transform duration-200 select-none">
                 {emoji}
               </span>
               <span className="font-semibold text-surface-800 text-sm">{name}</span>
-              <span className="badge badge-gray text-xs">{count} listings</span>
+              <span className="badge bg-surface-100 text-surface-500 text-xs">{count} listings</span>
             </button>
           ))}
         </div>
@@ -407,7 +391,6 @@ export default function HomePage() {
           )}
         </HScrollRow>
 
-        {/* Mobile CTA */}
         <div className="mt-5 sm:hidden text-center">
           <Link to="/search?type=HOUSE_RENTAL" className="btn-outline btn-md gap-2">
             See all House Rentals <ArrowRight size={15} />
@@ -452,7 +435,6 @@ export default function HomePage() {
           )}
         </HScrollRow>
 
-        {/* Mobile CTA */}
         <div className="mt-5 sm:hidden text-center">
           <Link to="/search?type=ROOM_SHARING" className="btn-outline btn-md gap-2">
             See all Room Sharing <ArrowRight size={15} />
@@ -497,7 +479,6 @@ export default function HomePage() {
           )}
         </HScrollRow>
 
-        {/* Mobile CTA */}
         <div className="mt-5 sm:hidden text-center">
           <Link to="/search?type=HOSTEL" className="btn-outline btn-md gap-2">
             See all Hostels & PGs <ArrowRight size={15} />
@@ -508,7 +489,7 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════
           LAND FOR SALE
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="py-16 px-4 sm:px-6 bg-surface-50">
+      <section className="py-16 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -529,12 +510,10 @@ export default function HomePage() {
               ))}
             </div>
           ) : (landData ?? []).length > 0 ? (
-            <div className="relative">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {(landData ?? []).slice(0, 6).map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
-                ))}
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {(landData ?? []).slice(0, 6).map((listing) => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
             </div>
           ) : (
             <div className="text-center py-12 text-surface-400">
@@ -564,21 +543,16 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 relative">
-            {/* Connector line (desktop only) */}
             <div className="hidden sm:block absolute top-12 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-gradient-to-r from-primary-200 via-accent-200 to-success-200 z-0" />
 
             {HOW_IT_WORKS.map(({ step, Icon, title, desc, color }) => (
               <div key={step} className="relative z-10 flex flex-col items-center text-center gap-4">
-                {/* Number chip */}
                 <span className="absolute -top-3 -right-2 sm:static sm:mb-0 font-display font-bold text-5xl text-surface-100 select-none leading-none z-0">
                   {step}
                 </span>
-
-                {/* Icon circle */}
-                <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-md ${color} z-10 mx-auto`}>
+                <div className={`relative w-20 h-20 rounded-2xl flex items-center justify-center shadow-soft ${color} z-10 mx-auto`}>
                   <Icon size={32} strokeWidth={1.5} />
                 </div>
-
                 <div>
                   <h3 className="font-display font-bold text-lg text-surface-900 mb-1">{title}</h3>
                   <p className="text-surface-500 text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
@@ -587,9 +561,8 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Bottom CTA */}
           <div className="text-center mt-14">
-            <Link to="/search" className="btn-primary btn-lg gap-2 shadow-lg hover:shadow-xl">
+            <Link to="/search" className="btn-primary btn-lg gap-2 shadow-glow-primary">
               <Search size={18} />
               Start Searching Now
             </Link>
@@ -604,7 +577,7 @@ export default function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════
           FOOTER CTA BAND
       ═══════════════════════════════════════════════════════════════════ */}
-      <section className="bg-gradient-to-br from-primary-600 to-accent-600 py-16 px-4 text-center text-white">
+      <section className="gradient-bg py-16 px-4 text-center text-white">
         <h2 className="font-display font-bold text-3xl sm:text-4xl mb-3 leading-tight">
           Are you a Property Owner?
         </h2>
@@ -614,7 +587,7 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             to="/register"
-            className="btn bg-surface-50/80 backdrop-blur-sm text-primary-700 hover:bg-primary-50 btn-lg shadow-xl font-semibold"
+            className="btn bg-white text-primary-700 hover:bg-white/90 btn-lg shadow-xl font-semibold"
           >
             Post a Listing — It's Free
           </Link>
@@ -627,9 +600,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Simple footer ── */}
+      {/* Footer */}
       <footer className="bg-surface-900 text-surface-400 text-center py-6 text-sm">
-        © {new Date().getFullYear()} Houziee · Made with ❤️ in India
+        &copy; {new Date().getFullYear()} Houziee &middot; Made with care in India
       </footer>
     </div>
   );

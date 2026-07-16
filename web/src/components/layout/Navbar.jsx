@@ -174,18 +174,18 @@ export default function Navbar() {
     <>
       {/* ── Main bar ───────────────────────────────────────────────────────── */}
       <header
-        className={`fixed top-0 inset-x-0 z-40 bg-surface-50/80 backdrop-blur-xl border-b border-surface-100/60 transition-shadow duration-300 ${
-          scrolled ? 'shadow-md' : 'shadow-none'
+        className={`fixed top-0 inset-x-0 z-40 transition-all duration-300 ${
+          scrolled ? 'bg-white/80 backdrop-blur-xl shadow-soft border-b border-surface-100/60' : 'bg-white/60 backdrop-blur-lg'
         }`}
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-600 text-white">
-              <Home size={16} strokeWidth={2.5} />
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-sm group-hover:shadow-glow-primary transition-shadow duration-300">
+              <Home size={17} strokeWidth={2.5} />
             </span>
-            <span className="font-display font-bold text-xl gradient-text">Houziee</span>
+            <span className="font-display font-bold text-xl text-surface-900">Houziee</span>
           </Link>
 
           {/* Desktop nav links */}
@@ -371,7 +371,7 @@ export default function Navbar() {
 
       {/* Drawer */}
       <aside
-        className={`fixed top-16 left-0 right-0 z-30 bg-surface-50/95 backdrop-blur-xl border-b border-surface-100/60 shadow-xl md:hidden transition-transform duration-300 ${
+        className={`fixed top-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-b border-surface-100 shadow-soft-lg md:hidden transition-transform duration-300 ${
           mobileOpen ? 'translate-y-0' : '-translate-y-full'
         }`}
       >

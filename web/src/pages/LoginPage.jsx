@@ -49,11 +49,11 @@ const TESTIMONIAL = {
 // ─── Left branding panel ─────────────────────────────────────────────────────
 
 const LeftPanel = () => (
-  <div className="hidden lg:flex flex-col justify-between h-full bg-gradient-to-br from-primary-700 via-primary-800 to-primary-950 p-12 relative overflow-hidden">
+  <div className="hidden lg:flex flex-col justify-between h-full bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-12 relative overflow-hidden">
     {/* Decorative blobs */}
-    <div className="absolute -top-24 -left-24 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl pointer-events-none" />
-    <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl pointer-events-none" />
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary-400/10 rounded-full blur-2xl pointer-events-none" />
+    <div className="absolute -top-24 -left-24 w-80 h-80 bg-primary-400/20 rounded-full blur-3xl pointer-events-none" />
+    <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-400/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary-300/10 rounded-full blur-2xl pointer-events-none" />
 
     {/* Brand */}
     <div className="relative z-10">
@@ -218,14 +218,14 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center bg-surface-50 px-6 py-12 lg:px-12">
         {/* Mobile brand */}
         <div className="flex lg:hidden items-center gap-2 mb-8">
-          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
             <Home size={16} className="text-white" />
           </div>
-          <span className="font-display font-bold text-xl text-primary-700">Houziee</span>
+          <span className="font-display font-bold text-xl text-surface-900">Houziee</span>
         </div>
 
         {/* Glass card */}
-        <div className="w-full max-w-md bg-surface-50/70 backdrop-blur-xl border border-surface-100/60 rounded-3xl shadow-card p-8 md:p-10">
+        <div className="w-full max-w-md bg-white border border-surface-200/60 rounded-3xl shadow-soft-lg p-8 md:p-10">
           {/* Heading */}
           <div className="mb-8">
             <h2 className="font-display font-bold text-2xl text-surface-900 tracking-tight">

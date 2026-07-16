@@ -12,16 +12,11 @@ const PLACEHOLDER = '/images/listing-placeholder.svg';
 
 const GENDER_LABEL = { MALE: 'Male Only', FEMALE: 'Female Only', ANY: 'Any Gender' };
 const GENDER_COLOR = {
-  MALE: 'badge-primary',
+  MALE: 'bg-primary-100 text-primary-700 badge',
   FEMALE: 'bg-pink-100 text-pink-700 badge',
   ANY: 'badge-gray',
 };
 
-/**
- * @param {object}   listing   - Full listing object from API
- * @param {Function} onSave    - Called after save/unsave toggles
- * @param {boolean}  isSaved   - Whether the current user has saved this listing
- */
 const ListingCard = ({ listing, onSave, isSaved = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,33 +40,33 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
       onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
       aria-label={`${listing.title} – ${formatRent(listing.rent)} per month`}
     >
-      {/* ── Photo ── */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-surface-50 flex items-center justify-center">
+      {/* Photo */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-surface-100 flex items-center justify-center">
         <img
           src={photoUrl}
           alt={listing.title}
           loading="lazy"
-          className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => { e.currentTarget.src = PLACEHOLDER; }}
         />
 
-        {/* Type badge — top-left */}
+        {/* Type badge */}
         <span
-          className={`absolute top-3 left-3 badge text-xs font-semibold shadow-sm
-            ${isLand ? 'bg-amber-100 text-amber-700 badge' : isHouse ? 'badge-primary' : isHostel ? 'bg-emerald-100 text-emerald-700 badge' : 'bg-accent-100 text-accent-700 badge'}`}
+          className={`absolute top-3 left-3 badge text-[11px] font-semibold shadow-sm backdrop-blur-sm
+            ${isLand ? 'bg-amber-500/90 text-white' : isHouse ? 'bg-primary-600/90 text-white' : isHostel ? 'bg-emerald-500/90 text-white' : 'bg-accent-600/90 text-white'}`}
         >
           {isLand ? 'Land Sale' : isHouse ? 'House Rental' : isHostel ? 'Hostel / PG' : 'Room Sharing'}
         </span>
 
-        {/* Booked badge — top-center */}
+        {/* Booked badge */}
         {listing.status === 'RENTED' && (
-          <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-            🏠 Booked
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-surface-900/80 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
+            Booked
           </span>
         )}
 
-        {/* Save button — top-right (auth-gated) */}
-        {(user || true) /* render always; SaveButton handles auth redirect */ && (
+        {/* Save button */}
+        {(user || true) && (
           <div className="absolute top-3 right-3">
             <SaveButton
               listingId={listing.id}
@@ -82,20 +77,20 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         )}
 
         {/* Time ago chip */}
-        <span className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full">
+        <span className="absolute bottom-3 right-3 bg-surface-900/60 backdrop-blur-sm text-white text-[11px] px-2 py-0.5 rounded-full font-medium">
           {timeAgo(listing.createdAt)}
         </span>
       </div>
 
-      {/* ── Body ── */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
+      {/* Body */}
+      <div className="flex flex-col flex-1 p-4 gap-2.5">
 
         {/* Rent */}
         <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-bold text-surface-900 font-display">
+          <span className="text-xl font-bold text-surface-900 font-display">
             {formatRent(listing.rent)}
           </span>
-          <span className="text-sm text-surface-400">/mo</span>
+          <span className="text-xs text-surface-400 font-medium">/mo</span>
         </div>
 
         {/* Title */}
@@ -105,7 +100,7 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
 
         {/* Location */}
         <div className="flex items-start gap-1 text-surface-500 text-xs">
-          <MapPin size={13} className="flex-shrink-0 mt-0.5 text-primary-400" />
+          <MapPin size={12} className="flex-shrink-0 mt-0.5 text-primary-400" />
           <span className="line-clamp-1">
             {[listing.address, listing.city].filter(Boolean).join(', ')}
           </span>
@@ -116,12 +111,12 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
           <div className="flex items-center gap-3 text-xs text-surface-600">
             {listing.areaSqFt != null && (
               <span className="flex items-center gap-1">
-                <Maximize2 size={13} className="text-amber-500" />
+                <Maximize2 size={12} className="text-amber-500" />
                 {listing.areaSqFt} sq.ft
               </span>
             )}
             <span className="flex items-center gap-1">
-              <LandPlot size={13} className="text-amber-500" />
+              <LandPlot size={12} className="text-amber-500" />
               For Sale
             </span>
           </div>
@@ -129,19 +124,19 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
           <div className="flex items-center gap-3 text-xs text-surface-600">
             {listing.bedrooms != null && (
               <span className="flex items-center gap-1">
-                <BedDouble size={13} className="text-primary-400" />
+                <BedDouble size={12} className="text-primary-400" />
                 {listing.bedrooms} {listing.bedrooms === 1 ? 'Bed' : 'Beds'}
               </span>
             )}
             {listing.bathrooms != null && (
               <span className="flex items-center gap-1">
-                <Bath size={13} className="text-primary-400" />
+                <Bath size={12} className="text-primary-400" />
                 {listing.bathrooms} {listing.bathrooms === 1 ? 'Bath' : 'Baths'}
               </span>
             )}
             {listing.areaSqFt != null && (
               <span className="flex items-center gap-1">
-                <Maximize2 size={13} className="text-primary-400" />
+                <Maximize2 size={12} className="text-primary-400" />
                 {listing.areaSqFt} sq.ft
               </span>
             )}
@@ -149,7 +144,7 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         ) : isHostel && listing.hostelSharing?.tiers?.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {listing.hostelSharing.tiers.filter((t) => t.available).slice(0, 3).map((t) => (
-              <span key={t.id} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">
+              <span key={t.id} className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary-50 text-primary-700">
                 {t.sharingSize}-sharing · {formatRent(t.price)}
               </span>
             ))}
@@ -166,7 +161,7 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         {/* Available from */}
         {listing.availableFrom && (
           <div className="flex items-center gap-1 text-xs text-surface-500">
-            <CalendarDays size={12} className="text-primary-400" />
+            <CalendarDays size={11} className="text-primary-400" />
             Available from{' '}
             {new Date(listing.availableFrom).toLocaleDateString('en-IN', {
               day: 'numeric',
@@ -177,7 +172,7 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         )}
 
         {/* Divider */}
-        <hr className="border-surface-100" />
+        <div className="border-t border-surface-100 mt-auto pt-2.5" />
 
         {/* Owner row */}
         <div className="flex items-center justify-between">
@@ -190,20 +185,11 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
 
           {listing.owner?.avgRating != null && listing.owner.avgRating > 0 && (
             <div className="flex items-center gap-0.5 text-xs text-amber-500 font-medium">
-              <Star size={12} className="fill-amber-400 text-amber-400" />
+              <Star size={11} className="fill-amber-400 text-amber-400" />
               {Number(listing.owner.avgRating).toFixed(1)}
             </div>
           )}
         </div>
-
-        {/* CTA */}
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); navigate(detailPath); }}
-          className="btn-primary btn-sm w-full mt-auto"
-        >
-          View Details
-        </button>
       </div>
     </article>
   );

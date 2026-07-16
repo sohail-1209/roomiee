@@ -1,14 +1,21 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-});
+let transporter = null;
+
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+    });
+  }
+  return transporter;
+}
 
 async function sendVerificationEmail(email, name, otp) {
   const html = `
@@ -37,7 +44,7 @@ async function sendVerificationEmail(email, name, otp) {
     </html>
   `;
 
-  await transporter.sendMail({
+  await getTransporter().sendMail({
     from: '"Quikden" <no-reply@quikden.com>',
     to: email,
     subject: `Your Quikden verification code: ${otp}`,

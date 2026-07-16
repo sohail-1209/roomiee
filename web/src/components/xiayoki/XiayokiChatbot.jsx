@@ -43,7 +43,11 @@ export default function XiayokiChatbot() {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
       setShowTooltip(false);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
   // Show tooltip after 3s if chat not opened

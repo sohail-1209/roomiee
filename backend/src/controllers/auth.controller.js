@@ -7,6 +7,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const {
   verifyGoogleToken,
   handleGoogleAuth,
+  createGoogleUser,
   completeGoogleProfile,
   generateVerificationToken,
   verifyEmailToken,
@@ -154,35 +155,50 @@ const googleAuth = asyncHandler(async (req, res) => {
   if (!idToken) throw new AppError('Google ID token required', 400);
 
   const googleUser = await verifyGoogleToken(idToken);
-  const { user, isNew, needsProfile } = await handleGoogleAuth(googleUser);
-
-  if (user.isBanned) throw new AppError('Account banned', 403);
+  const { user, isNew, needsProfile, googleInfo } = await handleGoogleAuth(googleUser);
 
   if (needsProfile) {
-    // Return partial user data — frontend will redirect to complete profile
-    const { password: _, ...safeUser } = user;
+    // New user — sign a temp token (15 min) with Google info, no DB user yet
+    const tempToken = jwt.sign(
+      { googleInfo, purpose: 'google_complete_profile' },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+
     return res.status(200).json({
       success: true,
       data: {
-        user: safeUser,
-        isNew: true,
         needsProfile: true,
-        accessToken: signAccessToken(user.id),
+        tempToken,
+        googleInfo,
       },
     });
   }
 
+  // Existing user — login normally
+  if (user.isBanned) throw new AppError('Account banned', 403);
   await sendTokens(user, res);
 });
 
-// ─── Complete Google user profile ──────────────
+// ─── Complete Google user profile (creates user) ──
 const completeProfile = asyncHandler(async (req, res) => {
-  const { name, phone, role } = req.body;
+  const { tempToken, name, phone, role } = req.body;
+  if (!tempToken) throw new AppError('Temp token required', 400);
+
+  let googleInfo;
+  try {
+    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    if (decoded.purpose !== 'google_complete_profile') throw new Error('Invalid token');
+    googleInfo = decoded.googleInfo;
+  } catch {
+    throw new AppError('Invalid or expired temp token. Please try Google sign-in again.', 401);
+  }
 
   const allowedRole = ['TENANT', 'OWNER'].includes(role) ? role : 'TENANT';
 
-  const user = await completeGoogleProfile(req.user.id, {
-    name: name || undefined,
+  const user = await createGoogleUser({
+    ...googleInfo,
+    name: name || googleInfo.name,
     phone: phone || undefined,
     role: allowedRole,
   });

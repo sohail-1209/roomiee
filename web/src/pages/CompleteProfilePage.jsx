@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { User, Phone, Mail, ArrowRight, AtSign } from 'lucide-react';
@@ -7,15 +7,19 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 
 const CompleteProfilePage = () => {
-  const { user, completeProfile } = useAuth();
+  const { completeProfile } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: user?.name || '',
-    phone: '',
-    role: 'TENANT',
-  });
+  const [googleInfo, setGoogleInfo] = useState(null);
+  const [form, setForm] = useState({ name: '', phone: '', role: 'TENANT' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const tempToken = localStorage.getItem('googleTempToken');
+    if (!tempToken) {
+      navigate('/register', { replace: true });
+    }
+  }, [navigate]);
 
   const validate = () => {
     const e = {};
@@ -67,11 +71,7 @@ const CompleteProfilePage = () => {
         <div className="w-full max-w-[380px] bg-white/80 backdrop-blur-xl border border-white/60 rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.06)] px-4 py-4 sm:px-6 sm:py-6 relative z-10">
           <div className="text-center mb-4">
             <div className="w-14 h-14 mx-auto mb-2 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center overflow-hidden">
-              {user?.profileImage ? (
-                <img src={user.profileImage} alt="" className="w-14 h-14 rounded-full object-cover" />
-              ) : (
-                <User size={24} className="text-white" />
-              )}
+              <User size={24} className="text-white" />
             </div>
             <h1 className="font-display font-bold text-lg text-surface-900">Complete your profile</h1>
             <p className="text-surface-500 text-[11px] mt-0.5">
@@ -80,16 +80,6 @@ const CompleteProfilePage = () => {
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-2.5">
-            {/* Email (readonly) */}
-            <div>
-              <label className="block text-[11px] font-medium text-surface-700 mb-0.5">Email</label>
-              <div className="relative">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-surface-400 pointer-events-none"><Mail size={13} /></span>
-                <input type="email" value={user?.email || ''} readOnly
-                  className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border text-[13px] bg-surface-100 text-surface-500 border-surface-200 cursor-not-allowed" />
-              </div>
-            </div>
-
             {/* Full Name */}
             <div>
               <label htmlFor="cp-name" className="block text-[11px] font-medium text-surface-700 mb-0.5">Full Name</label>

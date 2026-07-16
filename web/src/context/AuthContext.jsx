@@ -38,15 +38,15 @@ export const AuthProvider = ({ children }) => {
 
   const googleAuth = async (idToken) => {
     const { data } = await authAPI.googleAuth(idToken);
-    const { user: userData, accessToken, needsProfile } = data.data;
+    const { needsProfile, tempToken, googleInfo, accessToken, user: userData } = data.data;
 
     if (needsProfile) {
-      // Store token and return partial user — frontend will redirect to complete profile
-      localStorage.setItem('accessToken', accessToken);
-      setUser(userData);
-      return { user: userData, needsProfile: true };
+      // Store temp token for complete-profile step
+      localStorage.setItem('googleTempToken', tempToken);
+      return { needsProfile: true, googleInfo };
     }
 
+    // Existing user — login normally
     localStorage.setItem('accessToken', accessToken);
     setUser(userData);
     subscribeToPush().catch(() => {});
@@ -54,8 +54,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const completeProfile = async (profileData) => {
-    const { data } = await authAPI.completeProfile(profileData);
+    const tempToken = localStorage.getItem('googleTempToken');
+    const payload = { ...profileData };
+    if (tempToken) payload.tempToken = tempToken;
+
+    const { data } = await authAPI.completeProfile(payload);
+    localStorage.removeItem('googleTempToken');
+
     const userData = data.data.user;
+    localStorage.setItem('accessToken', data.data.accessToken);
     setUser(userData);
     subscribeToPush().catch(() => {});
     return userData;

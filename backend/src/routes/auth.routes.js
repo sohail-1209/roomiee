@@ -34,7 +34,7 @@ router.patch('/fcm-token', protect, updateFcmToken);
 
 // Google OAuth
 router.post('/google', googleAuth);
-router.post('/complete-profile', protect, completeProfile);
+router.post('/complete-profile', completeProfile);
 
 // Email verification
 router.post('/send-verification', protect, sendVerificationEmail);

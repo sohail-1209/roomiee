@@ -27,7 +27,7 @@ async function verifyGoogleToken(idToken) {
 
 /**
  * Find or create user from Google auth
- * Returns { user, isNew, needsProfile } 
+ * Returns { user, isNew, needsProfile, googleInfo }
  */
 async function handleGoogleAuth({ googleId, email, name, profileImage }) {
   // Check if user exists by googleId
@@ -37,32 +37,49 @@ async function handleGoogleAuth({ googleId, email, name, profileImage }) {
     return { user, isNew: false, needsProfile: false };
   }
 
-  // Check if user exists by email (normal registration)
+  // Check if user exists by email (normal registration) — link accounts
   user = await prisma.user.findUnique({ where: { email } });
 
   if (user) {
-    // Link Google account to existing user
     user = await prisma.user.update({
       where: { id: user.id },
-      data: { googleId, profileImage: user.profileImage || profileImage },
+      data: { googleId, profileImage: user.profileImage || profileImage, isVerified: true },
     });
     return { user, isNew: false, needsProfile: false };
   }
 
-  // New user — needs to complete profile (phone, role)
-  user = await prisma.user.create({
+  // New user — do NOT create in DB yet, return Google info for temp token
+  return {
+    user: null,
+    isNew: true,
+    needsProfile: true,
+    googleInfo: { googleId, email, name, profileImage },
+  };
+}
+
+/**
+ * Create a new Google user after profile is submitted
+ */
+async function createGoogleUser({ googleId, email, name, profileImage, phone, role }) {
+  if (phone) {
+    const existing = await prisma.user.findUnique({ where: { phone } });
+    if (existing) throw new AppError('Phone number already in use', 409);
+  }
+
+  const user = await prisma.user.create({
     data: {
       googleId,
       email,
-      name,
+      name: name || email.split('@')[0],
       profileImage,
-      role: 'TENANT',
+      phone: phone || null,
+      role: role || 'TENANT',
       isVerified: true,
       password: null,
     },
   });
 
-  return { user, isNew: true, needsProfile: true };
+  return user;
 }
 
 /**
@@ -151,6 +168,7 @@ async function verifyEmailToken(token) {
 module.exports = {
   verifyGoogleToken,
   handleGoogleAuth,
+  createGoogleUser,
   completeGoogleProfile,
   generateVerificationToken,
   verifyEmailToken,

@@ -1,5 +1,5 @@
 // RegisterPage — clean centered card design matching login page
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { User, Mail, Lock, Phone, ArrowRight, Eye, EyeOff } from 'lucide-react';
@@ -200,8 +200,6 @@ const RegisterPage = () => {
       setLoading(false);
     }
   };
-
-  const handleResendOtp = async () => {};
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

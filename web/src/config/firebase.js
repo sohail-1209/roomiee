@@ -10,12 +10,12 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDSvFQUWq-4rPGYH86Xw6R57KMYUlSYAPE",
-  authDomain: "quikden-2b6bb.firebaseapp.com",
-  projectId: "quikden-2b6bb",
-  storageBucket: "quikden-2b6bb.firebasestorage.app",
-  messagingSenderId: "394728970344",
-  appId: "1:394728970344:web:ddf7f752d59a8c1ecbc3dd",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

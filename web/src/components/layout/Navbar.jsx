@@ -195,10 +195,8 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-            <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md group-hover:shadow-lg transition-shadow">
-              <Home size={16} strokeWidth={2.5} />
-            </span>
+          <Link to="/" className="flex items-center gap-2 shrink-0 group">
+            <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784193764/animal_cypuzl.png" alt="Houziee" className="w-9 h-9 rounded-xl object-cover shadow-md group-hover:shadow-lg transition-shadow" />
             <span className="font-display font-bold text-lg text-surface-900 hidden sm:block tracking-tight">Houziee</span>
           </Link>
 

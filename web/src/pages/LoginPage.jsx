@@ -58,9 +58,7 @@ const LeftPanel = () => (
     {/* Brand */}
     <div className="relative z-10">
       <div className="flex items-center gap-3 mb-1">
-        <div className="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20">
-          <Home size={20} className="text-white" />
-        </div>
+        <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784193764/animal_cypuzl.png" alt="Houziee" className="w-10 h-10 rounded-xl object-cover border border-white/20" />
         <span className="text-white font-display font-bold text-2xl tracking-tight">
           Houziee
         </span>

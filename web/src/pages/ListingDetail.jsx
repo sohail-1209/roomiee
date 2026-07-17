@@ -20,6 +20,7 @@ import ReviewForm from '../components/ReviewForm';
 import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
 import { Modal, Button, Avatar, Spinner, StarRating } from '../components/ui';
+import PageLoader from '../components/ui/PageLoader';
 
 const amenityIcons = {
   WiFi: Wifi, AC: Wind, Parking: Car, Fridge: Refrigerator,
@@ -62,14 +63,7 @@ const ListingDetail = () => {
     },
   });
 
-  if (isLoading) return (
-    <>
-      <Navbar />
-      <div className="min-h-screen flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    </>
-  );
+  if (isLoading) return <PageLoader />;
   if (isError || !data) return (
     <>
       <Navbar />

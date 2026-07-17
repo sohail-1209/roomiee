@@ -17,6 +17,7 @@ import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
 import SaveButton from '../components/listing/SaveButton';
 import { Modal, Button, Avatar, Spinner } from '../components/ui';
+import PageLoader from '../components/ui/PageLoader';
 
 export default function LandDetail() {
   const { id } = useParams();
@@ -38,7 +39,7 @@ export default function LandDetail() {
   const [showReport, setShowReport] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Spinner size="lg" /></div>;
+  if (isLoading) return <PageLoader />;
   if (!data) return <div className="min-h-screen flex items-center justify-center text-surface-500">{t('landNotFound')}</div>;
 
   const photos = data.photos || [];

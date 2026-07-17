@@ -30,4 +30,12 @@ const markRead = asyncHandler(async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = { getNotifications, markAllRead, markRead };
+// ─── DELETE /notifications/:id ────────────────────────
+const deleteNotification = asyncHandler(async (req, res) => {
+  await prisma.notification.delete({
+    where: { id: req.params.id, userId: req.user.id },
+  });
+  res.json({ success: true });
+});
+
+module.exports = { getNotifications, markAllRead, markRead, deleteNotification };

@@ -433,4 +433,23 @@ const createFromBooking = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: listing });
 });
 
-module.exports = { getListings, getListing, createListing, updateListing, deleteListing, getMyListings, updateListingStatus, getMyBookings, createFromBooking };
+// ─── POST /listings/tenant/bookings/:id/complete — mark booking as completed ──
+const completeBooking = asyncHandler(async (req, res) => {
+  const request = await prisma.request.findFirst({
+    where: {
+      id: req.params.id,
+      tenantId: req.user.id,
+      status: 'ACCEPTED',
+    },
+  });
+  if (!request) throw new AppError('Booking not found', 404);
+
+  await prisma.request.update({
+    where: { id: req.params.id },
+    data: { status: 'COMPLETED' },
+  });
+
+  res.json({ success: true });
+});
+
+module.exports = { getListings, getListing, createListing, updateListing, deleteListing, getMyListings, updateListingStatus, getMyBookings, createFromBooking, completeBooking };

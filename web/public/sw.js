@@ -1,4 +1,4 @@
-const CACHE_NAME = 'quikden-v7';
+const CACHE_NAME = 'quikden-v8';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -57,12 +57,16 @@ self.addEventListener('push', (event) => {
     try { data = event.data.json(); } catch { data.body = event.data.text(); }
   }
 
+  const iconUrl = 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png';
+
   const options = {
     body: data.body,
-    icon: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
-    badge: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
+    icon: iconUrl,
+    badge: iconUrl,
     vibrate: [200, 100, 200],
     data: data.data || {},
+    tag: data.data?.chatId ? `chat-${data.data.chatId}` : undefined,
+    renotify: true,
     actions: [
       { action: 'open', title: 'Open' },
       { action: 'dismiss', title: 'Dismiss' },

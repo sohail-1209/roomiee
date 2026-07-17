@@ -70,10 +70,10 @@ const ListingRow = ({ listing }) => {
         <div className="flex items-center gap-2 mt-1.5">
           <span
             className={`badge text-xs ${
-              listing.isActive ? 'badge-success' : 'badge-gray'
+              listing.status === 'ACTIVE' ? 'badge-success' : listing.status === 'RENTED' ? 'badge-primary' : 'badge-gray'
             }`}
           >
-            {listing.isActive ? t('active') : t('inactive')}
+            {listing.status === 'ACTIVE' ? t('active') : listing.status === 'RENTED' ? t('booked') : t('inactive')}
           </span>
           <span className="text-xs text-surface-400 flex items-center gap-0.5">
             <Eye size={11} /> {formatNumber(listing.views ?? 0)} {t('views')}

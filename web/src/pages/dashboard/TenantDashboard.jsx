@@ -1,8 +1,9 @@
 // TenantDashboard — home page for tenants after login
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Bookmark, Send, MessageSquare, Search, Heart, ArrowRight, Plus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Bookmark, Send, MessageSquare, Plus, ArrowRight, Home, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { requestsAPI, savedAPI, chatAPI, listingsAPI } from '../../services/endpoints';
 import RequestCard from '../../components/RequestCard';
@@ -46,6 +47,7 @@ export default function TenantDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
   const { data: requestsData, isLoading: requestsLoading } = useQuery({
     queryKey: ['requests'],
@@ -69,6 +71,15 @@ export default function TenantDashboard() {
     queryKey: ['myBookings'],
     queryFn: () => listingsAPI.getMyBookings().then((r) => r.data.data),
     staleTime: 1000 * 60 * 2,
+  });
+
+  const completeBookingMutation = useMutation({
+    mutationFn: (id) => listingsAPI.completeBooking(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['myBookings'] });
+      toast.success(t('bookingCompleted') || 'Booking activated!');
+    },
+    onError: () => toast.error(t('failedToUpdate')),
   });
 
   const requests = requestsData ?? [];
@@ -169,40 +180,6 @@ export default function TenantDashboard() {
         )}
       </section>
 
-      {/* ── Quick Links — Category card style ──────────────────────────────────── */}
-      <section>
-        <h2 className="section-title mb-3 sm:mb-4">{t('quickLinks')}</h2>
-        <div className="grid grid-cols-3 gap-3">
-          <CategoryCard
-            to="/search"
-            icon={Search}
-            label={t('searchListings')}
-            value={t('findNextHome')}
-            color="bg-violet-500"
-            isLoading={false}
-            delay={0}
-          />
-          <CategoryCard
-            to="/dashboard/saved"
-            icon={Heart}
-            label={t('savedListings')}
-            value={`${savedCount} ${t('saved')}`}
-            color="bg-rose-500"
-            isLoading={savedLoading}
-            delay={80}
-          />
-          <CategoryCard
-            to="/dashboard/chats"
-            icon={MessageSquare}
-            label={t('chats')}
-            value={`${chatsCount} ${t('active')}`}
-            color="bg-teal-500"
-            isLoading={chatsLoading}
-            delay={160}
-          />
-        </div>
-      </section>
-
       {/* ── My Bookings (Accepted) ──────────────────────────────────────────── */}
       {bookings.length > 0 && (
         <section>
@@ -212,23 +189,43 @@ export default function TenantDashboard() {
               <p className="section-subtitle">{t('acceptedBookings')}</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
             {bookings.map((booking) => (
-              <div key={booking.id} className="card p-4 flex gap-4">
-                <img
-                  src={booking.listing?.photos?.[0]?.url || 'https://placehold.co/120x120?text=No+Photo'}
-                  alt={booking.listing?.title}
-                  className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-surface-800 text-sm truncate">{booking.listing?.title}</p>
-                  <p className="text-xs text-surface-400 truncate">{booking.listing?.city}</p>
-                  <button
-                    onClick={() => navigate('/dashboard/listings/new', { state: { fromBooking: booking } })}
-                    className="mt-2 text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
-                  >
-                    <Plus size={13} /> {t('createRoomSharing')}
-                  </button>
+              <div key={booking.id} className="card p-4">
+                <div className="flex gap-4">
+                  <img
+                    src={booking.listing?.photos?.[0]?.url || 'https://placehold.co/80x80?text=No+Photo'}
+                    alt={booking.listing?.title}
+                    className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-surface-800 text-sm truncate">{booking.listing?.title}</p>
+                    <p className="text-xs text-surface-400 truncate">{booking.listing?.city}</p>
+                  </div>
+                </div>
+                {/* Activate prompt */}
+                <div className="mt-3 p-3 bg-primary-50/50 rounded-xl border border-primary-100">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle size={16} className="text-primary-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-primary-700">{t('bookingConfirmed')}</p>
+                      <p className="text-[11px] text-primary-500 mt-0.5">{t('activateBookingPrompt') || 'Create a room sharing listing to activate this booking'}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => navigate('/dashboard/listings/new', { state: { fromBooking: booking } })}
+                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                    >
+                      <Plus size={14} /> {t('activateNow') || 'Activate Now'}
+                    </button>
+                    <button
+                      onClick={() => completeBookingMutation.mutate(booking.id)}
+                      className="px-3 py-2 text-xs font-medium text-surface-500 border border-surface-200 rounded-lg hover:bg-surface-50 transition-colors"
+                    >
+                      {t('dismiss') || 'Dismiss'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

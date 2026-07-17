@@ -26,7 +26,7 @@ const ChatPage = () => {
   const request = activeChat?.request || null;
 
   return (
-    <div className="flex h-[calc(100vh-11rem)] md:h-[calc(100vh-120px)] gap-4">
+    <div className="flex h-[calc(100vh-11rem)] md:h-[calc(100vh-120px)] gap-4 max-w-5xl mx-auto">
       {/* Chat list — hidden on mobile when a chat is active */}
       <div className={`${chatId ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-shrink-0 flex-col card overflow-y-auto`}>
         <div className="p-4 border-b border-surface-100">

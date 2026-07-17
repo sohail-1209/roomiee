@@ -26,6 +26,7 @@ export const listingsAPI = {
   getMyListings: () => api.get('/listings/owner/me'),
   getMyBookings: () => api.get('/listings/tenant/bookings'),
   createFromBooking: (data) => api.post('/listings/from-booking', data),
+  completeBooking: (id) => api.post(`/listings/tenant/bookings/${id}/complete`),
 };
 
 // ─── Search ───────────────────────────────────────────
@@ -85,6 +86,7 @@ export const notificationsAPI = {
   getAll: () => api.get('/notifications'),
   markRead: (id) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.patch('/notifications/read-all'),
+  delete: (id) => api.delete(`/notifications/${id}`),
 };
 
 // ─── Users ────────────────────────────────────────────

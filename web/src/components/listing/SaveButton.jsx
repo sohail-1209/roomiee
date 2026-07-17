@@ -82,10 +82,7 @@ const SaveButton = ({ listingId, isSaved, onToggle }) => {
       className={`
         group flex items-center justify-center w-9 h-9 rounded-full
         transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-1
-        ${localSaved
-          ? 'bg-red-50 hover:bg-red-100'
-          : 'bg-white/80 backdrop-blur-sm hover:bg-white'
-        }
+        bg-white/80 backdrop-blur-sm hover:bg-white
         shadow-sm hover:shadow-md
         ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}
       `}

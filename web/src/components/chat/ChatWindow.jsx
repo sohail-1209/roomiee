@@ -176,14 +176,31 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
     if (!content || sending || isRequestRejected) return;
     setSending(true);
     setInput('');
+
+    // Optimistic: add message immediately
+    const tempMsg = {
+      id: `temp-${Date.now()}`,
+      content,
+      senderId: user?.id,
+      sender: { id: user?.id, name: user?.name, profileImage: user?.profileImage },
+      createdAt: new Date().toISOString(),
+      seen: false,
+      imageUrl: null,
+    };
+    setMessages((prev) => [...prev, tempMsg]);
+
     socket?.emit('send_message', { chatId, content }, (res) => {
       if (res?.error) {
         toast.error(t('failedToSend'));
         setInput(content);
+        setMessages((prev) => prev.filter((m) => m.id !== tempMsg.id));
+      } else if (res?.data) {
+        // Replace temp message with real one from server
+        setMessages((prev) => prev.map((m) => m.id === tempMsg.id ? { ...res.data, sender: m.sender } : m));
       }
       setSending(false);
     });
-  }, [input, sending, socket, chatId, isRequestRejected, t]);
+  }, [input, sending, socket, chatId, isRequestRejected, t, user]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }

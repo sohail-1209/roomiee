@@ -7,13 +7,55 @@ import {
   Home, Search, Bell, Menu, X, ChevronDown, User,
   LayoutDashboard, LogOut, CheckCheck,
   BedDouble, LandPlot, Users,
-  Download,
+  Download, Trash2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notificationsAPI } from '../../services/endpoints';
 import { timeAgo } from '../../utils/helpers';
 import Avatar from '../ui/Avatar';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
+
+// ── Swipe to delete component ──────────────────────────────────────────────────
+const SwipeToDelete = ({ children, onDelete }) => {
+  const [offset, setOffset] = useState(0);
+  const [swiping, setSwiping] = useState(false);
+  const startX = useRef(0);
+
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+    setSwiping(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!swiping) return;
+    const diff = startX.current - e.touches[0].clientX;
+    if (diff > 0) setOffset(Math.min(diff, 80));
+  };
+
+  const handleTouchEnd = () => {
+    setSwiping(false);
+    if (offset > 50) {
+      onDelete();
+    }
+    setOffset(0);
+  };
+
+  return (
+    <div className="relative overflow-hidden" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+      <div
+        className="transition-transform"
+        style={{ transform: `translateX(-${offset}px)`, transition: swiping ? 'none' : 'transform 0.2s ease' }}
+      >
+        {children}
+      </div>
+      {offset > 10 && (
+        <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-danger-500 text-white px-3" style={{ width: offset }}>
+          <Trash2 size={16} />
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NAV_ITEMS = [
   {
@@ -143,6 +185,11 @@ export default function Navbar() {
 
   const markAllAsRead = useMutation({
     mutationFn: () => notificationsAPI.markAllRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const deleteNotif = useMutation({
+    mutationFn: (id) => notificationsAPI.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
@@ -329,27 +376,28 @@ export default function Navbar() {
                           </div>
                         ) : (
                           notifData?.slice(0, 20).map((notif, i) => (
-                            <button
-                              key={notif.id}
-                              onClick={() => {
-                                markAsRead.mutate(notif.id);
-                                if (notif.data?.chatId) navigate(`/dashboard/chats/${notif.data.chatId}`);
-                                else if (notif.data?.requestId) navigate('/dashboard/requests');
-                                else if (notif.data?.listingId) navigate(`/listing/${notif.data.listingId}`);
-                                setNotifOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-3 hover:bg-surface-50 active:bg-surface-100 transition-colors border-b border-surface-50 last:border-0 ${!notif.read ? 'bg-primary-50/30' : ''}`}
-                              style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 30}ms both` }}
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read ? 'bg-primary-500' : 'bg-surface-300'}`} />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-surface-900">{notif.title}</p>
-                                  <p className="text-sm text-surface-600 line-clamp-2 mt-0.5">{notif.body}</p>
-                                  <p className="text-xs text-surface-400 mt-1">{timeAgo(notif.createdAt)}</p>
+                            <SwipeToDelete key={notif.id} onDelete={() => deleteNotif.mutate(notif.id)}>
+                              <button
+                                onClick={() => {
+                                  markAsRead.mutate(notif.id);
+                                  if (notif.data?.chatId) navigate(`/dashboard/chats/${notif.data.chatId}`);
+                                  else if (notif.data?.requestId) navigate('/dashboard/requests');
+                                  else if (notif.data?.listingId) navigate(`/listing/${notif.data.listingId}`);
+                                  setNotifOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-3 hover:bg-surface-50 active:bg-surface-100 transition-colors border-b border-surface-50 last:border-0 ${!notif.read ? 'bg-primary-50/30' : ''}`}
+                                style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 30}ms both` }}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read ? 'bg-primary-500' : 'bg-surface-300'}`} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-surface-900">{notif.title}</p>
+                                    <p className="text-sm text-surface-600 line-clamp-2 mt-0.5">{notif.body}</p>
+                                    <p className="text-xs text-surface-400 mt-1">{timeAgo(notif.createdAt)}</p>
+                                  </div>
                                 </div>
-                              </div>
-                            </button>
+                              </button>
+                            </SwipeToDelete>
                           ))
                         )}
                       </div>

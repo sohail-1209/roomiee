@@ -13,14 +13,14 @@ import { formatRent, getPrimaryPhoto, requestStatusClass, formatNumber } from '.
 import Avatar from '../../components/ui/Avatar';
 
 // ── Category-style card (matches homepage) ──────────────────────────────────────
-const CategoryCard = ({ to, icon: Icon, label, value, color, isLoading, delay = 0 }) => (
+const CategoryCard = ({ to, icon: Icon, label, value, gradient, iconColor, isLoading, delay = 0 }) => (
   <Link
     to={to}
     className="flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-white/60 hover:bg-white/80 transition-all duration-300 group shadow-sm hover:shadow-md border border-surface-100"
     style={{ animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${delay}ms both` }}
   >
-    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300 ${color}`}>
-      <Icon size={18} className="text-white" />
+    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br ${gradient}`}>
+      <Icon size={18} className={iconColor} />
     </div>
     <div className="flex-1 min-w-0">
       {isLoading ? (
@@ -162,7 +162,8 @@ export default function OwnerDashboard() {
           icon={Building2}
           label={t('totalListings')}
           value={totalListings}
-          color="bg-primary-500"
+          gradient="from-primary-50 to-primary-100"
+          iconColor="text-primary-600"
           isLoading={listingsLoading}
           delay={0}
         />
@@ -171,7 +172,8 @@ export default function OwnerDashboard() {
           icon={Eye}
           label={t('totalViews')}
           value={formatNumber(totalViews)}
-          color="bg-violet-500"
+          gradient="from-violet-50 to-violet-100"
+          iconColor="text-violet-600"
           isLoading={listingsLoading}
           delay={80}
         />
@@ -180,7 +182,8 @@ export default function OwnerDashboard() {
           icon={Clock}
           label={t('pendingRequests')}
           value={pendingRequests.length}
-          color="bg-amber-500"
+          gradient="from-amber-50 to-amber-100"
+          iconColor="text-amber-600"
           isLoading={requestsLoading}
           delay={160}
         />
@@ -189,7 +192,8 @@ export default function OwnerDashboard() {
           icon={CheckCircle}
           label={t('acceptedRequests')}
           value={acceptedRequestsCount}
-          color="bg-emerald-500"
+          gradient="from-emerald-50 to-emerald-100"
+          iconColor="text-emerald-600"
           isLoading={requestsLoading}
           delay={240}
         />

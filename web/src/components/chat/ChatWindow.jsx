@@ -189,18 +189,40 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
     };
     setMessages((prev) => [...prev, tempMsg]);
 
-    socket?.emit('send_message', { chatId, content }, (res) => {
-      if (res?.error) {
-        toast.error(t('failedToSend'));
-        setInput(content);
-        setMessages((prev) => prev.filter((m) => m.id !== tempMsg.id));
-      } else if (res?.data) {
-        // Replace temp message with real one from server
-        setMessages((prev) => prev.map((m) => m.id === tempMsg.id ? { ...res.data, sender: m.sender } : m));
-      }
-      setSending(false);
-    });
+    // Try socket first, fallback to REST API
+    if (socket?.connected) {
+      socket.emit('send_message', { chatId, content }, (res) => {
+        if (res?.error) {
+          // Socket returned error — try REST fallback
+          sendViaRest(chatId, content, tempMsg);
+        } else if (res?.data) {
+          setMessages((prev) => prev.map((m) => m.id === tempMsg.id ? { ...res.data, sender: m.sender } : m));
+          setSending(false);
+        } else {
+          setSending(false);
+        }
+      });
+    } else {
+      // Socket not connected — use REST API directly
+      sendViaRest(chatId, content, tempMsg);
+    }
   }, [input, sending, socket, chatId, isRequestRejected, t, user]);
+
+  const sendViaRest = async (chatId, content, tempMsg) => {
+    try {
+      const { data } = await chatAPI.sendMessage(chatId, { content });
+      const realMsg = data?.data;
+      if (realMsg) {
+        setMessages((prev) => prev.map((m) => m.id === tempMsg.id ? { ...realMsg, sender: m.sender } : m));
+      }
+    } catch {
+      toast.error(t('failedToSend'));
+      setInput(content);
+      setMessages((prev) => prev.filter((m) => m.id !== tempMsg.id));
+    } finally {
+      setSending(false);
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }

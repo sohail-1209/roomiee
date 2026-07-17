@@ -2,11 +2,12 @@
 // Used in both the Chat page and as an overlay
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Image as ImageIcon, Check, CheckCheck } from 'lucide-react';
+import { Send, Check, CheckCheck, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
-import { chatAPI } from '../../services/endpoints';
+import { chatAPI, requestsAPI } from '../../services/endpoints';
 import { timeAgo } from '../../utils/helpers';
+import toast from 'react-hot-toast';
 
 const Message = ({ msg, isOwn }) => (
   <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2 animate-fade-in`}>
@@ -52,7 +53,64 @@ const TypingIndicator = () => {
   );
 };
 
-const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
+const BookingRequestBanner = ({ request, onAccept, onReject, processing }) => {
+  const { t } = useTranslation();
+  const isPending = request?.status === 'PENDING';
+  const isAccepted = request?.status === 'ACCEPTED';
+  const isRejected = request?.status === 'REJECTED';
+
+  if (isAccepted) {
+    return (
+      <div className="flex items-center gap-3 px-4 py-3 bg-success-50 border-b border-success-200">
+        <CheckCircle size={18} className="text-success-600 flex-shrink-0" />
+        <p className="text-sm font-medium text-success-700">{t('bookingConfirmed')}</p>
+      </div>
+    );
+  }
+
+  if (isRejected) {
+    return (
+      <div className="flex items-center gap-3 px-4 py-3 bg-danger-50 border-b border-danger-200">
+        <XCircle size={18} className="text-danger-600 flex-shrink-0" />
+        <p className="text-sm font-medium text-danger-700">{t('requestDeclined')}</p>
+      </div>
+    );
+  }
+
+  if (!isPending) return null;
+
+  return (
+    <div className="px-4 py-3 border-b border-surface-100 bg-surface-50">
+      <div className="flex items-start gap-3">
+        <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-surface-900">{t('rentalRequest')}</p>
+          {request?.message && (
+            <p className="text-sm text-surface-600 mt-1 line-clamp-2">{request.message}</p>
+          )}
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={onAccept}
+              disabled={processing}
+              className="px-4 py-2 bg-success-600 text-white text-sm font-medium rounded-lg hover:bg-success-700 transition-colors disabled:opacity-50"
+            >
+              {t('accept')}
+            </button>
+            <button
+              onClick={onReject}
+              disabled={processing}
+              className="px-4 py-2 bg-white text-surface-700 text-sm font-medium rounded-lg border border-surface-200 hover:bg-surface-50 transition-colors disabled:opacity-50"
+            >
+              {t('reject')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHeader = false }) => {
   const { user } = useAuth();
   const { socket } = useSocket();
   const { t } = useTranslation();
@@ -61,8 +119,13 @@ const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
   const [sending, setSending] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [request, setRequest] = useState(initialRequest);
+  const [processing, setProcessing] = useState(false);
   const bottomRef = useRef(null);
   const typingTimeout = useRef(null);
+
+  const isOwner = chat && user && chat.ownerId === user.id;
+  const isRequestRejected = request?.status === 'REJECTED';
 
   // Load message history
   useEffect(() => {
@@ -110,15 +173,48 @@ const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
 
   const sendMessage = useCallback(async () => {
     const content = input.trim();
-    if (!content || sending) return;
+    if (!content || sending || isRequestRejected) return;
     setSending(true);
     setInput('');
-    socket?.emit('send_message', { chatId, content }, () => {});
+    socket?.emit('send_message', { chatId, content }, (err) => {
+      if (err) {
+        toast.error(t('failedToSend'));
+        setInput(content);
+      }
+    });
     setSending(false);
-  }, [input, sending, socket, chatId]);
+  }, [input, sending, socket, chatId, isRequestRejected, t]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const handleAccept = async () => {
+    if (!request?.id) return;
+    setProcessing(true);
+    try {
+      await requestsAPI.update(request.id, 'ACCEPTED');
+      setRequest((prev) => ({ ...prev, status: 'ACCEPTED' }));
+      toast.success(t('requestAccepted'));
+    } catch {
+      toast.error(t('failedToUpdate'));
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!request?.id) return;
+    setProcessing(true);
+    try {
+      await requestsAPI.update(request.id, 'REJECTED');
+      setRequest((prev) => ({ ...prev, status: 'REJECTED' }));
+      toast.success(t('requestRejected'));
+    } catch {
+      toast.error(t('failedToUpdate'));
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (loading) return (
@@ -144,10 +240,27 @@ const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
       </div>
       )}
 
+      {/* Booking request banner — only for owner when request exists */}
+      {isOwner && request && (
+        <BookingRequestBanner
+          request={request}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          processing={processing}
+        />
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
-        {messages.length === 0 && (
+        {messages.length === 0 && !isRequestRejected && (
           <p className="text-center text-surface-400 text-sm mt-10">{t('sendFirst')}</p>
+        )}
+        {isRequestRejected && messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-surface-400">
+            <XCircle size={40} className="mb-3 text-surface-300" />
+            <p className="text-sm font-medium text-surface-600">{t('requestDeclined')}</p>
+            <p className="text-xs text-surface-400 mt-1">{t('messagingDisabled')}</p>
+          </div>
         )}
         {messages.map((msg) => (
           <Message key={msg.id} msg={msg} isOwn={msg.senderId === user?.id} />
@@ -158,6 +271,9 @@ const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
 
       {/* Input */}
       <div className="px-4 py-3 border-t border-surface-100 bg-surface-50">
+        {isRequestRejected ? (
+          <p className="text-center text-xs text-surface-400">{t('messagingDisabled')}</p>
+        ) : (
         <div className="flex items-center gap-2 bg-white rounded-xl border border-surface-200 px-3 py-2">
           <textarea
             value={input}
@@ -175,6 +291,7 @@ const ChatWindow = ({ chatId, otherUser, hideHeader = false }) => {
             <Send size={16} />
           </button>
         </div>
+        )}
       </div>
     </div>
   );

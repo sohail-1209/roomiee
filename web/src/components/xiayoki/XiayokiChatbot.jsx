@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, X, Send, Sparkles, ArrowUpRight } from 'lucide-react';
+import { X, Send, ArrowUpRight, Minimize2 } from 'lucide-react';
 import { xiayokiAPI } from '../../services/endpoints';
 import './XiayokiChatbot.css';
 
@@ -30,10 +30,11 @@ export default function XiayokiChatbot() {
     setMessages([{
       role: 'bot',
       content: t(GREETING_KEY),
-      actions: [
-        { label: t('searchListings'), to: '/search' },
-        { label: t('addListing'), to: '/dashboard/listings/new' },
-      ],
+      actions: QUICK_ACTION_KEYS.map((key) => ({
+        label: t(key),
+        to: null,
+        sendKey: key,
+      })),
     }]);
   }, [t]);
 
@@ -107,9 +108,13 @@ export default function XiayokiChatbot() {
     }
   };
 
-  const handleActionClick = (to) => {
-    navigate(to);
-    setIsOpen(false);
+  const handleActionClick = (action) => {
+    if (action.sendKey) {
+      handleSend(t(action.sendKey));
+    } else if (action.to) {
+      navigate(action.to);
+      setIsOpen(false);
+    }
   };
 
   return (
@@ -123,7 +128,7 @@ export default function XiayokiChatbot() {
           {/* Header */}
           <div className="xiayoki-header">
             <div className="xiayoki-header-avatar">
-              <Sparkles size={18} />
+              <img src="/xiayoki-bot.svg" alt="Xiayoki" className="w-full h-full" />
             </div>
             <div className="xiayoki-header-info">
               <div className="xiayoki-header-name">{t('xiayoki')}</div>
@@ -138,7 +143,7 @@ export default function XiayokiChatbot() {
                 onClick={() => setIsOpen(false)}
                 aria-label="Close chat"
               >
-                <X size={16} />
+                <Minimize2 size={15} />
               </button>
             </div>
           </div>
@@ -150,34 +155,26 @@ export default function XiayokiChatbot() {
                 key={i}
                 className={`xiayoki-msg xiayoki-msg-${msg.role === 'bot' ? 'bot' : 'user'}`}
               >
-                <div className="xiayoki-msg-avatar">
-                  {msg.role === 'bot' ? <Sparkles size={14} /> : t('you')}
-                </div>
-                <div>
-                  <div className="xiayoki-msg-bubble">{msg.content}</div>
-                  {msg.actions?.length > 0 && (
-                    <div className="xiayoki-actions">
-                      {msg.actions.map((action, j) => (
-                        <button
-                          key={j}
-                          className="xiayoki-action-btn"
-                          onClick={() => handleActionClick(action.to)}
-                        >
-                          {action.label}
-                          <ArrowUpRight size={12} />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <div className="xiayoki-msg-bubble">{msg.content}</div>
+                {msg.actions?.length > 0 && (
+                  <div className="xiayoki-actions">
+                    {msg.actions.map((action, j) => (
+                      <button
+                        key={j}
+                        className="xiayoki-action-btn"
+                        onClick={() => handleActionClick(action)}
+                      >
+                        {action.label}
+                        {action.to && <ArrowUpRight size={12} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
             {isTyping && (
               <div className="xiayoki-typing">
-                <div className="xiayoki-msg-avatar" style={{ background: 'linear-gradient(135deg, #0d9488, #14b8a6)', color: 'white' }}>
-                  <Sparkles size={14} />
-                </div>
                 <div className="xiayoki-typing-dots">
                   <div className="xiayoki-typing-dot" />
                   <div className="xiayoki-typing-dot" />
@@ -188,21 +185,6 @@ export default function XiayokiChatbot() {
 
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Quick Actions — show only if few messages */}
-          {messages.length <= 2 && (
-            <div className="xiayoki-chips">
-              {QUICK_ACTION_KEYS.map((actionKey) => (
-                <button
-                  key={actionKey}
-                  className="xiayoki-chip"
-                  onClick={() => handleSend(t(actionKey))}
-                >
-                  {t(actionKey)}
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* Input */}
           <div className="xiayoki-input-area">
@@ -239,7 +221,7 @@ export default function XiayokiChatbot() {
         onClick={() => { setIsOpen((v) => !v); setShowTooltip(false); }}
         aria-label={isOpen ? 'Close Xiayoki chat' : 'Open Xiayoki chat'}
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+        {isOpen ? <X size={20} /> : <img src="/xiayoki-bot.svg" alt="Xiayoki" className="w-7 h-7" />}
       </button>
     </>
   );

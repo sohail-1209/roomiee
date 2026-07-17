@@ -574,5 +574,9 @@
   "dreamRental": "خوابوں کا کرایہ گھر",
   "loginLabel": "لاگ ان",
   "signupLabel": "سائن اپ",
-  "searchPlaceholderAi": "مجھے گچی باؤلی کے قریب 6000 کے اندر کمرہ چاہیے"
+  "searchPlaceholderAi": "مجھے گچی باؤلی کے قریب 6000 کے اندر کمرہ چاہیے",
+  "bookingConfirmed": "بکنگ کی تصدیق ہو گئی",
+  "requestDeclined": "درخواست مسترد ہو گئی",
+  "rentalRequest": "کرایہ درخواست",
+  "messagingDisabled": "اس درخواست کے لیے پیغامات بند ہیں"
 }

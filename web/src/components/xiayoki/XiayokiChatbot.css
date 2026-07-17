@@ -28,11 +28,11 @@
 /* FAB Button */
 .xiayoki-fab {
   position: fixed;
-  bottom: 88px;
-  right: 20px;
+  bottom: 72px;
+  right: 16px;
   z-index: 999;
-  width: 56px;
-  height: 56px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   background: linear-gradient(135deg, #0d9488, #14b8a6);
   color: white;
@@ -56,18 +56,20 @@
 @media (min-width: 768px) {
   .xiayoki-fab {
     bottom: 28px;
-    right: 28px;
+    right: 24px;
+    width: 50px;
+    height: 50px;
   }
 }
 
 /* Chat Window */
 .xiayoki-chat-window {
   position: fixed;
-  bottom: 152px;
-  right: 20px;
+  bottom: 126px;
+  right: 16px;
   z-index: 1000;
-  width: 380px;
-  height: 520px;
+  width: 340px;
+  height: 440px;
   max-height: calc(100vh - 180px);
   border-radius: 20px;
   overflow: hidden;
@@ -87,37 +89,45 @@
 @media (max-width: 640px) {
   .xiayoki-chat-window {
     bottom: 0;
-    right: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-    max-height: 100dvh;
+    right: 8px;
+    left: 8px;
+    width: auto;
+    height: 70vh;
+    max-height: 70vh;
+    border-radius: 16px 16px 0 0;
   }
 }
 
 /* Header */
+@keyframes xiayoki-header-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .xiayoki-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #0d9488, #0f766e);
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #14b8a6, #0d9488, #0f766e, #115e59, #0f766e, #0d9488, #14b8a6);
+  background-size: 300% 300%;
+  animation: xiayoki-header-shift 6s ease infinite;
   color: white;
   flex-shrink: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .xiayoki-header-avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .xiayoki-header-info {
@@ -127,7 +137,7 @@
 
 .xiayoki-header-name {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
   font-family: 'Google Sans Display', 'Inter', sans-serif;
 }
 
@@ -153,11 +163,11 @@
 }
 
 .xiayoki-header-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   color: white;
   cursor: pointer;
   display: flex;
@@ -167,7 +177,7 @@
 }
 
 .xiayoki-header-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Messages Area */
@@ -197,7 +207,8 @@
 /* Message Bubbles */
 .xiayoki-msg {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   max-width: 85%;
   animation: xiayoki-fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -208,29 +219,7 @@
 
 .xiayoki-msg-user {
   align-self: flex-end;
-  flex-direction: row-reverse;
-}
-
-.xiayoki-msg-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  margin-top: 2px;
-}
-
-.xiayoki-msg-bot .xiayoki-msg-avatar {
-  background: linear-gradient(135deg, #0d9488, #14b8a6);
-  color: white;
-}
-
-.xiayoki-msg-user .xiayoki-msg-avatar {
-  background: #e2e8f0;
-  color: #475569;
+  align-items: flex-end;
 }
 
 .xiayoki-msg-bubble {
@@ -320,29 +309,31 @@
 /* Action Buttons inside messages */
 .xiayoki-actions {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
   margin-top: 8px;
 }
 
 .xiayoki-action-btn {
-  padding: 6px 12px;
-  border-radius: 10px;
-  border: none;
-  background: #0d9488;
-  color: white;
-  font-size: 12px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(13, 148, 136, 0.3);
+  background: rgba(13, 148, 136, 0.08);
+  color: #0d9488;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 .xiayoki-action-btn:hover {
-  background: #0f766e;
+  background: rgba(13, 148, 136, 0.16);
+  border-color: rgba(13, 148, 136, 0.5);
   transform: translateY(-1px);
 }
 
@@ -429,8 +420,8 @@
 /* Tooltip */
 .xiayoki-tooltip {
   position: fixed;
-  bottom: 150px;
-  right: 88px;
+  bottom: 124px;
+  right: 72px;
   z-index: 998;
   background: #1e293b;
   color: white;
@@ -456,7 +447,7 @@
 
 @media (min-width: 768px) {
   .xiayoki-tooltip {
-    bottom: 92px;
-    right: 96px;
+    bottom: 88px;
+    right: 86px;
   }
 }

@@ -20,8 +20,10 @@ export const SocketProvider = ({ children }) => {
 
     const token = localStorage.getItem('accessToken');
     
-    // Use current origin - Vite proxy will handle WebSocket
-    socketRef.current = io(window.location.origin, {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const socketURL = isLocal ? window.location.origin : (import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://roomiee.onrender.com');
+
+    socketRef.current = io(socketURL, {
       auth: { token },
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,

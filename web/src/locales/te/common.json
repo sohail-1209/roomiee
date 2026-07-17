@@ -574,5 +574,9 @@
   "dreamRental": "కలల అద్దె ఇల్లు",
   "loginLabel": "లాగిన్",
   "signupLabel": "సైన్ అప్",
-  "searchPlaceholderAi": "గచ్చిబౌలి దగ్గర 6000 లోపు గది కావాలి"
+  "searchPlaceholderAi": "గచ్చిబౌలి దగ్గర 6000 లోపు గది కావాలి",
+  "bookingConfirmed": "బుకింగ్ నిర్ధారించబడింది",
+  "requestDeclined": "అభ్యర్థన తిరస్కరించబడింది",
+  "rentalRequest": "అద్దె అభ్యర్థన",
+  "messagingDisabled": "ఈ అభ్యర్థన కోసం సందేశాలు పంపడం నిలిపివేయబడింది"
 }

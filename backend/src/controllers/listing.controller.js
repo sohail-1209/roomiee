@@ -380,7 +380,7 @@ const getMyBookings = asyncHandler(async (req, res) => {
     },
     orderBy: { createdAt: 'desc' },
   });
-  res.json({ success: true, data: requests.map((r) => r.listing) });
+  res.json({ success: true, data: requests });
 });
 
 // ─── POST /listings/from-booking — create room sharing from accepted booking ──

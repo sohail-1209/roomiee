@@ -14,6 +14,15 @@ const getChats = asyncHandler(async (req, res) => {
       owner: { select: { id: true, name: true, profileImage: true } },
       tenant: { select: { id: true, name: true, profileImage: true } },
       listing: { select: { id: true, title: true, city: true } },
+      request: {
+        select: {
+          id: true,
+          status: true,
+          message: true,
+          createdAt: true,
+          tenant: { select: { id: true, name: true, profileImage: true } },
+        },
+      },
       messages: {
         orderBy: { createdAt: 'desc' },
         take: 1, // Last message preview
@@ -76,6 +85,7 @@ const sendMessage = asyncHandler(async (req, res) => {
       owner: { select: { id: true, name: true, fcmToken: true } },
       tenant: { select: { id: true, name: true, fcmToken: true } },
       listing: { select: { id: true, title: true, status: true } },
+      request: { select: { status: true } },
     },
   });
   if (!chat) throw new AppError('Chat not found', 404);
@@ -83,9 +93,9 @@ const sendMessage = asyncHandler(async (req, res) => {
     throw new AppError('Not authorized', 403);
   }
 
-  // Check if listing is still active
-  if (chat.listing && chat.listing.status !== 'ACTIVE') {
-    throw new AppError('This listing is no longer active. Messaging has been disabled.', 400);
+  // Check if request was rejected
+  if (chat.request?.status === 'REJECTED') {
+    throw new AppError('This request was declined. Messaging has been disabled.', 400);
   }
 
   const message = await prisma.message.create({

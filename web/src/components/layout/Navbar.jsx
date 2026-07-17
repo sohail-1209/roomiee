@@ -211,7 +211,9 @@ export default function Navbar() {
             )}
 
             <Link to="/" className="shrink-0 group">
-              <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-10 h-10 md:w-16 md:h-16 rounded-xl object-cover shadow-md group-hover:shadow-lg transition-shadow" />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 ring-2 ring-white/60 ring-offset-1 ring-offset-primary-50" style={{ background: 'linear-gradient(135deg, rgba(13,148,136,0.25), rgba(20,184,166,0.15))', backdropFilter: 'blur(12px) saturate(1.8)', WebkitBackdropFilter: 'blur(12px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.5)' }}>
+                <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-7 h-7 md:w-9 md:h-9 object-cover rounded-full" />
+              </div>
             </Link>
 
             {/* Quick link: Dashboard on public pages, Home on dashboard pages */}
@@ -294,6 +296,7 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
+            <LanguageSwitcher />
             {user ? (
               <>
                 {/* Notifications */}
@@ -372,9 +375,6 @@ export default function Navbar() {
                         <p className="text-sm font-semibold text-surface-900 truncate">{user.name}</p>
                         <p className="text-xs text-surface-400 truncate">{user.email}</p>
                       </div>
-                      <div className="px-4 py-2 border-b border-surface-100">
-                        <LanguageSwitcher />
-                      </div>
                       {[
                         { to: '/dashboard/profile', icon: User, label: t('myProfile') },
                         { to: '/dashboard', icon: LayoutDashboard, label: t('dashboard') },
@@ -404,7 +404,6 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <LanguageSwitcher />
                 <Link to="/login" className="px-4 py-2 text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors rounded-full hover:bg-surface-100">{t('login')}</Link>
                 <Link to="/register" className="btn-primary btn-sm ripple-container" onClick={createRipple}>{t('signup')}</Link>
               </div>
@@ -446,9 +445,6 @@ export default function Navbar() {
 
             {!user && (
               <div className="pt-3 mt-1 border-t border-surface-100 flex flex-col gap-2">
-                <div className="flex justify-center mb-2">
-                  <LanguageSwitcher />
-                </div>
                 <Link to="/login" onClick={() => setMobileOpen(false)} className="btn-outline btn-md w-full justify-center">{t('login')}</Link>
                 <Link to="/register" onClick={() => setMobileOpen(false)} className="btn-primary btn-md w-full justify-center">{t('signup')}</Link>
               </div>

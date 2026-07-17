@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
+import { Languages } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 const languages = [
@@ -37,7 +37,7 @@ export default function LanguageSwitcher() {
         className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-surface-100 text-surface-600 text-sm transition-colors"
         title="Change language"
       >
-        <Globe className="w-4 h-4" />
+        <Languages className="w-4 h-4" />
         <span className="hidden sm:inline">{current.flag} {current.label}</span>
       </button>
 

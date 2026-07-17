@@ -423,7 +423,8 @@
 
 /* ─── No Scrollbar ──────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar, .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar, .scrollbar-none::-webkit-scrollbar { display: none; }
 
 /* ─── Leaflet Map ───────────────────────────── */
 .leaflet-container { border-radius: var(--md-sys-shape-corner-lg); z-index: 0; }

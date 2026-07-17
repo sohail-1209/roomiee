@@ -2,6 +2,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Bookmark, Send, MessageSquare, Search, Heart, ArrowRight, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { requestsAPI, savedAPI, chatAPI, listingsAPI } from '../../services/endpoints';
 import RequestCard from '../../components/RequestCard';
@@ -55,6 +56,7 @@ const RequestSkeleton = () => (
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function TenantDashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -99,10 +101,10 @@ export default function TenantDashboard() {
         <Avatar src={user?.profileImage} name={user?.name} size="lg" className="ring-2 ring-primary-100" />
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-surface-900 font-display">
-            Welcome back, <span className="gradient-text">{firstName}!</span>
+            {t('welcomeBackName', { name: firstName })} <span className="gradient-text"></span>
           </h1>
           <p className="text-xs sm:text-sm text-surface-400 mt-0.5">
-            Here's what's happening with your rentals today.
+            {t('happeningWithRentals')}
           </p>
         </div>
       </div>
@@ -111,21 +113,21 @@ export default function TenantDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           icon={Bookmark}
-          label="Saved Listings"
+          label={t('savedListings')}
           value={savedCount}
           color="bg-primary-500"
           isLoading={savedLoading}
         />
         <StatCard
           icon={Send}
-          label="Active Requests"
+          label={t('activeRequests')}
           value={activeRequestsCount}
           color="bg-amber-500"
           isLoading={requestsLoading}
         />
         <StatCard
           icon={MessageSquare}
-          label="Chats"
+          label={t('chats')}
           value={chatsCount}
           color="bg-emerald-500"
           isLoading={chatsLoading}
@@ -136,12 +138,12 @@ export default function TenantDashboard() {
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="section-title">Recent Requests</h2>
-            <p className="section-subtitle">Your latest rental requests</p>
+            <h2 className="section-title">{t('recentRequests')}</h2>
+            <p className="section-subtitle">{t('latestRentalRequests')}</p>
           </div>
           {requests.length > 3 && (
             <Link to="/dashboard/requests" className="btn-outline btn-sm flex items-center gap-1.5">
-              View all <ArrowRight size={14} />
+              {t('viewAll')} <ArrowRight size={14} />
             </Link>
           )}
         </div>
@@ -156,13 +158,13 @@ export default function TenantDashboard() {
               📋
             </div>
             <div>
-              <p className="font-semibold text-surface-700">No requests yet</p>
+              <p className="font-semibold text-surface-700">{t('noRequests')}</p>
               <p className="text-sm text-surface-400 mt-1">
-                Browse listings and send a request to get started.
+                {t('browseGetStarted')}
               </p>
             </div>
             <Link to="/search" className="btn-primary btn-sm">
-              Browse Listings
+              {t('browseListings')}
             </Link>
           </div>
         ) : (
@@ -176,25 +178,25 @@ export default function TenantDashboard() {
 
       {/* ── Quick Links ─────────────────────────────────────────────────────── */}
       <section>
-        <h2 className="section-title mb-3 sm:mb-4">Quick Links</h2>
+        <h2 className="section-title mb-3 sm:mb-4">{t('quickLinks')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
           <QuickLink
             to="/search"
             icon={Search}
-            label="Search Listings"
-            description="Find your next home"
+            label={t('searchListings')}
+            description={t('findNextHome')}
           />
           <QuickLink
             to="/dashboard/saved"
             icon={Heart}
-            label="View Saved"
-            description={`${savedCount} saved listing${savedCount !== 1 ? 's' : ''}`}
+            label={t('savedListings')}
+            description={t('savedCount', { count: savedCount })}
           />
           <QuickLink
             to="/dashboard/chats"
             icon={MessageSquare}
-            label="View Chats"
-            description={`${chatsCount} active conversation${chatsCount !== 1 ? 's' : ''}`}
+            label={t('chats')}
+            description={t('activeConversations', { count: chatsCount })}
           />
         </div>
       </section>
@@ -204,26 +206,26 @@ export default function TenantDashboard() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="section-title">My Bookings</h2>
-              <p className="section-subtitle">Your accepted bookings — create a room sharing listing from here</p>
+              <h2 className="section-title">{t('myBookings')}</h2>
+              <p className="section-subtitle">{t('acceptedBookings')}</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {bookings.map((booking) => (
               <div key={booking.id} className="card p-4 flex gap-4">
                 <img
-                  src={booking.photos?.[0]?.url || 'https://placehold.co/120x120?text=No+Photo'}
-                  alt={booking.title}
+                  src={booking.listing?.photos?.[0]?.url || 'https://placehold.co/120x120?text=No+Photo'}
+                  alt={booking.listing?.title}
                   className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-surface-800 text-sm truncate">{booking.title}</p>
-                  <p className="text-xs text-surface-400 truncate">{booking.city}</p>
+                  <p className="font-semibold text-surface-800 text-sm truncate">{booking.listing?.title}</p>
+                  <p className="text-xs text-surface-400 truncate">{booking.listing?.city}</p>
                   <button
                     onClick={() => navigate('/dashboard/listings/new', { state: { fromBooking: booking } })}
                     className="mt-2 text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
                   >
-                    <Plus size={13} /> Create Room Sharing
+                    <Plus size={13} /> {t('createRoomSharing')}
                   </button>
                 </div>
               </div>

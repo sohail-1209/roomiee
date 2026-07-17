@@ -23,6 +23,16 @@ const createRequest = asyncHandler(async (req, res) => {
     },
   });
 
+  // Create chat linked to this request
+  await prisma.chat.create({
+    data: {
+      ownerId: listing.ownerId,
+      tenantId: req.user.id,
+      listingId,
+      requestId: request.id,
+    },
+  });
+
   // Notify owner
   await sendNotification({
     userId: listing.ownerId,
@@ -58,19 +68,13 @@ const updateRequest = asyncHandler(async (req, res) => {
   let chat = null;
 
   if (status === 'ACCEPTED') {
-    // Create chat on acceptance (transactional)
-    const [updatedRequest, newChat] = await prisma.$transaction([
+    // Update request status + mark listing as BOOKED (transactional)
+    const [updatedRequest] = await prisma.$transaction([
       prisma.request.update({ where: { id: request.id }, data: { status: 'ACCEPTED' } }),
-      prisma.chat.create({
-        data: {
-          ownerId: req.user.id,
-          tenantId: request.tenantId,
-          listingId: request.listingId,
-          requestId: request.id,
-        },
-      }),
+      prisma.listing.update({ where: { id: request.listingId }, data: { status: 'RENTED' } }),
     ]);
-    chat = newChat;
+
+    chat = await prisma.chat.findUnique({ where: { requestId: request.id } });
 
     await sendNotification({
       userId: request.tenantId,
@@ -78,7 +82,7 @@ const updateRequest = asyncHandler(async (req, res) => {
       title: '✅ Request Accepted!',
       body: `Your request for "${request.listing.title}" was accepted. Chat is now unlocked.`,
       type: 'REQUEST_ACCEPTED',
-      data: { requestId: request.id, chatId: chat.id, listingId: request.listingId },
+      data: { requestId: request.id, chatId: chat?.id, listingId: request.listingId },
     });
   } else {
     await prisma.request.update({ where: { id: request.id }, data: { status: 'REJECTED' } });

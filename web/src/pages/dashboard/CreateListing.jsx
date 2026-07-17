@@ -109,7 +109,7 @@ const CreateListing = () => {
     queryFn: () => listingsAPI.getMyBookings().then((r) => r.data.data),
     enabled: user?.role === 'TENANT' && !isEdit,
   });
-  const acceptedBookings = (bookingsData || []).filter((b) => b.status === 'ACCEPTED');
+  const acceptedBookings = bookingsData || [];
 
   useEffect(() => {
     if (listingData) {
@@ -253,7 +253,7 @@ const CreateListing = () => {
       }
       if (isFromBooking || (selectedBooking && selectedBooking !== 'other')) {
         const booking = fromBooking || selectedBooking;
-        payload.bookingId = booking.listingId || booking.id;
+        payload.bookingId = booking.listing?.id || booking.listingId || booking.id;
         return listingsAPI.createFromBooking(payload);
       }
       return isEdit ? listingsAPI.update(id, payload) : listingsAPI.create(payload);

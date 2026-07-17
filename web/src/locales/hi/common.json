@@ -574,5 +574,9 @@
   "dreamRental": "सपनों का किराया घर",
   "loginLabel": "लॉगिन",
   "signupLabel": "साइन अप",
-  "searchPlaceholderAi": "गच्चिबौली के पास 6000 से कम में कमरा चाहिए"
+  "searchPlaceholderAi": "गच्चिबौली के पास 6000 से कम में कमरा चाहिए",
+  "bookingConfirmed": "बुकिंग पुष्टि हो गई",
+  "requestDeclined": "अनुरोध अस्वीकार कर दिया गया",
+  "rentalRequest": "किराया अनुरोध",
+  "messagingDisabled": "इस अनुरोध के लिए संदेश भेजना बंद है"
 }

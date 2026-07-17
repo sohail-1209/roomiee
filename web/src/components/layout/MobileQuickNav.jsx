@@ -1,21 +1,19 @@
 // MobileQuickNav — horizontal quick-nav row for mobile dashboard
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ListChecks, Heart, SendHorizontal, User } from 'lucide-react';
+import { ListChecks, Heart, SendHorizontal } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const TENANT_ITEMS = [
   { to: '/dashboard/my-listings', icon: ListChecks, label: 'myListingsMenu' },
   { to: '/dashboard/saved', icon: Heart, label: 'savedListingsMenu' },
   { to: '/dashboard/requests', icon: SendHorizontal, label: 'myRequestsMenu' },
-  { to: '/dashboard/profile', icon: User, label: 'profileMenu' },
 ];
 
 const OWNER_ITEMS = [
   { to: '/dashboard/listings', icon: ListChecks, label: 'myListingsMenu' },
   { to: '/dashboard/saved', icon: Heart, label: 'savedListingsMenu' },
   { to: '/dashboard/requests', icon: SendHorizontal, label: 'requestsMenu' },
-  { to: '/dashboard/profile', icon: User, label: 'profileMenu' },
 ];
 
 export default function MobileQuickNav() {

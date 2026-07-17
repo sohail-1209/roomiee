@@ -1,12 +1,13 @@
 // BottomNavbar — mobile-only bottom tab bar for dashboard
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, PlusSquare, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, PlusSquare, MessageSquare, User } from 'lucide-react';
 
 const TABS = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'dashboard', end: true },
   { to: '/dashboard/listings/new', icon: PlusSquare, label: 'addListingMenu' },
   { to: '/dashboard/chats', icon: MessageSquare, label: 'chatsMenu' },
+  { to: '/dashboard/profile', icon: User, label: 'profileMenu' },
 ];
 
 export default function BottomNavbar() {

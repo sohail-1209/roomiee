@@ -176,13 +176,13 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
     if (!content || sending || isRequestRejected) return;
     setSending(true);
     setInput('');
-    socket?.emit('send_message', { chatId, content }, (err) => {
-      if (err) {
+    socket?.emit('send_message', { chatId, content }, (res) => {
+      if (res?.error) {
         toast.error(t('failedToSend'));
         setInput(content);
       }
+      setSending(false);
     });
-    setSending(false);
   }, [input, sending, socket, chatId, isRequestRejected, t]);
 
   const handleKeyDown = (e) => {

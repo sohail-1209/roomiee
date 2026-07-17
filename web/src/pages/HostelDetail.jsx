@@ -1,7 +1,7 @@
 // Hostel Detail Page — shows sharing tiers, rules, and booking
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { MapPin, BedDouble, Heart, MessageCircle } from 'lucide-react';
@@ -33,11 +33,18 @@ const HostelDetail = () => {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [localSaved, setLocalSaved] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['listing', id],
     queryFn: () => listingsAPI.getOne(id).then((r) => r.data.data),
   });
+
+  useEffect(() => {
+    if (data) {
+      setLocalSaved(data.isSaved);
+    }
+  }, [data?.isSaved]);
 
   const { mutate: sendRequest, isPending: requesting } = useMutation({
     mutationFn: () => requestsAPI.create({ listingId: id, message: requestMsg }),
@@ -51,11 +58,18 @@ const HostelDetail = () => {
   });
 
   const { mutate: toggleSave } = useMutation({
-    mutationFn: () => data?.isSaved ? savedAPI.unsave(id) : savedAPI.save(id),
+    mutationFn: () => localSaved ? savedAPI.unsave(id) : savedAPI.save(id),
+    onMutate: () => {
+      setLocalSaved((prev) => !prev);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['listing', id] });
       qc.invalidateQueries({ queryKey: ['saved'] });
-      toast.success(data?.isSaved ? t('removedFromSaved') : t('saved'));
+      toast.success(localSaved ? t('saved') : t('removedFromSaved'));
+    },
+    onError: () => {
+      setLocalSaved((prev) => !prev);
+      toast.error(t('somethingWrong'));
     },
   });
 
@@ -202,9 +216,9 @@ const HostelDetail = () => {
                       <MessageCircle size={18} /> {t('sendRequest')}
                     </Button>
                   )}
-                  <Button variant={data?.isSaved ? 'primary' : 'outline'} size="md" className="w-full" onClick={() => toggleSave()}>
-                    <Heart size={16} className={data?.isSaved ? 'fill-white' : ''} />
-                    {data?.isSaved ? t('saved') : t('saveListing')}
+                  <Button variant="outline" size="md" className="w-full" onClick={() => toggleSave()}>
+                    <Heart size={16} className={localSaved ? 'fill-red-500 text-red-500' : 'text-surface-450 group-hover:text-red-400'} />
+                    {localSaved ? t('saved') : t('saveListing')}
                   </Button>
                 </div>
               ) : (

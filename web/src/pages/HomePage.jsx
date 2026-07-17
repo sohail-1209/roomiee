@@ -1,4 +1,4 @@
-// HomePage — Lightest glass hero, proper spacing, animated trust bar
+﻿// HomePage — Lightest glass hero, proper spacing, animated trust bar
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -334,7 +334,7 @@ export default function HomePage() {
 
       {/* TRUST BAR — Animated loading */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 text-center">
-        <h4 className="text-xs font-bold uppercase tracking-widest text-surface-400 mb-3">{t('ourGoal') || 'OUR GOAL'}</h4>
+        <h4 className="text-xs font-bold uppercase tracking-widest text-surface-400 mb-3">{t('our Goal') || 'OUR GOAL'}</h4>
         <div className="glass-tinted rounded-3xl p-6 sm:p-8">
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <TrustStat Icon={Shield} value="100%" label={t('verifiedOwners')} delay={0} />

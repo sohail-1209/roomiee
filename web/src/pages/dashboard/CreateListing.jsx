@@ -104,7 +104,7 @@ const CreateListing = () => {
   });
 
   // Fetch tenant's accepted bookings (only for new listings by tenants)
-  const { data: bookingsData } = useQuery({
+  const { data: bookingsData, isLoading: bookingsLoading } = useQuery({
     queryKey: ['tenant-bookings'],
     queryFn: () => listingsAPI.getMyBookings().then((r) => r.data.data),
     enabled: user?.role === 'TENANT' && !isEdit,
@@ -670,51 +670,75 @@ const CreateListing = () => {
       <div className="max-w-2xl mx-auto">
         <PageHeader title={t('createRoomSharingTitle')} subtitle={t('chooseBookedHouse')} />
         <div className="card p-6 mt-6 space-y-4">
-          {acceptedBookings.length > 0 && (
+          {bookingsLoading ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-surface-500">
+              <svg viewBox="0 0 64 64" fill="none" className="w-16 h-16">
+                <rect x="16" y="30" width="32" height="24" rx="3" fill="#f1f5f9" stroke="#0d9488" strokeWidth="2">
+                  <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+                </rect>
+                <path d="M12 32 L32 14 L52 32" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
+                  <animate attributeName="stroke-dasharray" values="0,100;60,40;0,100" dur="2.5s" repeatCount="indefinite" />
+                </path>
+                <rect x="27" y="38" width="10" height="16" rx="2" fill="#0d9488" opacity="0.3">
+                  <animate attributeName="opacity" values="0.3;0.6;0.3" dur="1.5s" repeatCount="indefinite" />
+                </rect>
+              </svg>
+              <div className="flex gap-1.5 mt-1">
+                <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+                <div className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+              </div>
+              <p className="text-sm font-medium">{t('loadingBookings') || 'Loading your booked houses...'}</p>
+            </div>
+          ) : (
             <>
-              <p className="text-sm font-semibold text-surface-700">{t('yourBookedHouses')}</p>
-              <div className="space-y-3">
-                {acceptedBookings.map((booking) => (
-                  <button
-                    key={booking.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedBooking(booking);
-                      setForm((prev) => ({ ...prev, _started: true }));
-                      setAddressInput(booking.listing?.address || '');
-                      setForm((prev) => ({
-                        ...prev,
-                        _started: true,
-                        type: 'ROOM_SHARING',
-                        title: `Room sharing at ${booking.listing?.title || 'my place'}`,
-                        address: booking.listing?.address || '',
-                        city: booking.listing?.city || '',
-                        state: booking.listing?.state || '',
-                        pincode: booking.listing?.pincode || '',
-                        latitude: booking.listing?.latitude || '',
-                        longitude: booking.listing?.longitude || '',
-                      }));
-                    }}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-surface-200 hover:border-primary-400 hover:bg-primary-50/50 transition-all text-left"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <Home size={20} className="text-primary-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-surface-900 text-sm truncate">{booking.listing?.title}</p>
-                      <div className="flex items-center gap-1 text-xs text-surface-400 mt-0.5">
-                        <MapPin size={11} />
-                        {[booking.listing?.address, booking.listing?.city].filter(Boolean).join(', ')}
-                      </div>
-                    </div>
-                    <span className="text-xs font-medium text-primary-600 shrink-0">{t('selectArrow')}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-surface-200" /></div>
-                <div className="relative flex justify-center"><span className="bg-surface-50/80 px-3 text-xs text-surface-400">{t('or')}</span></div>
-              </div>
+              {acceptedBookings.length > 0 && (
+                <>
+                  <p className="text-sm font-semibold text-surface-700">{t('yourBookedHouses')}</p>
+                  <div className="space-y-3">
+                    {acceptedBookings.map((booking) => (
+                      <button
+                        key={booking.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setForm((prev) => ({ ...prev, _started: true }));
+                          setAddressInput(booking.listing?.address || '');
+                          setForm((prev) => ({
+                            ...prev,
+                            _started: true,
+                            type: 'ROOM_SHARING',
+                            title: `Room sharing at ${booking.listing?.title || 'my place'}`,
+                            address: booking.listing?.address || '',
+                            city: booking.listing?.city || '',
+                            state: booking.listing?.state || '',
+                            pincode: booking.listing?.pincode || '',
+                            latitude: booking.listing?.latitude || '',
+                            longitude: booking.listing?.longitude || '',
+                          }));
+                        }}
+                        className="w-full flex items-center gap-4 p-4 rounded-xl border border-surface-200 hover:border-primary-400 hover:bg-primary-50/50 transition-all text-left"
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center flex-shrink-0">
+                          <Home size={20} className="text-primary-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-surface-900 text-sm truncate">{booking.listing?.title}</p>
+                          <div className="flex items-center gap-1 text-xs text-surface-400 mt-0.5">
+                            <MapPin size={11} />
+                            {[booking.listing?.address, booking.listing?.city].filter(Boolean).join(', ')}
+                          </div>
+                        </div>
+                        <span className="text-xs font-medium text-primary-600 shrink-0">{t('selectArrow')}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-surface-200" /></div>
+                    <div className="relative flex justify-center"><span className="bg-surface-50/80 px-3 text-xs text-surface-400">{t('or')}</span></div>
+                  </div>
+                </>
+              )}
             </>
           )}
           <button

@@ -19,6 +19,9 @@ import ReviewCard from '../components/ReviewCard';
 import ReviewForm from '../components/ReviewForm';
 import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
+import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Modal, Button, Avatar, Spinner, StarRating } from '../components/ui';
 import PageLoader from '../components/ui/PageLoader';
 
@@ -88,11 +91,50 @@ const ListingDetail = () => {
 
   const photos = data.photos || [];
   const amenities = getAmenityList(data.amenities);
+  const primaryPhoto = photos.find((p) => p.isPrimary)?.url || photos[0]?.url || 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png';
+
+  const listingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: data.title,
+    description: `${data.title} - ${data.type?.replace(/_/g, ' ')} in ${data.city}. Rent: ₹${data.rent}/month.`,
+    image: primaryPhoto,
+    url: `https://quikden.vercel.app/listing/${id}`,
+    offers: {
+      '@type': 'Offer',
+      price: data.rent,
+      priceCurrency: 'INR',
+      availability: data.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    },
+    aggregateRating: data._count?.reviews > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: data.owner?.avgRating || 0,
+      reviewCount: data._count.reviews,
+    } : undefined,
+    brand: {
+      '@type': 'Organization',
+      name: 'Quikden',
+    },
+  };
 
   return (
     <>
+      <SEO
+        title={`${data.title} — ₹${data.rent}/mo in ${data.city}`}
+        description={`${data.title} available in ${data.city}. ${data.bedrooms} BHK, ${data.bathrooms} bath, ${data.areaSqFt ? data.areaSqFt + ' sq ft' : ''}. Rent: ₹${data.rent}/month. Zero brokerage on Quikden.`}
+        image={primaryPhoto}
+        url={`/listing/${id}`}
+        type="article"
+        city={data.city}
+      />
+      <JsonLd data={listingSchema} />
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { label: 'Home', href: '/' },
+          { label: 'Search', href: '/search' },
+          { label: data.title },
+        ]} />
         {/* ─ Photo Gallery ─────────────────────────────── */}
         <ImageGallery photos={photos} title={data.title} />
 

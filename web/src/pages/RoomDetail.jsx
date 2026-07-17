@@ -15,6 +15,9 @@ import ReviewCard from '../components/ReviewCard';
 import ReviewForm from '../components/ReviewForm';
 import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
+import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Modal, Button, Badge, Avatar, StarRating } from '../components/ui';
 import PageLoader from '../components/ui/PageLoader';
 
@@ -77,11 +80,42 @@ const RoomDetail = () => {
 
   const rs = data?.roomSharing;
   const photos = data?.photos || [];
+  const primaryPhoto = photos.find((p) => p.isPrimary)?.url || photos[0]?.url || 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png';
+
+  const listingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: data?.title,
+    description: `${data?.title} - Shared room in ${data?.city}. Rent: ₹${data?.rent}/month.`,
+    image: primaryPhoto,
+    url: `https://quikden.vercel.app/room/${id}`,
+    offers: {
+      '@type': 'Offer',
+      price: data?.rent,
+      priceCurrency: 'INR',
+      availability: data?.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    },
+    brand: { '@type': 'Organization', name: 'Quikden' },
+  };
 
   return (
     <>
+      <SEO
+        title={`${data?.title} — Shared Room in ${data?.city}`}
+        description={`${data?.title} available in ${data?.city}. Shared room, ₹${data?.rent}/month. ${rs?.genderRequired ? rs.genderRequired + ' preferred' : 'All genders'}. Zero brokerage on Quikden.`}
+        image={primaryPhoto}
+        url={`/room/${id}`}
+        type="article"
+        city={data?.city}
+      />
+      <JsonLd data={listingSchema} />
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { label: 'Home', href: '/' },
+          { label: 'Search', href: '/search' },
+          { label: data?.title },
+        ]} />
         {/* Gallery */}
         <ImageGallery photos={photos} title={data?.title} />
 

@@ -14,6 +14,9 @@ import ReviewCard from '../components/ReviewCard';
 import ReviewForm from '../components/ReviewForm';
 import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
+import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Modal, Button, Badge, Avatar, StarRating } from '../components/ui';
 import PageLoader from '../components/ui/PageLoader';
 
@@ -79,11 +82,42 @@ const HostelDetail = () => {
   const tiers = hs?.tiers || [];
   const availableTiers = tiers.filter((t) => t.available);
   const photos = data?.photos || [];
+  const primaryPhoto = photos.find((p) => p.isPrimary)?.url || photos[0]?.url || 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png';
+
+  const listingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: data?.title,
+    description: `${data?.title} - Hostel in ${data?.city}. Starting from ₹${availableTiers[0]?.price || data?.rent}/month.`,
+    image: primaryPhoto,
+    url: `https://quikden.vercel.app/hostel/${id}`,
+    offers: {
+      '@type': 'Offer',
+      price: data?.rent,
+      priceCurrency: 'INR',
+      availability: data?.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    },
+    brand: { '@type': 'Organization', name: 'Quikden' },
+  };
 
   return (
     <>
+      <SEO
+        title={`${data?.title} — Hostel in ${data?.city}`}
+        description={`${data?.title} available in ${data?.city}. Hostel accommodation starting ₹${data?.rent}/month. ${hs?.genderRequired ? hs.genderRequired + ' preferred' : 'All genders'}. Zero brokerage on Quikden.`}
+        image={primaryPhoto}
+        url={`/hostel/${id}`}
+        type="article"
+        city={data?.city}
+      />
+      <JsonLd data={listingSchema} />
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs items={[
+          { label: 'Home', href: '/' },
+          { label: 'Search', href: '/search' },
+          { label: data?.title },
+        ]} />
         {/* Gallery */}
         <ImageGallery photos={photos} title={data?.title} />
 

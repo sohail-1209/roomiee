@@ -12,6 +12,8 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Spinner from '../components/ui/Spinner';
 import InstallBanner from '../components/ui/InstallBanner';
+import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
 import { useTranslation } from 'react-i18next';
 
 const CATEGORIES = [
@@ -195,8 +197,46 @@ export default function HomePage() {
     navigate(`/search?${params.toString()}`);
   };
 
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Quikden',
+    url: 'https://quikden.vercel.app',
+    description: "India's easiest platform to find rental houses, rooms, hostels, and roommates.",
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: 'https://quikden.vercel.app/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Quikden',
+    url: 'https://quikden.vercel.app',
+    logo: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
+    sameAs: ['https://instagram.com/quikden'],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'quikden.com@gmail.com',
+      contactType: 'customer service',
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'IN',
+    },
+  };
+
   return (
     <div className="min-h-screen bg-surface-50">
+      <SEO
+        title="Find Rooms, Hostels & Flatmates in India"
+        description="India's easiest platform to find rental houses, rooms, hostels, and roommates. AI-powered search, zero brokerage, verified listings across Hyderabad, Bangalore, Mumbai, Delhi & more."
+        url="/"
+      />
+      <JsonLd data={websiteSchema} />
+      <JsonLd data={orgSchema} />
       <Navbar />
 
       {/* HERO — Near-white with subtle teal tints */}

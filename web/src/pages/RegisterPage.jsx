@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+import SEO from '../components/SEO';
 import { requestNotificationPermission, subscribeToPush } from '../utils/pushNotifications';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -110,6 +111,12 @@ const RegisterPage = () => {
 
   return (
     <>
+      <SEO
+        title="Register on Quikden — List Properties Free"
+        description="Create your free Quikden account. List properties, find roommates, and connect directly with tenants. Zero brokerage fees."
+        url="/register"
+        noIndex={true}
+      />
       <Navbar />
       <style>{`
         .reg-bg {

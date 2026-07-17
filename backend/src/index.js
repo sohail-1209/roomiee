@@ -23,6 +23,7 @@ const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
 const pushRoutes = require('./routes/push.routes');
 const xiayokiRoutes = require('./routes/xiayoki.routes');
+const sitemapRoutes = require('./routes/sitemap.routes');
 
 const { errorHandler } = require('./middleware/error.middleware');
 
@@ -68,6 +69,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/xiayoki', xiayokiRoutes);
+app.use('/api/sitemap', sitemapRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));

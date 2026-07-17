@@ -16,6 +16,9 @@ import ReviewForm from '../components/ReviewForm';
 import ImageGallery from '../components/ImageGallery';
 import Navbar from '../components/layout/Navbar';
 import SaveButton from '../components/listing/SaveButton';
+import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Modal, Button, Avatar, Spinner } from '../components/ui';
 import PageLoader from '../components/ui/PageLoader';
 
@@ -39,12 +42,43 @@ export default function LandDetail() {
 
   const photos = data.photos || [];
   const isOwner = user?.id === data.ownerId;
+  const primaryPhoto = photos.find((p) => p.isPrimary)?.url || photos[0]?.url || 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png';
+
+  const listingSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: data.title,
+    description: `${data.title} - Land for sale in ${data.city}. Price: ₹${data.rent}.`,
+    image: primaryPhoto,
+    url: `https://quikden.vercel.app/land/${id}`,
+    offers: {
+      '@type': 'Offer',
+      price: data.rent,
+      priceCurrency: 'INR',
+      availability: data.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+    },
+    brand: { '@type': 'Organization', name: 'Quikden' },
+  };
 
   return (
     <div className="min-h-screen bg-surface-50">
+      <SEO
+        title={`${data.title} — Land for Sale in ${data.city}`}
+        description={`${data.title} available in ${data.city}. Land/plot for sale, ₹${data.rent}. ${data.areaSqFt ? data.areaSqFt + ' sq ft' : ''}. Browse on Quikden.`}
+        image={primaryPhoto}
+        url={`/land/${id}`}
+        type="article"
+        city={data.city}
+      />
+      <JsonLd data={listingSchema} />
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 pt-24 pb-16">
+        <Breadcrumbs items={[
+          { label: 'Home', href: '/' },
+          { label: 'Search', href: '/search' },
+          { label: data.title },
+        ]} />
         {/* Gallery */}
         {photos.length > 0 && (
           <div className="mb-8">

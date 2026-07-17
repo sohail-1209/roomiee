@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
+import SEO from '../components/SEO';
 import { requestNotificationPermission, subscribeToPush } from '../utils/pushNotifications';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -113,6 +114,12 @@ export default function LoginPage() {
 
   return (
     <>
+      <SEO
+        title="Login to Quikden"
+        description="Login to your Quikden account. Find and connect with verified property owners. Zero brokerage, real-time chat."
+        url="/login"
+        noIndex={true}
+      />
       <Navbar />
       <style>{`
         .login-bg {

@@ -11,6 +11,7 @@ import ListingFilters from '../components/listing/ListingFilters';
 import ListingGrid from '../components/listing/ListingGrid';
 import { searchAPI, listingsAPI } from '../services/endpoints';
 import { Button, Input, Select } from '../components/ui/index.js';
+import SEO from '../components/SEO';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -124,8 +125,21 @@ const SearchPage = () => {
   const totalPages = data?.pagination?.pages || 1;
   const currentPage = parseInt(filters.page);
 
+  const typeLabels = { HOUSE_RENTAL: 'Houses', ROOM_SHARING: 'Rooms', HOSTEL: 'Hostels', LAND_SALE: 'Land' };
+  const searchTitle = filters.city
+    ? `${typeLabels[filters.type] || 'Properties'} in ${filters.city}`
+    : filters.type
+    ? `${typeLabels[filters.type]} — Search`
+    : 'Search Properties';
+
   return (
     <div className="min-h-screen bg-surface-50 font-sans">
+      <SEO
+        title={searchTitle}
+        description={`Browse ${filters.city || 'India\'s best'} rental properties. ${filters.type ? typeLabels[filters.type] + ' available' : 'Houses, rooms, hostels & land'}. AI-powered search on Quikden.`}
+        url={`/search${window.location.search}`}
+        noIndex={currentPage > 1}
+      />
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

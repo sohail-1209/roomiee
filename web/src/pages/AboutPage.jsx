@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Sparkles, MessageSquare, CreditCard, Heart, ArrowRight } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
 
 export default function AboutPage() {
   const { t } = useTranslation();
@@ -12,8 +14,28 @@ export default function AboutPage() {
     setVisible(true);
   }, []);
 
+  const aboutSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About Quikden',
+    description: 'Quikden is India\'s premier zero-brokerage platform for finding rooms, hostels, PG accommodations, and flatmates.',
+    url: 'https://quikden.vercel.app/about',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'Quikden',
+      url: 'https://quikden.vercel.app',
+      logo: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
+    },
+  };
+
   return (
     <div className="min-h-screen bg-surface-50 font-sans">
+      <SEO
+        title="About Quikden — Zero Brokerage Rental Platform"
+        description="Quikden is India's premier platform to find rental houses, rooms, hostels, and flatmates without brokers. AI-powered search, real-time chat, verified listings."
+        url="/about"
+      />
+      <JsonLd data={aboutSchema} />
       <Navbar />
 
       {/* Hero section */}

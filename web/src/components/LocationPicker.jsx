@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import toast from 'react-hot-toast';
-import { MapPin, Crosshair, Loader2 } from 'lucide-react';
+import { MapPin, Crosshair } from 'lucide-react';
+import Spinner from './ui/Spinner';
 
 const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 const GEOAPIFY_KEY = 'c471b4637f644bbaa597b0103c703121';
@@ -145,7 +146,7 @@ const LocationPicker = ({ latitude, longitude, onChange, onAddressFill }) => {
           }`}
         >
           {gettingLocation ? (
-            <Loader2 size={16} className="animate-spin" />
+            <Spinner size="sm" />
           ) : (
             <Crosshair size={16} />
           )}

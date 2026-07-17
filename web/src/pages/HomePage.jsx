@@ -1,4 +1,4 @@
-﻿// HomePage — Lightest glass hero, proper spacing, animated trust bar
+// HomePage — Lightest glass hero, proper spacing, animated trust bar
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import ListingCard from '../components/listing/ListingCard';
 import Navbar from '../components/layout/Navbar';
 import InstallBanner from '../components/ui/InstallBanner';
 import { useTranslation } from 'react-i18next';
+import Spinner from '../components/ui/Spinner';
 
 const CATEGORIES = [
   { type: '', label: 'All', tKey: 'all', icon: SlidersHorizontal, color: 'from-surface-500 to-surface-600' },
@@ -324,7 +325,7 @@ export default function HomePage() {
         <div ref={loaderRef} className="h-12 flex items-center justify-center">
           {isFetching && !isLoading && (
             <div className="flex items-center gap-3 text-sm text-surface-400 animate-fade-in">
-              <div className="w-5 h-5 border-2 border-primary-400 border-t-transparent rounded-full animate-spin-slow" />
+              <Spinner size="sm" />
               {t('loadingMore')}
             </div>
           )}
@@ -332,7 +333,8 @@ export default function HomePage() {
       </section>
 
       {/* TRUST BAR — Animated loading */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-6 text-center">
+        <h4 className="text-xs font-bold uppercase tracking-widest text-surface-400 mb-3">{t('ourGoal') || 'OUR GOAL'}</h4>
         <div className="glass-tinted rounded-3xl p-6 sm:p-8">
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <TrustStat Icon={Shield} value="100%" label={t('verifiedOwners')} delay={0} />

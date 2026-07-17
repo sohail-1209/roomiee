@@ -1,30 +1,31 @@
 import React from 'react';
 
 /**
- * Spinner component — animated loading indicator
+ * Spinner component — beautiful dual-ring glowing animated loading indicator
  * @param {string} size - sm | md | lg
  * @param {string} className - additional Tailwind classes
  */
 
-const sizeClasses = {
-  sm: 'h-4 w-4 border-2',
-  md: 'h-6 w-6 border-2',
-  lg: 'h-8 w-8 border-[3px]',
-};
-
 const Spinner = ({ size = 'md', className = '' }) => {
+  const sizeStyle = {
+    sm: 'w-4 h-4',
+    md: 'w-6 h-6',
+    lg: 'w-10 h-10',
+  }[size] || 'w-6 h-6';
+
   return (
     <span
       role="status"
       aria-label="Loading"
-      className={[
-        'inline-block rounded-full border-current border-t-transparent animate-spin',
-        sizeClasses[size] ?? sizeClasses.md,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-    />
+      className={`relative inline-flex items-center justify-center shrink-0 ${sizeStyle} ${className}`}
+    >
+      {/* Outer pulsing ring */}
+      <span className="absolute inset-0 rounded-full border border-primary-500/35 animate-ping opacity-60" />
+      {/* Inner spinning gradient ring */}
+      <span className="w-full h-full rounded-full border-2 border-primary-500 border-t-transparent border-r-transparent animate-spin" />
+      {/* Center glowing dot */}
+      <span className="absolute w-[28%] h-[28%] rounded-full bg-primary-600 shadow-sm shadow-primary-500/50" />
+    </span>
   );
 };
 

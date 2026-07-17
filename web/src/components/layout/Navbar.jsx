@@ -7,7 +7,7 @@ import {
   Home, Search, Bell, Menu, X, ChevronDown, User,
   LayoutDashboard, LogOut, CheckCheck,
   BedDouble, LandPlot, Users,
-  Download, Trash2,
+  Download, Trash2, Compass,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notificationsAPI } from '../../services/endpoints';
@@ -250,10 +250,10 @@ export default function Navbar() {
             {/* Hamburger — hidden on dashboard pages (icon sidebar handles nav) */}
             {!isDashboard && (
               <button
-                className="md:hidden p-2 -ml-2 rounded-xl hover:bg-surface-100 active:bg-surface-100 transition-colors"
+                className="md:hidden p-2 -ml-2 rounded-xl hover:bg-primary-50 active:bg-primary-100 transition-colors text-primary-600"
                 onClick={(e) => { createRipple(e); setMobileOpen((v) => !v); }}
               >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                {mobileOpen ? <X size={20} /> : <Compass size={22} className="animate-spin-slow" style={{ animationDuration: '8s' }} />}
               </button>
             )}
 
@@ -460,39 +460,50 @@ export default function Navbar() {
 
       {/* ── Mobile Drawer — Public pages only (browse items) ──── */}
       {mobileOpen && !isDashboard && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute top-14 left-0 right-0 bg-white border-b border-surface-100 p-3 space-y-0.5 z-50 animate-slide-down max-h-[calc(100dvh-3.5rem)] overflow-y-auto" style={{ boxShadow: 'var(--md-sys-elevation-4)' }}>
-            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-surface-400">
-              {t('explore')}
-            </p>
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop */}
+          <div className="fixed inset-0 bg-black/35 backdrop-blur-sm animate-fade-in" onClick={() => setMobileOpen(false)} />
+          {/* Drawer content */}
+          <aside className="relative w-72 max-w-[85vw] h-full bg-white p-4 flex flex-col z-50 animate-slide-in-left shadow-2xl">
+            {/* Header of the drawer */}
+            <div className="flex items-center justify-between pb-4 border-b border-surface-100 mb-4">
+              <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="h-10 w-auto object-contain rounded-lg" />
+              <button onClick={() => setMobileOpen(false)} className="p-1.5 rounded-full hover:bg-surface-100 transition-colors">
+                <X size={18} className="text-surface-600" />
+              </button>
+            </div>
+            
+            {/* Drawer body */}
+            <div className="flex-1 space-y-0.5 overflow-y-auto">
+              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-surface-400">
+                {t('explore')}
+              </p>
 
-            {BROWSE_ITEMS.map(({ to, label, icon: Icon }, i) => {
-              const toType = new URLSearchParams(to.split('?')[1]).get('type');
-              const isActive = toType === activeType;
+              {BROWSE_ITEMS.map(({ to, label, icon: Icon }) => {
+                const toType = new URLSearchParams(to.split('?')[1]).get('type');
+                const isActive = toType === activeType;
 
-              return (
-                <Link
-                  key={to}
-                  to={to}
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-surface-700 hover:bg-surface-50 active:bg-surface-100'
-                  }`}
-                  style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 35}ms both` }}
-                >
-                  <Icon size={18} className={isActive ? 'text-primary-600' : 'text-surface-400'} />
-                  {t(label)}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 text-primary-700'
+                        : 'text-surface-700 hover:bg-surface-50 active:bg-surface-100'
+                    }`}
+                  >
+                    <Icon size={18} className={isActive ? 'text-primary-600' : 'text-surface-400'} />
+                    {t(label)}
+                  </Link>
+                );
+              })}
+            </div>
 
-
-
+            {/* Drawer footer */}
             {user && (
-              <div className="pt-2 mt-1 border-t border-surface-100">
+              <div className="pt-4 border-t border-surface-100">
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-danger-600 hover:bg-red-50 active:bg-red-100 transition-colors"

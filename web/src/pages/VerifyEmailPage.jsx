@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { MailCheck, XCircle, Loader2 } from 'lucide-react';
+import { MailCheck, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import Spinner from '../components/ui/Spinner';
 
 import { auth, applyActionCode, checkActionCode } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -60,7 +61,7 @@ const VerifyEmailPage = () => {
         <div className="text-center max-w-sm">
           {status === 'loading' && (
             <>
-              <Loader2 size={48} className="mx-auto text-primary-500 animate-spin mb-4" />
+              <Spinner size="lg" className="mx-auto mb-4" />
               <h1 className="font-display font-bold text-xl text-surface-900 mb-2">{t('verifyingEmail')}</h1>
               <p className="text-surface-500 text-sm">{t('pleaseWait')}</p>
             </>

@@ -26,6 +26,75 @@ export default function XiayokiChatbot() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Dragging functionality
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const dragInfo = useRef({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+    offsetX: 0,
+    offsetY: 0,
+    moved: false
+  });
+
+  const onPointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    dragInfo.current.isDragging = true;
+    dragInfo.current.startX = clientX - dragInfo.current.offsetX;
+    dragInfo.current.startY = clientY - dragInfo.current.offsetY;
+    dragInfo.current.moved = false;
+  };
+
+  useEffect(() => {
+    const handlePointerMove = (e) => {
+      if (!dragInfo.current.isDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dx = clientX - dragInfo.current.startX;
+      const dy = clientY - dragInfo.current.startY;
+
+      const dist = Math.sqrt(
+        Math.pow(dx - dragInfo.current.offsetX, 2) +
+        Math.pow(dy - dragInfo.current.offsetY, 2)
+      );
+      if (dist > 5) {
+        dragInfo.current.moved = true;
+      }
+
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const minX = -viewportWidth + 80;
+      const maxX = 20;
+      const minY = -viewportHeight + 80;
+      const maxY = 20;
+
+      const constrainedX = Math.max(minX, Math.min(maxX, dx));
+      const constrainedY = Math.max(minY, Math.min(maxY, dy));
+
+      dragInfo.current.offsetX = constrainedX;
+      dragInfo.current.offsetY = constrainedY;
+      setPosition({ x: constrainedX, y: constrainedY });
+    };
+
+    const handlePointerUp = () => {
+      dragInfo.current.isDragging = false;
+    };
+
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('mouseup', handlePointerUp);
+    window.addEventListener('touchmove', handlePointerMove, { passive: false });
+    window.addEventListener('touchend', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handlePointerMove);
+      window.removeEventListener('mouseup', handlePointerUp);
+      window.removeEventListener('touchmove', handlePointerMove);
+      window.removeEventListener('touchend', handlePointerUp);
+    };
+  }, []);
+
   useEffect(() => {
     setMessages([{
       role: 'bot',
@@ -124,7 +193,13 @@ export default function XiayokiChatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="xiayoki-chat-window">
+        <div
+          className="xiayoki-chat-window"
+          style={{
+            '--drag-x': `${position.x}px`,
+            '--drag-y': `${position.y}px`
+          }}
+        >
           {/* Header */}
           <div className="xiayoki-header">
             <div className="xiayoki-header-avatar">
@@ -212,13 +287,32 @@ export default function XiayokiChatbot() {
 
       {/* Tooltip */}
       {showTooltip && !isOpen && (
-        <div className="xiayoki-tooltip">{t('askAnything')}</div>
+        <div
+          className="xiayoki-tooltip"
+          style={{
+            '--drag-x': `${position.x}px`,
+            '--drag-y': `${position.y}px`
+          }}
+        >
+          {t('askAnything')}
+        </div>
       )}
 
       {/* FAB */}
       <button
         className="xiayoki-fab"
-        onClick={() => { setIsOpen((v) => !v); setShowTooltip(false); }}
+        style={{
+          '--drag-x': `${position.x}px`,
+          '--drag-y': `${position.y}px`,
+          cursor: dragInfo.current.isDragging ? 'grabbing' : 'grab'
+        }}
+        onMouseDown={onPointerDown}
+        onTouchStart={onPointerDown}
+        onClick={(e) => {
+          if (dragInfo.current.moved) return;
+          setIsOpen((v) => !v);
+          setShowTooltip(false);
+        }}
         aria-label={isOpen ? 'Close Xiayoki chat' : 'Open Xiayoki chat'}
       >
         {isOpen ? <X size={20} /> : <img src="/xiayoki-bot.svg" alt="Xiayoki" className="w-7 h-7" />}

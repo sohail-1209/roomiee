@@ -136,7 +136,7 @@ const SearchPage = () => {
               <button
                 onClick={() => setIsAiMode(false)}
                 className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${!isAiMode
-                  ? 'bg-surface-50/80 text-surface-900 shadow-sm'
+                  ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-sm'
                   : 'text-surface-500 hover:text-surface-900'
                   }`}
               >

@@ -489,12 +489,7 @@ export default function Navbar() {
               );
             })}
 
-            {!user && (
-              <div className="pt-3 mt-1 border-t border-surface-100 flex flex-col gap-2">
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="btn-outline btn-md w-full justify-center">{t('login')}</Link>
-                <Link to="/register" onClick={() => setMobileOpen(false)} className="btn-primary btn-md w-full justify-center">{t('signup')}</Link>
-              </div>
-            )}
+
 
             {user && (
               <div className="pt-2 mt-1 border-t border-surface-100">

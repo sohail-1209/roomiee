@@ -13,19 +13,19 @@ import Avatar from '../../components/ui/Avatar';
 const CategoryCard = ({ to, icon: Icon, label, value, gradient, iconColor, isLoading, delay = 0 }) => (
   <Link
     to={to}
-    className="flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-white/60 hover:bg-white/80 transition-all duration-300 group shadow-sm hover:shadow-md border border-surface-100"
+    className="flex flex-col sm:flex-row items-center text-center sm:text-left gap-2 sm:gap-3 p-2.5 sm:p-4 rounded-2xl glass-card group"
     style={{ animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${delay}ms both` }}
   >
-    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br ${gradient}`}>
-      <Icon size={18} className={iconColor} />
+    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-white/60 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300">
+      <Icon size={16} className={`${iconColor} animate-bounce-subtle`} />
     </div>
-    <div className="flex-1 min-w-0">
+    <div className="flex-1 min-w-0 flex flex-col items-center sm:items-start w-full">
       {isLoading ? (
         <div className="skeleton h-5 w-8 rounded-lg mb-1" />
       ) : (
-        <p className="text-lg font-bold text-surface-900 font-display">{value}</p>
+        <p className="text-base sm:text-lg font-bold text-surface-900 font-display leading-tight">{value}</p>
       )}
-      <p className="text-xs text-surface-400 font-medium">{label}</p>
+      <p className="text-[10px] sm:text-xs text-surface-400 font-medium leading-tight mt-0.5 whitespace-normal break-words w-full">{label}</p>
     </div>
   </Link>
 );

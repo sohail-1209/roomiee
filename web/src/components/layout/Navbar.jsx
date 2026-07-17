@@ -211,9 +211,7 @@ export default function Navbar() {
             )}
 
             <Link to="/" className="shrink-0 group">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 ring-2 ring-white/60 ring-offset-1 ring-offset-primary-50" style={{ background: 'linear-gradient(135deg, rgba(13,148,136,0.25), rgba(20,184,166,0.15))', backdropFilter: 'blur(12px) saturate(1.8)', WebkitBackdropFilter: 'blur(12px) saturate(1.8)', border: '1px solid rgba(255,255,255,0.5)' }}>
-                <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-7 h-7 md:w-9 md:h-9 object-cover rounded-full" />
-              </div>
+              <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="w-11 h-11 md:w-14 md:h-14 rounded-full object-cover shadow-md group-hover:shadow-lg transition-shadow" />
             </Link>
 
             {/* Quick link: Dashboard on public pages, Home on dashboard pages */}

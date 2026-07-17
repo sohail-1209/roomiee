@@ -111,7 +111,7 @@ Output: {"city":"Bangalore","type":"HOSTEL","wifi":true,"keywords":["Bangalore U
         Authorization: `Bearer ${OPENROUTER_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://quikden.vercel.app',
-        'X-Title': 'Roomiee AI Search',
+        'X-Title': 'Quikden AI Search',
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || 'mistralai/mistral-7b-instruct:free',

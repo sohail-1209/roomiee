@@ -18,7 +18,7 @@ const uploadListingPhotos = asyncHandler(async (req, res) => {
   const uploads = await Promise.all(
     req.files.map(async (file, index) => {
       const result = await cloudinary.uploader.upload_stream_promise(file.buffer, {
-        folder: `roomiee/listings/${listingId}`,
+        folder: `quikden/listings/${listingId}`,
         resource_type: 'image',
         transformation: [{ width: 1200, height: 800, crop: 'limit', quality: 'auto:low', fetch_format: 'auto' }],
         format: 'jpg',
@@ -56,7 +56,7 @@ const uploadProfilePhoto = asyncHandler(async (req, res) => {
   if (!req.file) throw new AppError('No file uploaded', 400);
 
   const result = await cloudinary.uploader.upload_stream_promise(req.file.buffer, {
-    folder: 'roomiee/profiles',
+    folder: 'quikden/profiles',
     transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face', quality: 'auto:low', fetch_format: 'auto' }],
     format: 'jpg',
   });

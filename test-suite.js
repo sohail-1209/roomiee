@@ -1,9 +1,9 @@
 // ═══════════════════════════════════════════════════════════════
-// ROOMIEE / HOUZIEE — Complete 4-Role QA Test Suite
+// QUIKDEN — Complete 4-Role QA Test Suite
 // Tests: Guest, Owner, Tenant, Admin — all features
 // ═══════════════════════════════════════════════════════════════
 
-const BASE_URL = process.env.API_URL || 'https://roomiee.onrender.com/api';
+const BASE_URL = process.env.API_URL || 'https://quikden.onrender.com/api';
 const ts = Date.now();
 
 let passed = 0, failed = 0, skipped = 0;
@@ -755,7 +755,7 @@ async function testEdgeCases() {
 // ═══════════════════════════════════════════════
 async function main() {
   console.log('╔═══════════════════════════════════════════════════════╗');
-  console.log('║  ROOMIEE / HOUZIEE — COMPLETE 4-ROLE QA TEST SUITE   ║');
+  console.log('║  QUIKDEN — COMPLETE 4-ROLE QA TEST SUITE             ║');
   console.log('║  Guest → Owner → Tenant → Admin → Security           ║');
   console.log(`║  Target: ${BASE_URL.padEnd(42)}║`);
   console.log(`║  Date: ${new Date().toISOString().padEnd(44)}║`);

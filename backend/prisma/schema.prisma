@@ -1,4 +1,4 @@
-// Roomiee — Prisma Schema
+// Quikden — Prisma Schema
 // DB-first approach: define all tables before any backend code
 
 generator client {

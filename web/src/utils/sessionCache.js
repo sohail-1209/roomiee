@@ -1,5 +1,5 @@
 // Session storage cache helper — persists data across tab switches within the same session
-const PREFIX = 'roomiee_';
+const PREFIX = 'quikden_';
 
 export const sessionCache = {
   get(key) {

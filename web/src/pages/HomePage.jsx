@@ -10,6 +10,7 @@ import { listingsAPI } from '../services/endpoints';
 import ListingCard from '../components/listing/ListingCard';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
+import Spinner from '../components/ui/Spinner';
 import InstallBanner from '../components/ui/InstallBanner';
 import { useTranslation } from 'react-i18next';
 

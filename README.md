@@ -1,15 +1,15 @@
-# Roomiee — Architecture & Codebase Documentation
+# Quikden — Architecture & Codebase Documentation
 
-Roomiee is India's easiest platform to find rental houses, hostels, paying guest (PG) accommodations, roommate share listings, and manage listings for property owners.
+Quikden is India's easiest platform to find rental houses, hostels, paying guest (PG) accommodations, roommate share listings, and manage listings for property owners.
 
 ---
 
 ## Workspace Directory Map
 
-The Roomiee workspace is divided into two primary sub-projects: `backend` (Node.js/Express api) and `web` (React/Vite single-page client).
+The Quikden workspace is divided into two primary sub-projects: `backend` (Node.js/Express api) and `web` (React/Vite single-page client).
 
 ```
-roomiee/
+quikden/
 ├── backend/                  # Server-side APIs and services
 │   ├── prisma/               # Prisma Database schemas and seeds
 │   └── src/

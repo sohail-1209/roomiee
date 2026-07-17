@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// ROOMIEE — COMPREHENSIVE MANUAL QA TEST
+// QUIKDEN — COMPREHENSIVE MANUAL QA TEST
 // All Roles, All Features (excl. Google Sign-In/Sign-Out)
 // ═══════════════════════════════════════════════════════════
 const BASE = process.env.API_URL || 'http://localhost:5000/api';
@@ -708,7 +708,7 @@ async function testEmailVerification() {
 async function main() {
   console.log('');
   console.log('╔═══════════════════════════════════════════════════════╗');
-  console.log('║  ROOMIEE — COMPREHENSIVE MANUAL QA TEST              ║');
+  console.log('║  QUIKDEN — COMPREHENSIVE MANUAL QA TEST              ║');
   console.log(`║  Target: ${BASE.padEnd(42)} ║`);
   console.log('║  Date: ' + new Date().toISOString().padEnd(48) + '║');
   console.log('╚═══════════════════════════════════════════════════════╝');

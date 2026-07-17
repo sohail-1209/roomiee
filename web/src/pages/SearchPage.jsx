@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import ListingFilters from '../components/listing/ListingFilters';
 import ListingGrid from '../components/listing/ListingGrid';
 import { searchAPI, listingsAPI } from '../services/endpoints';
@@ -329,6 +330,8 @@ const SearchPage = () => {
           </div>
         </div>
       </div>
+
+      <Footer />
 
       {/* Mobile Filters Modal */}
       {isFilterOpen && (

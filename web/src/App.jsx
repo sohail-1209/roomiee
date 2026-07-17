@@ -23,6 +23,7 @@ const CompleteProfilePage = lazy(() => import('./pages/CompleteProfilePage'));
 const VerifyEmailPage     = lazy(() => import('./pages/VerifyEmailPage'));
 const ChatPage       = lazy(() => import('./pages/ChatPage'));
 const ProfilePage    = lazy(() => import('./pages/ProfilePage'));
+const AboutPage      = lazy(() => import('./pages/AboutPage'));
 
 // Dashboards
 const TenantDashboard = lazy(() => import('./pages/dashboard/TenantDashboard'));
@@ -117,6 +118,7 @@ export default function App() {
                 {/* ─ Public ─ */}
                 <Route path="/"         element={<HomePage />} />
                 <Route path="/search"   element={<SearchPage />} />
+                <Route path="/about"    element={<AboutPage />} />
                 <Route path="/listing/:id" element={<ListingDetail />} />
                 <Route path="/room/:id"    element={<RoomDetail />} />
                 <Route path="/hostel/:id"  element={<HostelDetail />} />

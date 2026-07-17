@@ -211,7 +211,7 @@ export default function Navbar() {
             )}
 
             <Link to="/" className="shrink-0 group">
-              <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="h-10 md:h-14 w-auto object-contain" />
+              <img src="https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png" alt="Quikden" className="h-12 md:h-16 w-auto object-contain rounded-xl" />
             </Link>
 
             {/* Quick link: Dashboard on public pages, Home on dashboard pages */}

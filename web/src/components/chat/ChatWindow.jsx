@@ -2,7 +2,7 @@
 // Used in both the Chat page and as an overlay
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Check, CheckCheck, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Send, Check, CheckCheck, CheckCircle, XCircle, AlertCircle, Phone } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { chatAPI, requestsAPI } from '../../services/endpoints';
@@ -264,10 +264,19 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
           alt={otherUser?.name}
           className="w-10 h-10 rounded-full object-cover"
         />
-        <div>
+        <div className="flex-1">
           <p className="font-semibold text-surface-900">{otherUser?.name}</p>
           <p className="text-xs text-success-500">{t('online')}</p>
         </div>
+        {request?.status === 'ACCEPTED' && otherUser?.phone && (
+          <a
+            href={`tel:${otherUser.phone}`}
+            className="p-2.5 hover:bg-surface-100 rounded-xl transition-colors text-primary-600"
+            aria-label="Call"
+          >
+            <Phone size={18} />
+          </a>
+        )}
       </div>
       )}
 

@@ -5,7 +5,7 @@ import { chatAPI } from '../services/endpoints';
 import { useAuth } from '../context/AuthContext';
 import ChatList from '../components/chat/ChatList';
 import ChatWindow from '../components/chat/ChatWindow';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Phone } from 'lucide-react';
 
 const ChatPage = () => {
   const { id: chatId } = useParams();
@@ -55,6 +55,15 @@ const ChatPage = () => {
                 className="w-8 h-8 rounded-full object-cover"
               />
               <p className="font-semibold text-surface-900 text-sm">{otherUser?.name}</p>
+              {request?.status === 'ACCEPTED' && otherUser?.phone && (
+                <a
+                  href={`tel:${otherUser.phone}`}
+                  className="ml-auto p-2 -mr-2 hover:bg-surface-100 rounded-xl transition-colors text-primary-600"
+                  aria-label="Call"
+                >
+                  <Phone size={18} />
+                </a>
+              )}
             </div>
             <div className="h-[calc(100vh-14rem)] md:h-full">
               <ChatWindow chatId={chatId} chat={activeChat} otherUser={otherUser} request={request} hideHeader />

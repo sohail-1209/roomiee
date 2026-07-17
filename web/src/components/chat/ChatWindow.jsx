@@ -127,6 +127,20 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
   const isOwner = chat && user && chat.ownerId === user.id;
   const isRequestRejected = request?.status === 'REJECTED';
 
+  const [otherUserStatus, setOtherUserStatus] = useState({
+    isOnline: otherUser?.isOnline || false,
+    lastSeen: otherUser?.lastSeen || null,
+  });
+
+  useEffect(() => {
+    if (otherUser) {
+      setOtherUserStatus({
+        isOnline: otherUser.isOnline || false,
+        lastSeen: otherUser.lastSeen || null,
+      });
+    }
+  }, [otherUser]);
+
   // Load message history
   useEffect(() => {
     if (!chatId) return;
@@ -149,14 +163,23 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
     socket.on('messages_seen', () => {
       setMessages((prev) => prev.map((m) => ({ ...m, seen: true })));
     });
+    socket.on('user_status_changed', ({ userId, isOnline, lastSeen }) => {
+      if (userId === otherUser?.id) {
+        setOtherUserStatus({
+          isOnline,
+          lastSeen: lastSeen || new Date().toISOString(),
+        });
+      }
+    });
 
     return () => {
       socket.emit('leave_chat', chatId);
       socket.off('new_message');
       socket.off('user_typing');
       socket.off('messages_seen');
+      socket.off('user_status_changed');
     };
-  }, [socket, chatId, user?.id]);
+  }, [socket, chatId, user?.id, otherUser?.id]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -288,7 +311,18 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
         />
         <div className="flex-1">
           <p className="font-semibold text-surface-900">{otherUser?.name}</p>
-          <p className="text-xs text-success-500">{t('online')}</p>
+          {otherUserStatus.isOnline ? (
+            <p className="text-xs text-success-600 flex items-center gap-1 font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
+              {t('online') || 'Online'}
+            </p>
+          ) : (
+            <p className="text-xs text-surface-450">
+              {otherUserStatus.lastSeen 
+                ? `${t('lastSeen') || 'Last seen'} ${timeAgo(otherUserStatus.lastSeen)}`
+                : t('offline') || 'Offline'}
+            </p>
+          )}
         </div>
         {request?.status === 'ACCEPTED' && otherUser?.phone && (
           <a

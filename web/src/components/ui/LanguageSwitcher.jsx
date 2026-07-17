@@ -3,10 +3,10 @@ import { Languages } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 const languages = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'te', label: 'తెలుగు', flag: '🇮🇳' },
-  { code: 'ur', label: 'اردو', flag: '🇮🇳' },
+  { code: 'en', label: 'English' },
+  { code: 'hi', label: 'हिन्दी' },
+  { code: 'te', label: 'తెలుగు' },
+  { code: 'ur', label: 'اردو' },
 ];
 
 export default function LanguageSwitcher() {
@@ -38,11 +38,11 @@ export default function LanguageSwitcher() {
         title="Change language"
       >
         <Languages className="w-4 h-4" />
-        <span className="hidden sm:inline">{current.flag} {current.label}</span>
+        <span className="hidden sm:inline">{current.label}</span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white border border-surface-200/60 rounded-2xl z-50 overflow-hidden min-w-[160px]" style={{ boxShadow: 'var(--md-sys-elevation-3)' }}>
+        <div className="absolute right-0 top-full mt-1 bg-white border border-surface-200/60 rounded-2xl z-50 overflow-hidden min-w-[140px]" style={{ boxShadow: 'var(--md-sys-elevation-3)' }}>
           {languages.map((lang) => (
             <button
               key={lang.code}
@@ -53,7 +53,6 @@ export default function LanguageSwitcher() {
                   : 'text-surface-700 hover:bg-surface-50'
               }`}
             >
-              <span className="text-lg">{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}

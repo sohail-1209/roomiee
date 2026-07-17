@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Sparkles, Search, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { Sparkles, Search, SlidersHorizontal, ArrowUpDown, Home, Building2, Users, LandPlot, Grid } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -218,6 +218,34 @@ const SearchPage = () => {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Mobile Categories Scroll (Capsules) */}
+        <div className="lg:hidden flex gap-2 overflow-x-auto pb-4 pt-1 no-scrollbar scroll-smooth">
+          {[
+            { value: '', label: t('all') || 'All', icon: Grid },
+            { value: 'HOUSE_RENTAL', label: t('house') || 'House', icon: Home },
+            { value: 'HOSTEL', label: t('hostels') || 'Hostels', icon: Building2 },
+            { value: 'ROOM_SHARING', label: t('roomSharing') || 'Room Sharing', icon: Users },
+            { value: 'LAND_SALE', label: t('land') || 'Land', icon: LandPlot },
+          ].map((cat) => {
+            const isActive = filters.type === cat.value;
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.value}
+                onClick={() => updateFilters({ type: cat.value })}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 border shrink-0 shadow-sm ${
+                  isActive
+                    ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white border-transparent scale-102 font-bold'
+                    : 'bg-white text-surface-600 border-surface-200 hover:border-primary-300 hover:text-surface-900 active:bg-surface-50'
+                }`}
+              >
+                <Icon size={13} className={isActive ? 'text-white' : 'text-surface-450'} />
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* ─── Main Grid Layout ────────────────────────────────────────────── */}

@@ -7,7 +7,7 @@ import {
   Home, Search, Bell, Menu, X, ChevronDown, User,
   LayoutDashboard, LogOut, CheckCheck,
   BedDouble, LandPlot, Users,
-  Download, Trash2, Compass,
+  Download, Trash2, Compass, LayoutGrid,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { notificationsAPI } from '../../services/endpoints';
@@ -253,7 +253,7 @@ export default function Navbar() {
                 className="md:hidden p-2 -ml-2 rounded-xl hover:bg-primary-50 active:bg-primary-100 transition-colors text-primary-600"
                 onClick={(e) => { createRipple(e); setMobileOpen((v) => !v); }}
               >
-                {mobileOpen ? <X size={20} /> : <Compass size={22} className="animate-spin-slow" style={{ animationDuration: '8s' }} />}
+                {mobileOpen ? <X size={20} /> : <LayoutGrid size={22} className="transition-transform duration-300 hover:rotate-90 text-primary-600" />}
               </button>
             )}
 

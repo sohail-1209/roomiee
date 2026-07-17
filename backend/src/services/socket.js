@@ -3,6 +3,8 @@
 const prisma = require('../utils/prisma');
 const { sendNotification } = require('./notification.service');
 
+const activeConnections = new Map(); // userId -> Set of socket.ids
+
 const initSocket = (io) => {
   // Auth middleware for socket
   io.use(async (socket, next) => {
@@ -21,6 +23,23 @@ const initSocket = (io) => {
 
   io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.userId}`);
+
+    // Track active connection
+    if (!activeConnections.has(socket.userId)) {
+      activeConnections.set(socket.userId, new Set());
+    }
+    const userSockets = activeConnections.get(socket.userId);
+    const isFirstConnection = userSockets.size === 0;
+    userSockets.add(socket.id);
+
+    if (isFirstConnection) {
+      prisma.user.update({
+        where: { id: socket.userId },
+        data: { isOnline: true, lastSeen: new Date() }
+      }).then(() => {
+        socket.broadcast.emit('user_status_changed', { userId: socket.userId, isOnline: true });
+      }).catch(err => console.error('Error updating presence on connect:', err));
+    }
 
     // Join personal room (for notifications)
     socket.join(`user:${socket.userId}`);
@@ -104,6 +123,20 @@ const initSocket = (io) => {
 
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: ${socket.userId}`);
+      const userSockets = activeConnections.get(socket.userId);
+      if (userSockets) {
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          activeConnections.delete(socket.userId);
+          const now = new Date();
+          prisma.user.update({
+            where: { id: socket.userId },
+            data: { isOnline: false, lastSeen: now }
+          }).then(() => {
+            socket.broadcast.emit('user_status_changed', { userId: socket.userId, isOnline: false, lastSeen: now });
+          }).catch(err => console.error('Error updating presence on disconnect:', err));
+        }
+      }
     });
   });
 };

@@ -1,22 +1,40 @@
-﻿// HomePage — Lightest glass hero, proper spacing, animated trust bar
+// HomePage — Lightest glass hero, proper spacing, animated trust bar
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   Search, MapPin, Home, Users, BedDouble, LandPlot, SlidersHorizontal,
   ArrowRight, Sparkles, Shield, Building2, Star, TrendingUp, Zap, CheckCircle,
+  Mail,
 } from 'lucide-react';
 import { listingsAPI } from '../services/endpoints';
 import ListingCard from '../components/listing/ListingCard';
 import Navbar from '../components/layout/Navbar';
 import InstallBanner from '../components/ui/InstallBanner';
 import { useTranslation } from 'react-i18next';
-import Spinner from '../components/ui/Spinner';
+const InstagramIcon = ({ size = 16, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+);
 
 const CATEGORIES = [
   { type: '', label: 'All', tKey: 'all', icon: SlidersHorizontal, color: 'from-surface-500 to-surface-600' },
   { type: 'HOUSE_RENTAL', label: 'Houses', tKey: 'houses', icon: Home, color: 'from-primary-500 to-primary-600' },
-  { type: 'ROOM_SHARING', label: 'Rooms', tKey: 'rooms', icon: Users, color: 'from-accent-500 to-accent-600' },
+  { type: 'ROOM_SHARING', label: 'Room Sharing', tKey: 'rooms', icon: Users, color: 'from-accent-500 to-accent-600' },
   { type: 'HOSTEL', label: 'Hostels', tKey: 'hostels', icon: BedDouble, color: 'from-emerald-500 to-emerald-600' },
   { type: 'LAND_SALE', label: 'Land', tKey: 'land', icon: LandPlot, color: 'from-amber-500 to-amber-600' },
 ];
@@ -373,8 +391,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      <footer className="border-t border-surface-100 py-6 px-4 text-center text-xs text-surface-400 bg-white">
-        <p>&copy; {new Date().getFullYear()} Quikden &middot; {t('madeInIndia')}</p>
+      <footer className="border-t border-surface-100 bg-white pt-8 pb-6 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4 text-center">
+          <div className="font-display font-bold text-base text-surface-900 tracking-wide">
+            Quikden
+          </div>
+          
+          <p className="text-xs text-surface-450 max-w-sm leading-relaxed">
+            {t('footerAbout') || 'Find flatmates, rooms, hostels, and land investments easily with premium visual searches and verified owner interactions.'}
+          </p>
+
+          <div className="flex gap-6 text-xs font-semibold text-surface-600">
+            <Link to="/search" className="hover:text-primary-600 transition-colors">
+              {t('browse') || 'Browse'}
+            </Link>
+            <Link to="/about" className="hover:text-primary-600 transition-colors">
+              {t('aboutUs') || 'About Us'}
+            </Link>
+            <Link to="/" className="hover:text-primary-600 transition-colors">
+              {t('home') || 'Home'}
+            </Link>
+          </div>
+
+          <div className="flex gap-3 items-center mt-1">
+            <a
+              href="https://instagram.com/quikden"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 bg-surface-50 rounded-xl hover:bg-primary-50 text-surface-500 hover:text-primary-600 border border-surface-200/60 transition-all hover:scale-105 shadow-sm"
+              title="Instagram"
+            >
+              <InstagramIcon size={16} />
+            </a>
+            <a
+              href="mailto:quikden.com@gmail.com"
+              className="p-2 bg-surface-50 rounded-xl hover:bg-primary-50 text-surface-500 hover:text-primary-600 border border-surface-200/60 transition-all hover:scale-105 shadow-sm"
+              title="Gmail"
+            >
+              <Mail size={16} />
+            </a>
+          </div>
+
+          <p className="text-[11px] text-surface-400 mt-2">
+            &copy; {new Date().getFullYear()} Quikden &middot; {t('madeInIndia')}
+          </p>
+        </div>
       </footer>
 
       <InstallBanner />

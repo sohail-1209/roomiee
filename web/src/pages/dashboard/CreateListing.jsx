@@ -13,8 +13,8 @@ import { Input, Select, Textarea, Button } from '../../components/ui';
 
 const STEPS = ['basicInfo', 'locationStep', 'amenitiesStep', 'roomHostelDetails', 'photos'];
 
-const AMENITY_FIELDS = ['wifi','parking','washingMachine','ac','fridge','kitchen','lift','gym','security','powerBackup','waterSupply','cctv'];
-const AMENITY_LABELS = { wifi:'wifi', parking:'parking', washingMachine:'washingMachine', ac:'ac', fridge:'fridge', kitchen:'kitchen', lift:'lift', gym:'gym', security:'security', powerBackup:'powerBackup', waterSupply:'waterSupply', cctv:'cctv' };
+const AMENITY_FIELDS = ['wifi','parking','washingMachine','ac','fridge','kitchen','lift','gym','security','powerBackup','waterSupply','cctv','ventilation'];
+const AMENITY_LABELS = { wifi:'wifi', parking:'parking', washingMachine:'washingMachine', ac:'ac', fridge:'fridge', kitchen:'kitchen', lift:'lift', gym:'gym', security:'security', powerBackup:'powerBackup', waterSupply:'waterSupply', cctv:'cctv', ventilation:'ventilation' };
 
 const defaultForm = {
   title: '', description: '', type: 'HOUSE_RENTAL', rent: '', deposit: '', maintenance: '',
@@ -603,8 +603,25 @@ const CreateListing = () => {
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center text-surface-400">
-        <div className="w-10 h-10 border-3 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-sm font-medium">{t('loadingListing')}</p>
+        <div className="flex flex-col items-center gap-3">
+          <svg viewBox="0 0 64 64" fill="none" className="w-14 h-14">
+            <rect x="16" y="30" width="32" height="24" rx="3" fill="#e2e8f0" stroke="#0d9488" strokeWidth="2">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+            </rect>
+            <path d="M12 32 L32 14 L52 32" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <animate attributeName="stroke-dasharray" values="0,100;60,40;0,100" dur="2.5s" repeatCount="indefinite" />
+            </path>
+            <rect x="27" y="38" width="10" height="16" rx="2" fill="#0d9488" opacity="0.3">
+              <animate attributeName="opacity" values="0.3;0.6;0.3" dur="1.5s" repeatCount="indefinite" />
+            </rect>
+          </svg>
+          <div className="flex gap-1">
+            <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" />
+            <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+            <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+          </div>
+          <p className="text-sm font-medium">{t('loadingListing')}</p>
+        </div>
       </div>
     );
   }

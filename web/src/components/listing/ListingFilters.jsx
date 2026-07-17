@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   SlidersHorizontal, X, ChevronDown, ChevronUp,
-  Wifi, Wind, Car, Refrigerator, UtensilsCrossed, Dumbbell,
+  Wifi, Wind, Car, Refrigerator, UtensilsCrossed, Dumbbell, Droplets, Fan,
 } from 'lucide-react';
 
 /* ── Constants ─────────────────────────────────────────────── */
@@ -25,12 +25,14 @@ const GENDER_OPTIONS = [
 ];
 
 const AMENITY_OPTIONS = [
-  { key: 'wifi',    labelKey: 'wifi',    Icon: Wifi },
-  { key: 'ac',      labelKey: 'ac',      Icon: Wind },
-  { key: 'parking', labelKey: 'parking', Icon: Car },
-  { key: 'fridge',  labelKey: 'fridge',  Icon: Refrigerator },
-  { key: 'kitchen', labelKey: 'kitchen', Icon: UtensilsCrossed },
-  { key: 'gym',     labelKey: 'gym',     Icon: Dumbbell },
+  { key: 'wifi',         labelKey: 'wifi',         Icon: Wifi },
+  { key: 'ac',           labelKey: 'ac',           Icon: Wind },
+  { key: 'parking',      labelKey: 'parking',      Icon: Car },
+  { key: 'fridge',       labelKey: 'fridge',       Icon: Refrigerator },
+  { key: 'kitchen',      labelKey: 'kitchen',      Icon: UtensilsCrossed },
+  { key: 'gym',          labelKey: 'gym',          Icon: Dumbbell },
+  { key: 'waterSupply',  labelKey: 'waterSupply',  Icon: Droplets },
+  { key: 'ventilation',  labelKey: 'ventilation',  Icon: Fan },
 ];
 
 const DEFAULT_FILTERS = {

@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
-import { requestNotificationPermission } from '../utils/pushNotifications';
+import { requestNotificationPermission, subscribeToPush } from '../utils/pushNotifications';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -88,8 +88,8 @@ export default function LoginPage() {
         navigate('/complete-profile', { replace: true });
       } else {
         toast.success(t('welcomeBackHand'));
-        // Request notification permission on mobile (needs user gesture)
-        requestNotificationPermission().catch(() => {});
+        // Request notification permission and subscribe (needs user gesture on mobile)
+        requestNotificationPermission().then(() => subscribeToPush()).catch(() => {});
         navigate(from, { replace: true });
       }
     } catch (err) {

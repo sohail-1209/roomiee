@@ -262,24 +262,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CATEGORY CARDS — Below hero, no overlap */}
+      {/* CATEGORY CARDS — Trust bar style */}
       <section className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 stagger-children">
-          {CATEGORIES.filter((c) => c.type).map(({ type, tKey, icon: Icon, color }) => (
-            <Link
-              key={type}
-              to={`/search?type=${type}`}
-              className="glass-card glass-shimmer glass-glow p-5 flex flex-col items-center gap-3 text-center group"
-            >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                <Icon size={22} />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-surface-800">{t(tKey)}</p>
-                <p className="text-xs text-surface-400 mt-0.5">{t('viewAll')}</p>
-              </div>
-            </Link>
-          ))}
+        <div className="glass-tinted rounded-3xl p-4 sm:p-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {CATEGORIES.filter((c) => c.type).map(({ type, tKey, icon: Icon, color }, idx) => (
+              <Link
+                key={type}
+                to={`/search?type=${type}`}
+                className="flex items-center gap-3 p-3 sm:p-4 rounded-2xl bg-white/60 hover:bg-white/80 transition-all duration-300 group shadow-sm hover:shadow-md"
+                style={{ animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${idx * 80}ms both` }}
+              >
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-surface-800">{t(tKey)}</p>
+                  <p className="text-[10px] sm:text-xs text-surface-400">{t('viewAll')}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

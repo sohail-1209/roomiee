@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
-import Stars from './components/ui/Stars';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 
@@ -56,9 +55,43 @@ const PageLoader = () => {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface-50">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-3 border-primary-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-surface-400 font-medium">{t('loading')}</p>
+      <div className="flex flex-col items-center gap-4">
+        {/* Animated house icon */}
+        <div className="relative w-16 h-16">
+          <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+            {/* House body */}
+            <rect x="16" y="30" width="32" height="24" rx="3" fill="#e2e8f0" stroke="#0d9488" strokeWidth="2">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+            </rect>
+            {/* Roof */}
+            <path d="M12 32 L32 14 L52 32" stroke="#0d9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none">
+              <animate attributeName="stroke-dasharray" values="0,100;60,40;0,100" dur="2.5s" repeatCount="indefinite" />
+            </path>
+            {/* Door */}
+            <rect x="27" y="38" width="10" height="16" rx="2" fill="#0d9488" opacity="0.3">
+              <animate attributeName="opacity" values="0.3;0.6;0.3" dur="1.5s" repeatCount="indefinite" />
+            </rect>
+            {/* Window */}
+            <rect x="19" y="34" width="6" height="6" rx="1" fill="#0d9488" opacity="0.4">
+              <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.8s" repeatCount="indefinite" />
+            </rect>
+            <rect x="39" y="34" width="6" height="6" rx="1" fill="#0d9488" opacity="0.4">
+              <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.8s" begin="0.3s" repeatCount="indefinite" />
+            </rect>
+          </svg>
+          {/* Floating dots */}
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+          <div className="absolute -top-2 right-3 w-1.5 h-1.5 bg-primary-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          <div className="absolute top-0 -right-2 w-1 h-1 bg-primary-200 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }} />
+        </div>
+        <div className="flex flex-col items-center gap-1.5">
+          <p className="text-sm font-semibold text-surface-700">{t('loading')}</p>
+          <div className="flex gap-1">
+            <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+            <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }} />
+            <div className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }} />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -79,7 +112,6 @@ export default function App() {
       <AuthProvider>
         <SocketProvider>
           <BrowserRouter>
-            <Stars />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* ─ Public ─ */}

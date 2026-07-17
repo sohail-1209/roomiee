@@ -14,7 +14,6 @@ import { notificationsAPI } from '../../services/endpoints';
 import { timeAgo } from '../../utils/helpers';
 import Avatar from '../ui/Avatar';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
-import LampToggle from '../ui/LampToggle';
 
 const NAV_ITEMS = [
   {
@@ -295,7 +294,6 @@ export default function Navbar() {
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
-            <LampToggle />
             <LanguageSwitcher />
             {user ? (
               <>
@@ -314,7 +312,7 @@ export default function Navbar() {
                   </button>
 
                   {notifOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] rounded-2xl bg-white border border-surface-200/60 py-0 z-50 overflow-hidden" style={{ boxShadow: 'var(--md-sys-elevation-4)' }}>
+                    <div className="fixed sm:absolute right-2 sm:right-0 top-14 sm:top-full sm:mt-2 w-[calc(100vw-1rem)] sm:w-96 max-h-[60vh] rounded-2xl bg-white border border-surface-200/60 z-50 overflow-hidden" style={{ boxShadow: 'var(--md-sys-elevation-4)' }}>
                       <div className="flex items-center justify-between px-4 py-3 border-b border-surface-100">
                         <h3 className="font-semibold text-surface-900 text-sm">{t('notifications')}</h3>
                         {unreadCount > 0 && (

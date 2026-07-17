@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import './i18n'
 import './index.css'
 import App from './App.jsx'
-import { ThemeProvider } from './context/ThemeContext'
 
 // Register service worker for PWA + push notifications
 if ('serviceWorker' in navigator) {
@@ -14,8 +13,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <App />
   </StrictMode>,
 )

@@ -20,30 +20,30 @@ import {
 // ─── Per-role menu configs ─────────────────────────────────────────────────
 export const MENUS = {
   TENANT: [
-    { to: '/dashboard',               icon: LayoutDashboard, label: 'dashboardMenu' },
-    { to: '/dashboard/my-listings',   icon: ListChecks,      label: 'myListingsMenu' },
-    { to: '/dashboard/listings/new',  icon: PlusSquare,      label: 'addListingMenu' },
-    { to: '/dashboard/saved',         icon: Heart,           label: 'savedListingsMenu' },
-    { to: '/dashboard/requests',      icon: SendHorizontal,  label: 'myRequestsMenu' },
-    { to: '/dashboard/chats',         icon: MessageSquare,   label: 'chatsMenu' },
-    { to: '/dashboard/profile',       icon: User,            label: 'profileMenu' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'dashboardMenu' },
+    { to: '/dashboard/my-listings', icon: ListChecks, label: 'myListingsMenu' },
+    { to: '/dashboard/listings/new', icon: PlusSquare, label: 'addListingMenu' },
+    { to: '/dashboard/saved', icon: Heart, label: 'savedListingsMenu' },
+    { to: '/dashboard/requests', icon: SendHorizontal, label: 'myRequestsMenu' },
+    { to: '/dashboard/chats', icon: MessageSquare, label: 'chatsMenu' },
+    { to: '/dashboard/profile', icon: User, label: 'profileMenu' },
   ],
   OWNER: [
-    { to: '/dashboard',               icon: LayoutDashboard, label: 'dashboardMenu' },
-    { to: '/dashboard/listings',      icon: ListChecks,      label: 'myListingsMenu' },
-    { to: '/dashboard/listings/new',  icon: PlusSquare,      label: 'addListingMenu' },
-    { to: '/dashboard/saved',         icon: Heart,           label: 'savedListingsMenu' },
-    { to: '/dashboard/requests',      icon: SendHorizontal,  label: 'requestsMenu' },
-    { to: '/dashboard/chats',         icon: MessageSquare,   label: 'chatsMenu' },
-    { to: '/dashboard/analytics',     icon: BarChart2,       label: 'analyticsMenu' },
-    { to: '/dashboard/profile',       icon: User,            label: 'profileMenu' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'dashboardMenu' },
+    { to: '/dashboard/listings', icon: ListChecks, label: 'myListingsMenu' },
+    { to: '/dashboard/listings/new', icon: PlusSquare, label: 'addListingMenu' },
+    { to: '/dashboard/saved', icon: Heart, label: 'savedListingsMenu' },
+    { to: '/dashboard/requests', icon: SendHorizontal, label: 'requestsMenu' },
+    { to: '/dashboard/chats', icon: MessageSquare, label: 'chatsMenu' },
+    { to: '/dashboard/analytics', icon: BarChart2, label: 'analyticsMenu' },
+    { to: '/dashboard/profile', icon: User, label: 'profileMenu' },
   ],
   ADMIN: [
-    { to: '/admin',                   icon: LayoutDashboard, label: 'dashboardMenu' },
-    { to: '/admin',                   icon: Users,           label: 'users' },
-    { to: '/admin',                   icon: ListChecks,      label: 'listingsTab' },
-    { to: '/admin',                   icon: Flag,            label: 'reports' },
-    { to: '/admin',                   icon: BarChart2,       label: 'analyticsMenu' },
+    { to: '/admin', icon: LayoutDashboard, label: 'dashboardMenu' },
+    { to: '/admin', icon: Users, label: 'users' },
+    { to: '/admin', icon: ListChecks, label: 'listingsTab' },
+    { to: '/admin', icon: Flag, label: 'reports' },
+    { to: '/admin', icon: BarChart2, label: 'analyticsMenu' },
   ],
 };
 
@@ -56,12 +56,10 @@ function SidebarItem({ to, icon: Icon, label, end, collapsed }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `group relative flex items-center rounded-xl text-sm font-medium transition-all duration-200 ${
-          collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 px-3 py-2.5'
-        } ${
-          isActive
-            ? 'bg-primary-50 text-primary-700 shadow-sm shadow-primary-500/5'
-            : 'text-surface-500 hover:bg-surface-100 hover:text-surface-800'
+        `group relative flex items-center rounded-xl text-sm font-medium transition-all duration-200 ${collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 px-3 py-2.5'
+        } ${isActive
+          ? 'bg-primary-50 text-primary-700 shadow-sm shadow-primary-500/5'
+          : 'text-surface-500 hover:bg-surface-100 hover:text-surface-800'
         }`
       }
     >
@@ -70,20 +68,18 @@ function SidebarItem({ to, icon: Icon, label, end, collapsed }) {
           <Icon
             size={19}
             strokeWidth={isActive ? 2.2 : 1.8}
-            className={`shrink-0 transition-colors duration-150 ${
-              isActive ? 'text-primary-600' : 'text-surface-400 group-hover:text-surface-600'
-            }`}
+            className={`shrink-0 transition-colors duration-150 ${isActive ? 'text-primary-600' : 'text-surface-400 group-hover:text-surface-600'
+              }`}
           />
           {!collapsed && (
             <span className="truncate">{t(label)}</span>
           )}
           {isActive && (
             <span
-              className={`absolute ${
-                collapsed
+              className={`absolute ${collapsed
                   ? 'bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px]'
                   : 'right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5'
-              } rounded-full bg-primary-500`}
+                } rounded-full bg-primary-500`}
             />
           )}
         </>
@@ -116,13 +112,12 @@ export default function Sidebar({ role, collapsed = false, onToggle }) {
 
   return (
     <aside
-      className={`flex flex-col h-full bg-surface-50/80 backdrop-blur-xl border-r border-surface-100/60 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        collapsed ? 'px-2 py-4' : 'px-3 py-4 sm:py-6'
-      }`}
+      className={`flex flex-col h-full bg-surface-50/80 backdrop-blur-xl border-r border-surface-100/60 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${collapsed ? 'px-2 py-4' : 'px-3 py-4 sm:py-6'
+        }`}
     >
       {/* Section label */}
       {!collapsed && (
-        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-surface-400">
+        <p className="px-3 py-3 mb-2 text-[10px] font-semibold uppercase tracking-widest text-surface-400">
           {role === 'ADMIN' ? t('adminPanel') : t('myAccount')}
         </p>
       )}
@@ -144,11 +139,10 @@ export default function Sidebar({ role, collapsed = false, onToggle }) {
       <div className={`border-t border-surface-200/60 ${collapsed ? 'pt-2 mt-1' : 'pt-3 mt-2'}`}>
         <button
           onClick={onToggle}
-          className={`group flex items-center rounded-xl transition-all duration-200 w-full ${
-            collapsed
+          className={`group flex items-center rounded-xl transition-all duration-200 w-full ${collapsed
               ? 'justify-center w-10 h-10 mx-auto text-surface-500 hover:bg-surface-100 hover:text-surface-800'
               : 'gap-2.5 px-3 py-2.5 text-surface-500 hover:bg-surface-100 hover:text-surface-800'
-          }`}
+            }`}
           title={collapsed ? t('expandSidebar') : t('collapseSidebar')}
         >
           {collapsed ? (

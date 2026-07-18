@@ -83,6 +83,8 @@
   "noYet": "No",
   "notConfigured": "not configured yet",
   "googleLoading": "Google Sign-In is loading, please try again",
+  "connectingGoogle": "Connecting with Google",
+  "selectGoogleAccount": "Please select your Google account from the prompt to continue",
   "welcomeBack": "Welcome back!",
   "welcome": "Welcome!",
   "createAccount": "Create an account",

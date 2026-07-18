@@ -83,6 +83,8 @@
   "noYet": "नहीं",
   "notConfigured": "अभी तक कॉन्फ़िगर नहीं किया गया",
   "googleLoading": "Google Sign-In लोड हो रहा है, कृपया पुनः प्रयास करें",
+  "connectingGoogle": "Google से कनेक्ट किया जा रहा है",
+  "selectGoogleAccount": "कृपया जारी रखने के लिए दिखाई देने वाले Google प्रॉम्प्ट से अपना खाता चुनें",
   "welcomeBack": "वापस स्वागत है!",
   "welcome": "स्वागत है!",
   "createAccount": "खाता बनाएं",

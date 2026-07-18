@@ -83,6 +83,8 @@
   "noYet": "نہیں",
   "notConfigured": "ابھی تک ترتیب نہیں دی گئی",
   "googleLoading": "Google Sign-In لوڈ ہو رہا ہے، براہ کرم دوبارہ کوشش کریں",
+  "connectingGoogle": "Google سے منسلک ہو رہا ہے",
+  "selectGoogleAccount": "براہ کرم جاری رکھنے کے لیے گوگل پراامپٹ سے اپنا اکاؤنٹ منتخب کریں",
   "welcomeBack": "واپسی پر خوش آمدید!",
   "welcome": "خوش آمدید!",
   "createAccount": "اکاؤنٹ بنائیں",

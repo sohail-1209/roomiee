@@ -123,7 +123,7 @@ const RegisterPage = () => {
     const e = {};
     if (!form.name.trim()) e.name = t('fullNameRequired', 'Full name is required');
     if (!form.email.trim()) e.email = t('emailRequired', 'Email is required');
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = t('invalidEmail', 'Enter a valid email');
+    else if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(form.email)) e.email = t('invalidEmail', 'Enter a valid email (e.g. name@example.com)');
     if (!form.phone.trim()) e.phone = t('phoneRequired', 'Phone number is required');
     else if (!/^[6-9]\d{9}$/.test(form.phone)) e.phone = t('invalidPhone', 'Enter a valid 10-digit mobile number');
     if (!form.password) e.password = t('passwordRequired', 'Password is required');

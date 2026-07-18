@@ -125,7 +125,7 @@ export default function LoginPage() {
   const validate = () => {
     const e = {};
     if (!form.email.trim()) e.email = t('emailRequired', 'Email is required');
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = t('invalidEmail', 'Enter a valid email');
+    else if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(form.email)) e.email = t('invalidEmail', 'Enter a valid email (e.g. name@example.com)');
     if (!form.password) e.password = t('passwordRequired', 'Password is required');
     setErrors(e);
     return Object.keys(e).length === 0;

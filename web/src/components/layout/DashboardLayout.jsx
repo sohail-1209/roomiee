@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }) {
   return (
     <>
       <Navbar />
-      <div className="min-h-[calc(100vh-3.5rem)] flex flex-col bg-surface-50">
+      <div className="min-h-[calc(100vh-3.5rem)] lg:min-h-[calc(100vh-5rem)] flex flex-col bg-surface-50">
 
         {/* ── Mobile quick-nav row ──────────────────────────────────────── */}
         <MobileQuickNav />
@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }) {
           {/* ── Collapsible sidebar (desktop, ≥ lg) ───────────────────── */}
           <div className="hidden lg:flex lg:flex-shrink-0">
             <div
-              className={`flex flex-col sticky top-14 h-[calc(100vh-3.5rem)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`flex flex-col sticky top-20 h-[calc(100vh-5rem)] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 collapsed ? 'w-[68px]' : 'w-60'
               }`}
             >

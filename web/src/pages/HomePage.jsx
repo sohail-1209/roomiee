@@ -154,7 +154,10 @@ export default function HomePage() {
 
   // Typing animation
   useEffect(() => {
-    const currentQuote = t(HERO_QUOTE_KEYS[quoteIdx]);
+    const quoteKey = HERO_QUOTE_KEYS[quoteIdx];
+    if (!quoteKey) return;
+    const currentQuote = String(t(quoteKey) || '');
+    if (!currentQuote) return;
     let timeout;
 
     if (!isDeleting && typedText === currentQuote) {
@@ -172,7 +175,7 @@ export default function HomePage() {
       }, isDeleting ? 40 : 80);
     }
     return () => clearTimeout(timeout);
-  }, [typedText, isDeleting, quoteIdx]);
+  }, [typedText, isDeleting, quoteIdx, t]);
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['home-listings', activeType, page],

@@ -156,7 +156,18 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
     socket.emit('mark_seen', { chatId });
 
     socket.on('new_message', (msg) => {
-      setMessages((prev) => [...prev, msg]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev;
+        if (msg.senderId === user?.id) {
+          const tempIdx = prev.findIndex((m) => String(m.id).startsWith('temp-'));
+          if (tempIdx > -1) {
+            const updated = [...prev];
+            updated[tempIdx] = { ...msg, sender: updated[tempIdx].sender };
+            return updated;
+          }
+        }
+        return [...prev, msg];
+      });
       if (msg.senderId !== user?.id) socket.emit('mark_seen', { chatId });
     });
     socket.on('user_typing', ({ isTyping: t }) => setIsTyping(t));

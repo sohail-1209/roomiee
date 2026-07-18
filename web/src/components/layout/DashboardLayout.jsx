@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }) {
   return (
     <>
       <Navbar />
-      <div className="pt-14 lg:pt-12 min-h-[calc(100vh-3.5rem)] lg:min-h-[calc(100vh-5rem)] flex flex-col bg-surface-50">
+      <div className="lg:pt-9 min-h-[calc(100vh-3.5rem)] lg:min-h-[calc(100vh-5rem)] flex flex-col bg-surface-50">
 
         {/* ── Mobile quick-nav row ──────────────────────────────────────── */}
         <MobileQuickNav />

@@ -16,14 +16,17 @@ const ReviewCard = ({ review }) => (
         <span className="text-xs text-surface-400">{timeAgo(review.createdAt)}</span>
       </div>
       {/* Stars */}
-      <div className="flex gap-0.5 mb-2">
-        {[1,2,3,4,5].map((s) => (
-          <Star
-            key={s}
-            size={13}
-            className={s <= review.rating ? 'text-accent-400 fill-accent-400' : 'text-surface-200'}
-          />
-        ))}
+      <div className="flex items-center gap-2 mb-2">
+        <div className="flex gap-0.5">
+          {[1,2,3,4,5].map((s) => (
+            <Star
+              key={s}
+              size={13}
+              className={s <= review.rating ? 'fill-amber-400 text-amber-400' : 'text-surface-200'}
+            />
+          ))}
+        </div>
+        <span className="text-xs font-semibold text-surface-650">({review.rating}/5)</span>
       </div>
       {review.comment && <p className="text-sm text-surface-600 leading-relaxed">{review.comment}</p>}
     </div>

@@ -2,12 +2,14 @@
 // Used in both the Chat page and as an overlay
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Check, CheckCheck, CheckCircle, XCircle, AlertCircle, Phone } from 'lucide-react';
+import { Send, Check, CheckCheck, CheckCircle, XCircle, AlertCircle, Phone, Star } from 'lucide-react';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { chatAPI, requestsAPI } from '../../services/endpoints';
 import { timeAgo } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import ReviewForm from '../ReviewForm';
+import UserReviewsModal from '../UserReviewsModal';
 
 const Message = ({ msg, isOwn }) => (
   <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2 animate-fade-in`}>
@@ -121,6 +123,8 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
   const [loading, setLoading] = useState(true);
   const [request, setRequest] = useState(initialRequest);
   const [processing, setProcessing] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReviewsList, setShowReviewsList] = useState(false);
   const bottomRef = useRef(null);
   const typingTimeout = useRef(null);
 
@@ -322,7 +326,19 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
           className="w-10 h-10 rounded-full object-cover"
         />
         <div className="flex-1">
-          <p className="font-semibold text-surface-900">{otherUser?.name}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-semibold text-surface-900">{otherUser?.name}</p>
+            {otherUser?.avgRating != null && otherUser.avgRating > 0 && (
+              <button
+                onClick={() => setShowReviewsList(true)}
+                className="flex items-center gap-0.5 text-xs text-amber-500 font-semibold hover:underline bg-amber-50 px-1.5 py-0.5 rounded-full"
+                title={t('viewReviews', 'View Reviews')}
+              >
+                <Star size={10} className="fill-amber-400 text-amber-400" />
+                {Number(otherUser.avgRating).toFixed(1)} ({otherUser.totalRatings})
+              </button>
+            )}
+          </div>
           {otherUserStatus.isOnline ? (
             <p className="text-xs text-success-600 flex items-center gap-1 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
@@ -344,6 +360,16 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
           >
             <Phone size={18} />
           </a>
+        )}
+        {otherUser && (
+          <button
+            onClick={() => setShowReviewForm(true)}
+            className="p-2.5 hover:bg-surface-100 rounded-xl transition-colors text-amber-500"
+            title={t('rateUser', 'Rate User')}
+            aria-label="Rate User"
+          >
+            <Star size={18} className="fill-amber-400 text-amber-400" />
+          </button>
         )}
       </div>
       )}
@@ -401,6 +427,21 @@ const ChatWindow = ({ chatId, chat, otherUser, request: initialRequest, hideHead
         </div>
         )}
       </div>
+
+      <ReviewForm
+        isOpen={showReviewForm}
+        onClose={() => setShowReviewForm(false)}
+        receiverId={otherUser?.id}
+        listingId={chat?.listingId}
+        listingTitle={chat?.listing?.title}
+      />
+
+      <UserReviewsModal
+        isOpen={showReviewsList}
+        onClose={() => setShowReviewsList(false)}
+        userId={otherUser?.id}
+        userName={otherUser?.name}
+      />
     </div>
   );
 };

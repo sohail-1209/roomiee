@@ -11,8 +11,8 @@ const getChats = asyncHandler(async (req, res) => {
       OR: [{ ownerId: req.user.id }, { tenantId: req.user.id }],
     },
     include: {
-      owner: { select: { id: true, name: true, profileImage: true, phone: true, isOnline: true, lastSeen: true } },
-      tenant: { select: { id: true, name: true, profileImage: true, phone: true, isOnline: true, lastSeen: true } },
+      owner: { select: { id: true, name: true, profileImage: true, phone: true, isOnline: true, lastSeen: true, avgRating: true, totalRatings: true } },
+      tenant: { select: { id: true, name: true, profileImage: true, phone: true, isOnline: true, lastSeen: true, avgRating: true, totalRatings: true } },
       listing: { select: { id: true, title: true, city: true } },
       request: {
         select: {

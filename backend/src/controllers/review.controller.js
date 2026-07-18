@@ -7,6 +7,7 @@ const { sendNotification } = require('../services/notification.service');
 // ─── POST /reviews ────────────────────────────────────
 const createReview = asyncHandler(async (req, res) => {
   const { receiverId, listingId, rating, comment } = req.body;
+  if (!receiverId) throw new AppError('Receiver ID is required', 400);
   if (rating < 1 || rating > 5) throw new AppError('Rating must be 1-5', 400);
   if (receiverId === req.user.id) throw new AppError('Cannot review yourself', 400);
 

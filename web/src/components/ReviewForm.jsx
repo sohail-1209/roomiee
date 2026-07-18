@@ -46,6 +46,15 @@ const ReviewForm = ({ isOpen, onClose, receiverId, listingId, listingTitle }) =>
         <div className="text-center">
           <p className="text-sm font-medium text-surface-600 mb-2">{t('yourRating')}</p>
           <StarRating value={rating} onChange={setRating} size={32} className="justify-center" />
+          {rating > 0 && (
+            <p className="text-sm font-semibold text-primary-650 mt-1.5">
+              {rating === 1 && t('ratingPoor', '1 - Poor')}
+              {rating === 2 && t('ratingFair', '2 - Fair')}
+              {rating === 3 && t('ratingAverage', '3 - Average')}
+              {rating === 4 && t('ratingGood', '4 - Good')}
+              {rating === 5 && t('ratingExcellent', '5 - Excellent')}
+            </p>
+          )}
         </div>
 
         <div>

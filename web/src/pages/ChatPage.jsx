@@ -1,17 +1,22 @@
 // Chat Page — shows chat list on left, active chat on right (responsive: one panel at a time on mobile)
 // When a chat is active on mobile, renders as fullscreen overlay
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { chatAPI } from '../services/endpoints';
 import { useAuth } from '../context/AuthContext';
 import ChatList from '../components/chat/ChatList';
 import ChatWindow from '../components/chat/ChatWindow';
-import { MessageCircle, Phone, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Phone, ArrowLeft, Star } from 'lucide-react';
+import ReviewForm from '../components/ReviewForm';
+import UserReviewsModal from '../components/UserReviewsModal';
 
 const ChatPage = () => {
   const { id: chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showReviewsList, setShowReviewsList] = useState(false);
 
   const { data: chats } = useQuery({
     queryKey: ['chats'],
@@ -63,7 +68,18 @@ const ChatPage = () => {
               className="w-9 h-9 rounded-full object-cover"
             />
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-surface-900 text-sm truncate">{otherUser?.name}</p>
+              <div className="flex items-center gap-1.5">
+                <p className="font-semibold text-surface-900 text-sm truncate">{otherUser?.name}</p>
+                {otherUser?.avgRating != null && otherUser.avgRating > 0 && (
+                  <button
+                    onClick={() => setShowReviewsList(true)}
+                    className="flex items-center gap-0.5 text-[10px] text-amber-500 font-semibold hover:underline bg-amber-50 px-1 py-0.2 rounded-full"
+                  >
+                    <Star size={8} className="fill-amber-400 text-amber-400" />
+                    {Number(otherUser.avgRating).toFixed(1)}
+                  </button>
+                )}
+              </div>
               {request?.status === 'ACCEPTED' && (
                 <p className="text-xs text-success-500">Online</p>
               )}
@@ -77,11 +93,33 @@ const ChatPage = () => {
                 <Phone size={18} />
               </a>
             )}
+            {otherUser && (
+              <button
+                onClick={() => setShowReviewForm(true)}
+                className="p-2.5 hover:bg-surface-100 rounded-xl transition-colors text-amber-500"
+                aria-label="Rate User"
+              >
+                <Star size={18} className="fill-amber-400 text-amber-400" />
+              </button>
+            )}
           </div>
           {/* Chat content fills remaining space */}
           <div className="flex-1 min-h-0">
             <ChatWindow chatId={chatId} chat={activeChat} otherUser={otherUser} request={request} hideHeader />
           </div>
+          <ReviewForm
+            isOpen={showReviewForm}
+            onClose={() => setShowReviewForm(false)}
+            receiverId={otherUser?.id}
+            listingId={activeChat?.listingId}
+            listingTitle={activeChat?.listing?.title}
+          />
+          <UserReviewsModal
+            isOpen={showReviewsList}
+            onClose={() => setShowReviewsList(false)}
+            userId={otherUser?.id}
+            userName={otherUser?.name}
+          />
         </div>
       </>
     );

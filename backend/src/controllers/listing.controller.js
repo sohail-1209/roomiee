@@ -7,6 +7,7 @@ const cloudinary = require('../services/cloudinary.service');
 // ─── Shared listing select (reused in list + detail) ──
 const listingSelect = {
   id: true,
+  ownerId: true,
   title: true,
   type: true,
   status: true,

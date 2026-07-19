@@ -37,6 +37,8 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
   'https://quikden.vercel.app',
+  'https://quikden.in',
+  'https://www.quikden.in',
   'http://localhost:5173',
   'http://localhost:3000',
 ].filter(Boolean);

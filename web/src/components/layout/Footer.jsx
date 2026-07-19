@@ -134,7 +134,7 @@ export default function Footer() {
                   to="/search"
                   className="hover:text-primary-600 hover:translate-x-1 inline-block transition-all duration-200"
                 >
-                  {t('browse') || 'Browse All'}
+                  {t('Browse') || 'Browse All'}
                 </Link>
               </li>
               <li>

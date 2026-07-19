@@ -146,39 +146,51 @@ const getListings = asyncHandler(async (req, res) => {
 
 // ─── GET /listings/:id — single listing detail ────────
 const getListing = asyncHandler(async (req, res) => {
-  const listing = await prisma.listing.findUnique({
-    where: { id: req.params.id },
-    select: {
-      ...listingSelect,
-      description: true,
-      pincode: true,
-      reviews: {
-        include: {
-          reviewer: { select: { id: true, name: true, profileImage: true } },
+  const listingId = req.params.id;
+
+  // 1. Get raw listing details (from cache or database)
+  const cacheKey = `listing:${listingId}`;
+  let listing = cache.get(cacheKey);
+
+  if (!listing) {
+    listing = await prisma.listing.findUnique({
+      where: { id: listingId },
+      select: {
+        ...listingSelect,
+        description: true,
+        pincode: true,
+        reviews: {
+          include: {
+            reviewer: { select: { id: true, name: true, profileImage: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
         },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
       },
-    },
-  });
-  if (!listing) throw new AppError('Listing not found', 404);
+    });
+    if (!listing) throw new AppError('Listing not found', 404);
+
+    // Save raw details to cache for 30s
+    cache.set(cacheKey, listing, 30);
+  }
 
   // Increment views (fire and forget)
-  prisma.listing.update({ where: { id: listing.id }, data: { views: { increment: 1 } } }).catch(() => {});
+  prisma.listing.update({ where: { id: listingId }, data: { views: { increment: 1 } } }).catch(() => {});
 
-  // If authenticated, check if saved
+  // 2. Fetch user-specific status in parallel if authenticated
   let isSaved = false;
   let hasAcceptedRequest = false;
-  if (req.user) {
-    const saved = await prisma.savedListing.findUnique({
-      where: { userId_listingId: { userId: req.user.id, listingId: listing.id } },
-    });
-    isSaved = !!saved;
 
-    // Check if user has an accepted request for this listing
-    const acceptedRequest = await prisma.request.findFirst({
-      where: { listingId: listing.id, tenantId: req.user.id, status: 'ACCEPTED' },
-    });
+  if (req.user) {
+    const [saved, acceptedRequest] = await Promise.all([
+      prisma.savedListing.findUnique({
+        where: { userId_listingId: { userId: req.user.id, listingId } },
+      }),
+      prisma.request.findFirst({
+        where: { listingId, tenantId: req.user.id, status: 'ACCEPTED' },
+      }),
+    ]);
+    isSaved = !!saved;
     hasAcceptedRequest = !!acceptedRequest;
   }
 
@@ -195,7 +207,13 @@ const getListing = asyncHandler(async (req, res) => {
 
   res.json({
     success: true,
-    data: { ...listing, latitude, longitude, isSaved, isLocationExact: listing.type !== 'HOUSE_RENTAL' || isOwner || isAdmin || hasAcceptedRequest },
+    data: { 
+      ...listing, 
+      latitude, 
+      longitude, 
+      isSaved, 
+      isLocationExact: listing.type !== 'HOUSE_RENTAL' || isOwner || isAdmin || hasAcceptedRequest 
+    },
   });
 });
 

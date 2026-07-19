@@ -3,6 +3,7 @@ const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const { sendNotification } = require('../services/notification.service');
+const cache = require('../utils/cache');
 
 // ─── POST /reviews ────────────────────────────────────
 const createReview = asyncHandler(async (req, res) => {
@@ -52,20 +53,31 @@ const createReview = asyncHandler(async (req, res) => {
     data: { reviewId: review.id, listingId, reviewerId: req.user.id },
   });
 
+  cache.clear();
   res.status(201).json({ success: true, data: review });
 });
 
 // ─── GET /reviews/:userId ──────────────────────────────
 const getUserReviews = asyncHandler(async (req, res) => {
+  const userId = req.params.userId;
+  const cacheKey = `reviews:${userId}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return res.json(cachedData);
+  }
+
   const reviews = await prisma.review.findMany({
-    where: { receiverId: req.params.userId },
+    where: { receiverId: userId },
     include: {
       reviewer: { select: { id: true, name: true, profileImage: true } },
       listing: { select: { id: true, title: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
-  res.json({ success: true, data: reviews });
+
+  const responseData = { success: true, data: reviews };
+  cache.set(cacheKey, responseData, 60);
+  res.json(responseData);
 });
 
 module.exports = { createReview, getUserReviews };

@@ -584,14 +584,28 @@ const CreateListing = () => {
         {(listingData?.photos?.length > 0 || uploadingPhotos || isFetching) && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {listingData?.photos?.map((photo, idx) => (
-              <div key={photo.id} className="relative aspect-square rounded-2xl overflow-hidden group border border-surface-100">
-                <img src={photo.url} alt="" className="w-full h-full object-cover" />
+              <div key={photo.id} className="relative aspect-square rounded-2xl overflow-hidden group border border-surface-100 bg-surface-100">
+                {/* Skeleton placeholder — visible until img loads */}
+                <div className="absolute inset-0 bg-surface-100 animate-pulse flex items-center justify-center transition-opacity duration-300 photo-skeleton">
+                  <div className="h-5 w-5 border-2 border-surface-300 border-t-transparent rounded-full animate-spin" />
+                </div>
+                <img
+                  src={photo.url}
+                  alt=""
+                  className="w-full h-full object-cover relative z-[1] opacity-0 transition-opacity duration-300"
+                  onLoad={(e) => {
+                    e.currentTarget.classList.remove('opacity-0');
+                    e.currentTarget.classList.add('opacity-100');
+                    const skel = e.currentTarget.parentElement?.querySelector('.photo-skeleton');
+                    if (skel) skel.style.opacity = '0';
+                  }}
+                />
                 {idx === 0 && (
-                  <span className="absolute top-2 left-2 bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{t('cover') || 'Cover'}</span>
+                  <span className="absolute top-2 left-2 z-[2] bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{t('cover') || 'Cover'}</span>
                 )}
                 <button
                   onClick={() => deletePhoto(photo.id)}
-                  className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors md:opacity-0 md:group-hover:opacity-100 shadow-md min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  className="absolute top-2 right-2 z-[2] bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors md:opacity-0 md:group-hover:opacity-100 shadow-md min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
                   <Trash2 size={14} />
                 </button>

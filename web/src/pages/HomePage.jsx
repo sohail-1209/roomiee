@@ -362,7 +362,7 @@ export default function HomePage() {
             ? Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} index={i} />)
             : listings.map((listing, i) => (
               <div key={listing.id} className="h-full" style={{ animation: `slide-up 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 50}ms both` }}>
-                <ListingCard listing={listing} isSaved={savedIds.has(listing.id)} />
+                <ListingCard listing={listing} isSaved={savedIds.has(listing.id)} hideSave />
               </div>
             ))
           }

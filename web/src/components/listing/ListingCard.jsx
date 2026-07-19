@@ -38,7 +38,7 @@ const TYPE_CONFIG_KEYS = {
   LAND_SALE: { labelKey: 'landSaleBadge', color: 'bg-amber-500/90 text-white' },
 };
 
-const ListingCard = ({ listing, onSave, isSaved = false }) => {
+const ListingCard = ({ listing, onSave, isSaved = false, hideSave = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -97,9 +97,11 @@ const ListingCard = ({ listing, onSave, isSaved = false }) => {
         )}
 
         {/* Save */}
-        <div className="absolute top-3 right-3">
-          <SaveButton listingId={listing.id} isSaved={isSaved} onToggle={onSave} />
-        </div>
+        {!hideSave && (
+          <div className="absolute top-3 right-3">
+            <SaveButton listingId={listing.id} isSaved={isSaved} onToggle={onSave} />
+          </div>
+        )}
 
         {/* Time ago */}
         <span className="absolute bottom-3 right-3 bg-surface-900/60 backdrop-blur-sm text-white text-[11px] px-2.5 py-1 rounded-full font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-1 group-hover:translate-y-0">

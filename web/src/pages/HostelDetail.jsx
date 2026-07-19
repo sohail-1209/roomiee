@@ -50,7 +50,7 @@ const HostelDetail = () => {
   }, [data?.isSaved]);
 
   const { mutate: sendRequest, isPending: requesting } = useMutation({
-    mutationFn: () => requestsAPI.create({ listingId: id, message: requestMsg }),
+    mutationFn: () => requestsAPI.create({ listingId: id, message: requestMsg, price: selectedTier ? selectedTier.price : data?.rent }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['requests'] });
       qc.invalidateQueries({ queryKey: ['listings'] });

@@ -89,10 +89,10 @@ const ListingCard = ({ listing, onSave, isSaved = false, hideSave = false }) => 
           {typeConfig.label}
         </span>
 
-        {/* Booked */}
+        {/* Booked / Fully Booked */}
         {listing.status === 'RENTED' && (
           <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-surface-900/80 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">
-            {t('booked')}
+            {isHostel ? t('fullyBooked') : t('booked')}
           </span>
         )}
 

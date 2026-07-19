@@ -6,7 +6,7 @@ const { sendNotification } = require('../services/notification.service');
 
 // ─── POST /requests — tenant sends request ────────────
 const createRequest = asyncHandler(async (req, res) => {
-  const { listingId, message } = req.body;
+  const { listingId, message, price } = req.body;
 
   const listing = await prisma.listing.findUnique({
     where: { id: listingId },
@@ -16,7 +16,7 @@ const createRequest = asyncHandler(async (req, res) => {
   if (listing.ownerId === req.user.id) throw new AppError('Cannot request your own listing', 400);
 
   const request = await prisma.request.create({
-    data: { listingId, tenantId: req.user.id, message },
+    data: { listingId, tenantId: req.user.id, message, price },
     include: {
       tenant: { select: { id: true, name: true, profileImage: true } },
       listing: { select: { id: true, title: true } },
@@ -54,7 +54,7 @@ const updateRequest = asyncHandler(async (req, res) => {
   const request = await prisma.request.findUnique({
     where: { id: req.params.id },
     include: {
-      listing: { select: { ownerId: true, title: true } },
+      listing: { select: { ownerId: true, title: true, type: true } },
       tenant: { select: { id: true, fcmToken: true, name: true } },
     },
   });
@@ -69,10 +69,15 @@ const updateRequest = asyncHandler(async (req, res) => {
 
   if (status === 'ACCEPTED') {
     // Update request status + mark listing as BOOKED (transactional)
-    const [updatedRequest] = await prisma.$transaction([
-      prisma.request.update({ where: { id: request.id }, data: { status: 'ACCEPTED' } }),
-      prisma.listing.update({ where: { id: request.listingId }, data: { status: 'RENTED' } }),
-    ]);
+    // Only mark listing as RENTED if it is not a HOSTEL, since hostels have multiple capacity
+    const transactionOps = [
+      prisma.request.update({ where: { id: request.id }, data: { status: 'ACCEPTED' } })
+    ];
+    if (request.listing.type !== 'HOSTEL') {
+      transactionOps.push(prisma.listing.update({ where: { id: request.listingId }, data: { status: 'RENTED' } }));
+    }
+    
+    const [updatedRequest] = await prisma.$transaction(transactionOps);
 
     chat = await prisma.chat.findUnique({ where: { requestId: request.id } });
 

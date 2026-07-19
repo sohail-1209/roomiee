@@ -55,7 +55,7 @@ const ListingDetail = () => {
   }, [data?.isSaved]);
 
   const { mutate: sendRequest, isPending: requesting } = useMutation({
-    mutationFn: () => requestsAPI.create({ listingId: id, message: requestMsg }),
+    mutationFn: () => requestsAPI.create({ listingId: id, message: requestMsg, price: data?.rent }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['requests'] });
       qc.invalidateQueries({ queryKey: ['listings'] });

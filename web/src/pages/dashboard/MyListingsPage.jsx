@@ -85,7 +85,7 @@ const MyListingsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mt-5 sm:mt-6">
           {listings.map((listing) => {
             const photo = getPrimaryPhoto(listing);
-            const statusLabel = listing.status === 'ACTIVE' ? t('active') : listing.status === 'RENTED' ? t('booked') : t('inactive');
+            const statusLabel = listing.status === 'ACTIVE' ? t('active') : listing.status === 'RENTED' ? (listing.type === 'HOSTEL' ? t('fullyBooked') : t('booked')) : t('inactive');
             return (
               <div key={listing.id} className="card overflow-hidden">
                 {/* Top: Image + Info */}

@@ -300,6 +300,7 @@ model Request {
   tenant      User          @relation("TenantRequests", fields: [tenantId], references: [id], onDelete: Cascade)
   status      RequestStatus @default(PENDING)
   message     String?
+  price       Int?          // The price they booked for (useful for hostels with tiers)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

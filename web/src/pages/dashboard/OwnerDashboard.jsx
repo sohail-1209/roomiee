@@ -66,7 +66,12 @@ const ListingRow = ({ listing }) => {
       />
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-surface-800 text-sm line-clamp-1">{listing.title}</p>
-        <p className="text-xs text-surface-400 mt-0.5">{formatRent(listing.rent)}/mo · {listing.city}</p>
+        <p className="text-xs text-surface-400 mt-0.5">
+          {listing.type === 'HOSTEL' && listing.hostelSharing?.tiers?.length > 0
+            ? `From ${formatRent(Math.min(...listing.hostelSharing.tiers.map((t) => t.price)))}`
+            : formatRent(listing.rent)
+          }/mo · {listing.city}
+        </p>
         <div className="flex items-center gap-2 mt-1.5">
           <span
             className={`badge text-xs ${

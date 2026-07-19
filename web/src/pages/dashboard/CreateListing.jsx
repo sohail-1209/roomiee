@@ -48,6 +48,7 @@ const CreateListing = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null); // null = "Other room"
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [deletingPhotoIds, setDeletingPhotoIds] = useState(new Set());
 
   const set = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
   const setAmenity = (key, val) => setForm((prev) => ({ ...prev, amenities: { ...prev.amenities, [key]: val } }));
@@ -276,12 +277,19 @@ const CreateListing = () => {
   });
 
   const { mutate: deletePhoto } = useMutation({
-    mutationFn: (photoId) => uploadAPI.deletePhoto(photoId),
-    onSuccess: () => {
-      toast.success(t('photoDeleted'));
-      qc.invalidateQueries({ queryKey: ['listing', id] });
+    mutationFn: (photoId) => {
+      setDeletingPhotoIds((prev) => new Set(prev).add(photoId));
+      return uploadAPI.deletePhoto(photoId);
     },
-    onError: () => toast.error(t('failedToDeletePhoto')),
+    onSuccess: (_, photoId) => {
+      toast.success(t('photoDeleted') || 'Photo deleted!');
+      qc.invalidateQueries({ queryKey: ['listing', id] });
+      setDeletingPhotoIds((prev) => { const s = new Set(prev); s.delete(photoId); return s; });
+    },
+    onError: (_, photoId) => {
+      toast.error(t('failedToDeletePhoto') || 'Failed to delete photo.');
+      setDeletingPhotoIds((prev) => { const s = new Set(prev); s.delete(photoId); return s; });
+    },
   });
 
   const handlePhotoUpload = async (e) => {
@@ -585,8 +593,10 @@ const CreateListing = () => {
         {/* Existing photos + Uploading placeholder overlay */}
         {(listingData?.photos?.length > 0 || uploadingPhotos || isFetching) && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {listingData?.photos?.map((photo, idx) => (
-              <div key={photo.id} className="relative aspect-square rounded-2xl overflow-hidden group border border-surface-100 bg-surface-100">
+            {listingData?.photos?.map((photo, idx) => {
+              const isDeleting = deletingPhotoIds.has(photo.id);
+              return (
+              <div key={photo.id} className={`relative aspect-square rounded-2xl overflow-hidden group border bg-surface-100 ${isDeleting ? 'border-red-300' : 'border-surface-100'}`}>
                 {/* Skeleton placeholder — visible until img loads */}
                 <div className="absolute inset-0 bg-surface-100 animate-pulse flex items-center justify-center transition-opacity duration-300 photo-skeleton">
                   <div className="h-5 w-5 border-2 border-surface-300 border-t-transparent rounded-full animate-spin" />
@@ -594,7 +604,7 @@ const CreateListing = () => {
                 <img
                   src={photo.url}
                   alt=""
-                  className="w-full h-full object-cover relative z-[1] opacity-0 transition-opacity duration-300"
+                  className={`w-full h-full object-cover relative z-[1] opacity-0 transition-opacity duration-300 ${isDeleting ? 'grayscale' : ''}`}
                   onLoad={(e) => {
                     e.currentTarget.classList.remove('opacity-0');
                     e.currentTarget.classList.add('opacity-100');
@@ -602,17 +612,29 @@ const CreateListing = () => {
                     if (skel) skel.style.opacity = '0';
                   }}
                 />
-                {idx === 0 && (
+
+                {/* Deleting overlay */}
+                {isDeleting && (
+                  <div className="absolute inset-0 z-[3] bg-red-600/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 animate-pulse">
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] font-bold text-white tracking-wide uppercase">Deleting...</span>
+                  </div>
+                )}
+
+                {idx === 0 && !isDeleting && (
                   <span className="absolute top-2 left-2 z-[2] bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{t('cover') || 'Cover'}</span>
                 )}
-                <button
-                  onClick={() => deletePhoto(photo.id)}
-                  className="absolute top-2 right-2 z-[2] bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors md:opacity-0 md:group-hover:opacity-100 shadow-md min-w-[36px] min-h-[36px] flex items-center justify-center"
-                >
-                  <Trash2 size={14} />
-                </button>
+                {!isDeleting && (
+                  <button
+                    onClick={() => deletePhoto(photo.id)}
+                    className="absolute top-2 right-2 z-[2] bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors md:opacity-0 md:group-hover:opacity-100 shadow-md min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
-            ))}
+              );
+            })}
             
             {/* Pulsing loading animation card */}
             {(uploadingPhotos || isFetching) && (

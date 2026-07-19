@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const http = require('http');
 const { Server } = require('socket.io');
+const compression = require('compression');
 require('dotenv').config();
 
 const { initSocket } = require('./services/socket');
@@ -28,6 +29,7 @@ const sitemapRoutes = require('./routes/sitemap.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 
 const app = express();
+app.use(compression());
 const httpServer = http.createServer(app);
 
 // ─── CORS ─────────────────────────────────────

@@ -198,6 +198,9 @@ model Listing {
   @@index([type])
   @@index([status])
   @@index([rent])
+  @@index([ownerId])
+  @@index([createdAt])
+  @@index([city, rent])
   @@index([latitude, longitude])
   @@map("listings")
 }
@@ -374,6 +377,9 @@ model Review {
   comment     String?
   createdAt   DateTime @default(now())
 
+  @@index([receiverId])
+  @@index([reviewerId])
+  @@index([listingId])
   @@map("reviews")
 }
 

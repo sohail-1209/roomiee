@@ -94,6 +94,7 @@ router.get('/', asyncHandler(async (req, res) => {
 ${listingUrls}
 </urlset>`;
 
+  res.set('Cache-Control', 'public, max-age=3600');
   res.set('Content-Type', 'application/xml');
   res.send(xml);
 }));

@@ -88,12 +88,12 @@ const HostelDetail = () => {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: data?.title,
-    description: `${data?.title} - Hostel in ${data?.city}. Starting from ₹${availableTiers[0]?.price || data?.rent}/month.`,
+    description: `${data?.title} - Hostel in ${data?.city}. Starting from ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}/month.`,
     image: primaryPhoto,
     url: `https://quikden.vercel.app/hostel/${id}`,
     offers: {
       '@type': 'Offer',
-      price: data?.rent,
+      price: tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent,
       priceCurrency: 'INR',
       availability: data?.status === 'ACTIVE' ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
     },
@@ -104,7 +104,7 @@ const HostelDetail = () => {
     <>
       <SEO
         title={`${data?.title} — Hostel in ${data?.city}`}
-        description={`${data?.title} available in ${data?.city}. Hostel accommodation starting ₹${data?.rent}/month. ${hs?.genderRequired ? hs.genderRequired + ' preferred' : 'All genders'}. Zero brokerage on Quikden.`}
+        description={`${data?.title} available in ${data?.city}. Hostel accommodation starting ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}/month. ${hs?.genderRequired ? hs.genderRequired + ' preferred' : 'All genders'}. Zero brokerage on Quikden.`}
         image={primaryPhoto}
         url={`/hostel/${id}`}
         type="article"
@@ -136,26 +136,28 @@ const HostelDetail = () => {
             </div>
 
             {/* Sharing Tiers */}
-            {availableTiers.length > 0 && (
+            {(user?.id === data?.ownerId ? tiers : availableTiers).length > 0 && (
               <div className="card p-5">
                 <h2 className="font-display font-semibold text-lg mb-4">{t('sharingOptions')}</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {availableTiers.map((tier) => (
+                  {(user?.id === data?.ownerId ? tiers : availableTiers).map((tier) => (
                     <div
                       key={tier.id}
-                      onClick={() => setSelectedTier(tier)}
-                      className={`p-4 rounded-xl border-2 cursor-pointer transition-all text-center ${
+                      onClick={() => tier.available && setSelectedTier(tier)}
+                      className={`p-4 rounded-xl border-2 transition-all text-center ${
+                        tier.available ? 'cursor-pointer hover:border-primary-300' : 'opacity-50 cursor-not-allowed bg-surface-50'
+                      } ${
                         selectedTier?.id === tier.id
                           ? 'border-primary-500 bg-primary-50'
-                          : 'border-surface-200 hover:border-primary-300'
+                          : 'border-surface-200'
                       }`}
                     >
                       <div className="flex items-center justify-center gap-1 mb-2">
-                        <BedDouble size={16} className="text-primary-500" />
+                        <BedDouble size={16} className={tier.available ? 'text-primary-500' : 'text-surface-400'} />
                         <span className="font-bold text-lg text-surface-900">{tier.sharingSize}</span>
                       </div>
-                      <p className="text-xs text-surface-500 mb-1">{t('sharing')}</p>
-                      <p className="font-display font-bold text-primary-600">{formatRent(tier.price)}<span className="text-xs font-normal text-surface-400">/mo</span></p>
+                      <p className="text-xs text-surface-500 mb-1">{tier.available ? t('sharing') : t('full') || 'Full'}</p>
+                      <p className={`font-display font-bold ${tier.available ? 'text-primary-600' : 'text-surface-500'}`}>{formatRent(tier.price)}<span className="text-xs font-normal text-surface-400">/mo</span></p>
                     </div>
                   ))}
                 </div>
@@ -204,12 +206,12 @@ const HostelDetail = () => {
             <div className="card p-6 sticky top-24 space-y-4">
               {/* Price range */}
               <div>
-                {availableTiers.length > 0 ? (
+                {tiers.length > 0 ? (
                   <div>
                     <span className="text-sm text-surface-400">{t('startingFrom')}</span>
                     <div className="flex items-baseline gap-1">
                       <span className="font-display font-bold text-3xl text-surface-900">
-                        {formatRent(Math.min(...availableTiers.map((t) => t.price)))}
+                        {formatRent(Math.min(...tiers.map((t) => t.price)))}
                       </span>
                       <span className="text-surface-400 text-sm">{t('mo')}</span>
                     </div>

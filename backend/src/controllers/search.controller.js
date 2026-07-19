@@ -2,6 +2,47 @@
 const prisma = require('../utils/prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { parseAIQuery } = require('../services/ai.service');
+const cache = require('../utils/cache');
+
+// Optimized listing select for search feeds
+const listingFeedSelect = {
+  id: true,
+  ownerId: true,
+  title: true,
+  type: true,
+  status: true,
+  rent: true,
+  deposit: true,
+  address: true,
+  city: true,
+  bedrooms: true,
+  bathrooms: true,
+  areaSqFt: true,
+  availableFrom: true,
+  createdAt: true,
+  owner: {
+    select: {
+      id: true,
+      name: true,
+      profileImage: true,
+      avgRating: true,
+    },
+  },
+  photos: {
+    select: { url: true, isPrimary: true },
+    orderBy: { order: 'asc' },
+  },
+  roomSharing: {
+    select: { genderRequired: true },
+  },
+  hostelSharing: {
+    select: {
+      tiers: {
+        select: { id: true, sharingSize: true, price: true, available: true },
+      },
+    },
+  },
+};
 
 // ─── GET /search — full text + filter search ──────────
 const search = asyncHandler(async (req, res) => {
@@ -9,6 +50,12 @@ const search = asyncHandler(async (req, res) => {
     q, type, city, minRent, maxRent, furnished,
     gender, bedrooms, page = 1, limit = 12,
   } = req.query;
+
+  const cacheKey = `search:${JSON.stringify(req.query)}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return res.json(cachedData);
+  }
 
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
@@ -35,17 +82,7 @@ const search = asyncHandler(async (req, res) => {
   const [results, total] = await prisma.$transaction([
     prisma.listing.findMany({
       where,
-      select: {
-        id: true, title: true, type: true, status: true,
-        rent: true, deposit: true, city: true, address: true,
-        latitude: true, longitude: true, bedrooms: true, furnished: true,
-        views: true, createdAt: true,
-        owner: { select: { id: true, name: true, profileImage: true, avgRating: true } },
-        photos: { where: { isPrimary: true }, take: 1 },
-        amenities: true,
-        hostelSharing: { include: { tiers: true } },
-        _count: { select: { savedBy: true } },
-      },
+      select: listingFeedSelect,
       orderBy: { createdAt: 'desc' },
       skip,
       take: parseInt(limit),
@@ -53,17 +90,26 @@ const search = asyncHandler(async (req, res) => {
     prisma.listing.count({ where }),
   ]);
 
-  res.json({
+  const responseData = {
     success: true,
     data: results,
     pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) },
-  });
+  };
+
+  cache.set(cacheKey, responseData, 30);
+  res.json(responseData);
 });
 
 // ─── POST /search/ai — natural language → filters + keywords → results ──
 const aiSearch = asyncHandler(async (req, res) => {
   const { query } = req.body;
   if (!query) return res.status(400).json({ success: false, message: 'Query required' });
+
+  const cacheKey = `aisearch:${query}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return res.json(cachedData);
+  }
 
   // Parse the natural language query to structured filters + keywords
   const parsed = await parseAIQuery(query);
@@ -128,17 +174,7 @@ const aiSearch = asyncHandler(async (req, res) => {
 
   const results = await prisma.listing.findMany({
     where,
-    select: {
-      id: true, title: true, type: true, rent: true, deposit: true,
-      city: true, address: true, latitude: true, longitude: true,
-      bedrooms: true, furnished: true, views: true, createdAt: true,
-      owner: { select: { id: true, name: true, profileImage: true, avgRating: true } },
-      photos: { where: { isPrimary: true }, take: 1 },
-      amenities: true,
-      hostelSharing: { include: { tiers: true } },
-      roomSharing: true,
-      _count: { select: { savedBy: true } },
-    },
+    select: listingFeedSelect,
     orderBy: { createdAt: 'desc' },
     take: 20,
   });
@@ -150,17 +186,7 @@ const aiSearch = asyncHandler(async (req, res) => {
     if (textOR.length > 0) {
       const fallbackResults = await prisma.listing.findMany({
         where: structuredWhere,
-        select: {
-          id: true, title: true, type: true, rent: true, deposit: true,
-          city: true, address: true, latitude: true, longitude: true,
-          bedrooms: true, furnished: true, views: true, createdAt: true,
-          owner: { select: { id: true, name: true, profileImage: true, avgRating: true } },
-          photos: { where: { isPrimary: true }, take: 1 },
-          amenities: true,
-          hostelSharing: { include: { tiers: true } },
-          roomSharing: true,
-          _count: { select: { savedBy: true } },
-        },
+        select: listingFeedSelect,
         orderBy: { createdAt: 'desc' },
         take: 20,
       });
@@ -182,17 +208,7 @@ const aiSearch = asyncHandler(async (req, res) => {
       };
       const looseResults = await prisma.listing.findMany({
         where: looseWhere,
-        select: {
-          id: true, title: true, type: true, rent: true, deposit: true,
-          city: true, address: true, latitude: true, longitude: true,
-          bedrooms: true, furnished: true, views: true, createdAt: true,
-          owner: { select: { id: true, name: true, profileImage: true, avgRating: true } },
-          photos: { where: { isPrimary: true }, take: 1 },
-          amenities: true,
-          hostelSharing: { include: { tiers: true } },
-          roomSharing: true,
-          _count: { select: { savedBy: true } },
-        },
+        select: listingFeedSelect,
         orderBy: { createdAt: 'desc' },
         take: 20,
       });
@@ -203,7 +219,9 @@ const aiSearch = asyncHandler(async (req, res) => {
     }
   }
 
-  res.json({ success: true, data: finalResults, parsedFilters: { ...filters, keywords } });
+  const responseData = { success: true, data: finalResults, parsedFilters: { ...filters, keywords } };
+  cache.set(cacheKey, responseData, 60);
+  res.json(responseData);
 });
 
 module.exports = { search, aiSearch };

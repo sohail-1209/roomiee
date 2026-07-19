@@ -3,6 +3,7 @@ const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
 const cloudinary = require('../services/cloudinary.service');
+const cache = require('../utils/cache');
 
 // ─── Shared listing select (reused in list + detail) ──
 const listingSelect = {
@@ -41,12 +42,58 @@ const listingSelect = {
   _count: { select: { savedBy: true, reviews: true, requests: true } },
 };
 
+// Optimized listing select for list feeds (e.g. search, lists, homepage)
+const listingFeedSelect = {
+  id: true,
+  ownerId: true,
+  title: true,
+  type: true,
+  status: true,
+  rent: true,
+  deposit: true,
+  address: true,
+  city: true,
+  bedrooms: true,
+  bathrooms: true,
+  areaSqFt: true,
+  availableFrom: true,
+  createdAt: true,
+  owner: {
+    select: {
+      id: true,
+      name: true,
+      profileImage: true,
+      avgRating: true,
+    },
+  },
+  photos: {
+    select: { url: true, isPrimary: true },
+    orderBy: { order: 'asc' },
+  },
+  roomSharing: {
+    select: { genderRequired: true },
+  },
+  hostelSharing: {
+    select: {
+      tiers: {
+        select: { id: true, sharingSize: true, price: true, available: true },
+      },
+    },
+  },
+};
+
 // ─── GET /listings — list with filters + pagination ───
 const getListings = asyncHandler(async (req, res) => {
   const {
     type, city, minRent, maxRent, furnished, gender,
     bedrooms, parking, wifi, ac, fridge, pg, page = 1, limit = 12,
   } = req.query;
+
+  const cacheKey = `listings:${JSON.stringify(req.query)}`;
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    return res.json(cachedData);
+  }
 
   const where = {
     status: { in: ['ACTIVE', 'RENTED'] },
@@ -79,7 +126,7 @@ const getListings = asyncHandler(async (req, res) => {
   const [listings, total] = await prisma.$transaction([
     prisma.listing.findMany({
       where,
-      select: listingSelect,
+      select: listingFeedSelect,
       orderBy: { createdAt: 'desc' },
       skip,
       take: parseInt(limit),
@@ -87,11 +134,14 @@ const getListings = asyncHandler(async (req, res) => {
     prisma.listing.count({ where }),
   ]);
 
-  res.json({
+  const responseData = {
     success: true,
     data: listings,
     pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / limit) },
-  });
+  };
+
+  cache.set(cacheKey, responseData, 30);
+  res.json(responseData);
 });
 
 // ─── GET /listings/:id — single listing detail ────────
@@ -200,6 +250,7 @@ const createListing = asyncHandler(async (req, res) => {
     include: { amenities: true, roomSharing: true, hostelSharing: { include: { tiers: true } } },
   });
 
+  cache.clear();
   res.status(201).json({ success: true, data: listing });
 });
 
@@ -304,6 +355,7 @@ const updateListing = asyncHandler(async (req, res) => {
     include: { amenities: true, roomSharing: true, hostelSharing: { include: { tiers: true } }, photos: true },
   });
 
+  cache.clear();
   res.json({ success: true, data: updated });
 });
 
@@ -329,6 +381,7 @@ const deleteListing = asyncHandler(async (req, res) => {
 
   // Delete listing — all related records cascade via Prisma schema
   await prisma.listing.delete({ where: { id: listing.id } });
+  cache.clear();
   res.json({ success: true, message: 'Listing deleted' });
 });
 
@@ -351,6 +404,7 @@ const updateListingStatus = asyncHandler(async (req, res) => {
     data: { status },
   });
 
+  cache.clear();
   res.json({ success: true, data: updated });
 });
 

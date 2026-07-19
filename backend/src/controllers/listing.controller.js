@@ -224,6 +224,23 @@ const parseAvailableFrom = (dateStr) => {
   return isNaN(d.getTime()) ? new Date() : d;
 };
 
+// ─── Helper: clean amenities object matching Prisma model ───
+const cleanAmenities = (amenitiesObj) => {
+  if (!amenitiesObj) return undefined;
+  const allowed = [
+    'wifi', 'parking', 'washingMachine', 'ac', 'fridge', 
+    'kitchen', 'lift', 'gym', 'security', 'powerBackup', 
+    'waterSupply', 'cctv'
+  ];
+  const cleaned = {};
+  allowed.forEach((field) => {
+    if (amenitiesObj[field] !== undefined) {
+      cleaned[field] = Boolean(amenitiesObj[field]);
+    }
+  });
+  return cleaned;
+};
+
 // ─── POST /listings — create listing (owner only) ─────
 const createListing = asyncHandler(async (req, res) => {
   const {
@@ -246,7 +263,7 @@ const createListing = asyncHandler(async (req, res) => {
       furnished: Boolean(furnished),
       availableFrom: parseAvailableFrom(availableFrom),
       ...(amenities && {
-        amenities: { create: amenities },
+        amenities: { create: cleanAmenities(amenities) },
       }),
       ...(roomSharing && type === 'ROOM_SHARING' && {
         roomSharing: {
@@ -318,10 +335,7 @@ const updateListing = asyncHandler(async (req, res) => {
   // Parse amenities
   let amenitiesUpsert = undefined;
   if (amenities) {
-    const amenitiesClean = {};
-    for (const k in amenities) {
-      amenitiesClean[k] = Boolean(amenities[k]);
-    }
+    const amenitiesClean = cleanAmenities(amenities);
     amenitiesUpsert = { upsert: { create: amenitiesClean, update: amenitiesClean } };
   }
 

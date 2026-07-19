@@ -303,7 +303,9 @@ const CreateListing = () => {
       toast.loading(t('uploadingPhotos') || 'Uploading photos...', { id: 'photo-upload' });
       await uploadAPI.listingPhotos(id, fd);
       toast.success(t('photosUploaded') || 'Photos uploaded successfully!', { id: 'photo-upload' });
-      qc.invalidateQueries({ queryKey: ['listing', id] });
+
+      // Wait for refetch to complete before hiding the skeleton
+      await qc.refetchQueries({ queryKey: ['listing', id] });
     } catch {
       toast.error(t('failedToUploadPhotos') || 'Failed to upload photos.', { id: 'photo-upload' });
     } finally {

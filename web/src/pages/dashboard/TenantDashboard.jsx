@@ -1,7 +1,8 @@
 // TenantDashboard — home page for tenants after login
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Bookmark, Send, MessageSquare, Plus, ArrowRight, Home, CheckCircle } from 'lucide-react';
+import { Bookmark, Send, MessageSquare, Plus, ArrowRight, Home, CheckCircle, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
@@ -41,6 +42,60 @@ const RequestSkeleton = () => (
     </div>
   </div>
 );
+
+// ── Booking Item (Local State for instant UI update) ───────────────────────────
+const BookingItem = ({ booking, navigate, completeBookingMutation, t }) => {
+  const [deleted, setDeleted] = useState(false);
+
+  const handleDelete = () => {
+    setDeleted(true);
+    completeBookingMutation.mutate(booking.id, {
+      onError: () => setDeleted(false),
+    });
+  };
+
+  if (deleted) return null;
+
+  return (
+    <div className="card p-4">
+      <div className="flex gap-4">
+        <img
+          src={booking.listing?.photos?.[0]?.url || 'https://placehold.co/80x80?text=No+Photo'}
+          alt={booking.listing?.title}
+          className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-surface-800 text-sm truncate">{booking.listing?.title}</p>
+          <p className="text-xs text-surface-400 truncate">{booking.listing?.city}</p>
+        </div>
+      </div>
+      {/* Activate prompt */}
+      <div className="mt-3 p-3 bg-primary-50/50 rounded-xl border border-primary-100">
+        <div className="flex items-start gap-2">
+          <CheckCircle size={16} className="text-primary-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-xs font-medium text-primary-700">{t('bookingConfirmed')}</p>
+            <p className="text-[11px] text-primary-500 mt-0.5">{t('activateBookingPrompt') || 'Create a room sharing listing to activate this booking'}</p>
+          </div>
+        </div>
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={() => navigate('/dashboard/listings/new', { state: { fromBooking: booking } })}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            <Plus size={14} /> {t('activateNow') || 'Activate Now'}
+          </button>
+          <button
+            onClick={handleDelete}
+            className="px-3 py-2 flex items-center justify-center gap-1.5 text-xs font-medium text-danger-500 border border-danger-200 bg-danger-50 rounded-lg hover:bg-danger-100 transition-colors"
+          >
+            <Trash2 size={14} /> {t('delete') || 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function TenantDashboard() {
@@ -194,43 +249,13 @@ export default function TenantDashboard() {
           </div>
           <div className="space-y-3">
             {bookings.map((booking) => (
-              <div key={booking.id} className="card p-4">
-                <div className="flex gap-4">
-                  <img
-                    src={booking.listing?.photos?.[0]?.url || 'https://placehold.co/80x80?text=No+Photo'}
-                    alt={booking.listing?.title}
-                    className="w-20 h-20 rounded-xl object-cover flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-surface-800 text-sm truncate">{booking.listing?.title}</p>
-                    <p className="text-xs text-surface-400 truncate">{booking.listing?.city}</p>
-                  </div>
-                </div>
-                {/* Activate prompt */}
-                <div className="mt-3 p-3 bg-primary-50/50 rounded-xl border border-primary-100">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle size={16} className="text-primary-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-xs font-medium text-primary-700">{t('bookingConfirmed')}</p>
-                      <p className="text-[11px] text-primary-500 mt-0.5">{t('activateBookingPrompt') || 'Create a room sharing listing to activate this booking'}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <button
-                      onClick={() => navigate('/dashboard/listings/new', { state: { fromBooking: booking } })}
-                      className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
-                    >
-                      <Plus size={14} /> {t('activateNow') || 'Activate Now'}
-                    </button>
-                    <button
-                      onClick={() => completeBookingMutation.mutate(booking.id)}
-                      className="px-3 py-2 text-xs font-medium text-surface-500 border border-surface-200 rounded-lg hover:bg-surface-50 transition-colors"
-                    >
-                      {t('dismiss') || 'Dismiss'}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <BookingItem 
+                key={booking.id} 
+                booking={booking} 
+                navigate={navigate} 
+                completeBookingMutation={completeBookingMutation} 
+                t={t} 
+              />
             ))}
           </div>
         </section>

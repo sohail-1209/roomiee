@@ -3,6 +3,7 @@ const cloudinary = require('../services/cloudinary.service');
 const prisma = require('../utils/prisma');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
+const { del: clearCache } = require('../utils/cache');
 
 // ─── POST /upload/listing-photos/:listingId ────────────
 const uploadListingPhotos = asyncHandler(async (req, res) => {
@@ -35,6 +36,7 @@ const uploadListingPhotos = asyncHandler(async (req, res) => {
   );
 
   const photos = await prisma.photo.createMany({ data: uploads });
+  clearCache(`listing:${listingId}`);
   res.status(201).json({ success: true, count: photos.count });
 });
 
@@ -48,6 +50,7 @@ const deletePhoto = asyncHandler(async (req, res) => {
 
   await cloudinary.uploader.destroy(photo.publicId);
   await prisma.photo.delete({ where: { id: photo.id } });
+  clearCache(`listing:${photo.listingId}`);
   res.json({ success: true, message: 'Photo deleted' });
 });
 

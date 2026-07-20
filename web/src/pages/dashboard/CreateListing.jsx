@@ -49,6 +49,7 @@ const CreateListing = () => {
   const [selectedBooking, setSelectedBooking] = useState(null); // null = "Other room"
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [deletingPhotoIds, setDeletingPhotoIds] = useState(new Set());
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const set = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
   const setAmenity = (key, val) => setForm((prev) => ({ ...prev, amenities: { ...prev.amenities, [key]: val } }));
@@ -114,7 +115,7 @@ const CreateListing = () => {
   const acceptedBookings = bookingsData || [];
 
   useEffect(() => {
-    if (listingData) {
+    if (listingData && !dataLoaded) {
       setAddressInput(listingData.address || '');
       setForm({
         title: listingData.title || '',
@@ -178,8 +179,9 @@ const CreateListing = () => {
             : [{ sharingSize: '2', price: '', available: true }],
         } : defaultForm.hostelSharing,
       });
+      setDataLoaded(true);
     }
-  }, [listingData]);
+  }, [listingData, dataLoaded]);
 
   // Pre-fill from booking
   useEffect(() => {
@@ -307,6 +309,21 @@ const CreateListing = () => {
 
       const fd = new FormData();
       results.forEach((r) => fd.append('photos', r.file));
+
+      // Optimistic UI Update
+      const optimisticPhotos = results.map((r, i) => ({
+        id: `optimistic-${Date.now()}-${i}`,
+        url: URL.createObjectURL(r.file),
+        isOptimistic: true
+      }));
+
+      qc.setQueryData(['listing', id], (oldData) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          photos: [...(oldData.photos || []), ...optimisticPhotos]
+        };
+      });
 
       toast.loading(t('uploadingPhotos') || 'Uploading photos...', { id: 'photo-upload' });
       await uploadAPI.listingPhotos(id, fd);
@@ -621,6 +638,14 @@ const CreateListing = () => {
                   </div>
                 )}
 
+                {/* Optimistic uploading overlay */}
+                {photo.isOptimistic && (
+                  <div className="absolute inset-0 z-[3] bg-surface-900/40 backdrop-blur-[1px] flex flex-col items-center justify-center gap-1.5 animate-pulse">
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[10px] font-bold text-white tracking-wide uppercase">{t('uploading') || 'Uploading...'}</span>
+                  </div>
+                )}
+
                 {idx === 0 && !isDeleting && (
                   <span className="absolute top-2 left-2 z-[2] bg-primary-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{t('cover') || 'Cover'}</span>
                 )}
@@ -636,11 +661,11 @@ const CreateListing = () => {
               );
             })}
             
-            {/* Pulsing loading animation card */}
-            {(uploadingPhotos || isFetching) && (
+            {/* Pulsing loading animation card (only show if fetching but not uploading new ones) */}
+            {isFetching && !uploadingPhotos && (
               <div className="relative aspect-square rounded-2xl overflow-hidden border border-primary-200 bg-primary-50/30 flex flex-col items-center justify-center gap-2 shadow-inner animate-pulse">
                 <div className="h-6 w-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-[10px] font-bold text-primary-700 tracking-wide uppercase">{t('uploading') || 'Uploading...'}</span>
+                <span className="text-[10px] font-bold text-primary-700 tracking-wide uppercase">{t('loading') || 'Loading...'}</span>
               </div>
             )}
           </div>

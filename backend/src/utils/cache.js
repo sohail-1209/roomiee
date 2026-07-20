@@ -30,6 +30,10 @@ const set = (key, value, ttlSeconds = 30) => {
   });
 };
 
+const del = (key) => {
+  cache.delete(key);
+};
+
 /**
  * Clear the entire cache
  */
@@ -37,4 +41,4 @@ const clear = () => {
   cache.clear();
 };
 
-module.exports = { get, set, clear };
+module.exports = { get, set, del, clear };

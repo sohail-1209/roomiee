@@ -36,15 +36,12 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 // ─── PATCH /users/me/password — change password ────────────────
 const changePassword = asyncHandler(async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+  const { newPassword } = req.body;
   
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
   if (!user.password) {
     throw new AppError('Accounts created with Google cannot change their password.', 400);
   }
-
-  const match = await bcrypt.compare(currentPassword, user.password);
-  if (!match) throw new AppError('Incorrect current password', 401);
 
   const hashed = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({

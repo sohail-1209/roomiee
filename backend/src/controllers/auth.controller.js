@@ -176,10 +176,13 @@ const getMe = asyncHandler(async (req, res) => {
     select: {
       id: true, name: true, email: true, phone: true, role: true,
       profileImage: true, bio: true, avgRating: true, totalRatings: true,
-      isVerified: true, createdAt: true,
+      isVerified: true, createdAt: true, password: true,
     },
   });
-  res.json({ success: true, data: user });
+  if (!user) throw new AppError('User not found', 404);
+  const { password, ...safeUser } = user;
+  safeUser.hasPassword = !!password;
+  res.json({ success: true, data: safeUser });
 });
 
 // ─── Update FCM token ─────────────────────────

@@ -20,6 +20,13 @@ const RequestCard = ({ request, userRole }) => {
   });
 
   const photo = request.listing?.photos?.[0]?.url;
+  
+  const isHostel = request.listing?.type === 'HOSTEL';
+  const displayPrice = request.price || request.listing?.rent || (
+    isHostel && request.listing?.hostelSharing?.tiers?.length > 0 
+      ? Math.min(...request.listing.hostelSharing.tiers.map(t => t.price))
+      : 0
+  );
 
   return (
     <div className="card p-4 flex gap-4 animate-slide-up overflow-hidden">
@@ -41,7 +48,7 @@ const RequestCard = ({ request, userRole }) => {
             <div className="flex items-center gap-1 text-xs text-surface-400 mt-0.5">
               <MapPin size={11} className="flex-shrink-0" /> <span className="truncate">{request.listing?.city}</span>
               <span className="mx-1 flex-shrink-0">·</span>
-              <span className="font-medium text-surface-700 flex-shrink-0">{formatRent(request.price ?? request.listing?.rent)}/mo</span>
+              <span className="font-medium text-surface-700 flex-shrink-0">{isHostel && !request.price ? `${t('from') || 'From'} ` : ''}{formatRent(displayPrice)}/mo</span>
             </div>
           </div>
           <span className={`badge flex-shrink-0 text-[10px] px-2 py-0.5 whitespace-nowrap ${requestStatusClass(request.status)}`}>

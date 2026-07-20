@@ -41,7 +41,7 @@ const SwipeToDelete = ({ children, onDelete }) => {
   };
 
   return (
-    <div className="relative overflow-hidden" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+    <div className="relative overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
       <div
         className="transition-transform"
         style={{ transform: `translateX(-${offset}px)`, transition: swiping ? 'none' : 'transform 0.2s ease' }}

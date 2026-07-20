@@ -9,14 +9,16 @@ import { useAuth } from '../context/AuthContext';
 import { compressImage } from '../utils/compressImage';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import ReviewCard from '../components/ReviewCard';
-import { Button, Input, Textarea, Avatar } from '../components/ui';
+import { Button, Input, Textarea, Avatar, Modal } from '../components/ui';
 
 const ProfilePage = () => {
   const { t } = useTranslation();
   const { user, updateUser } = useAuth();
   const qc = useQueryClient();
   const [form, setForm] = useState({ name: user?.name || '', phone: user?.phone || '', bio: user?.bio || '' });
-  const [passForm, setPassForm] = useState({ currentPassword: '', newPassword: '' });
+  const [passForm, setPassForm] = useState({ newPassword: '' });
+  const [showPassConfirm, setShowPassConfirm] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
   const [uploading, setUploading] = useState(false);
 
   const { data: reviews } = useQuery({
@@ -38,7 +40,7 @@ const ProfilePage = () => {
   const { mutate: updatePassword, isPending: isPassPending } = useMutation({
     mutationFn: () => usersAPI.changePassword(passForm),
     onSuccess: () => {
-      setPassForm({ currentPassword: '', newPassword: '' });
+      setPassForm({ newPassword: '' });
       toast.success(t('passwordUpdated') || 'Password updated successfully');
     },
     onError: (err) => {
@@ -46,6 +48,12 @@ const ProfilePage = () => {
       toast.error(msg);
     },
   });
+
+  const handlePassUpdateClick = () => {
+    if (!passForm.newPassword) return;
+    setConfirmText('');
+    setShowPassConfirm(true);
+  };
 
   const handlePhotoUpload = async (e) => {
     const original = e.target.files?.[0];
@@ -95,12 +103,13 @@ const ProfilePage = () => {
       </div>
 
       {/* Change Password form */}
-      <div className="card p-4 sm:p-6 space-y-4">
-        <h3 className="font-semibold text-surface-900">{t('changePassword') || 'Change Password'}</h3>
-        <Input label={t('currentPassword') || 'Current Password'} value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })} type="password" />
-        <Input label={t('newPassword') || 'New Password'} value={passForm.newPassword} onChange={(e) => setPassForm({ ...passForm, newPassword: e.target.value })} type="password" />
-        <Button variant="primary" size="md" loading={isPassPending} onClick={() => updatePassword()} disabled={!passForm.currentPassword || !passForm.newPassword}>{t('updatePassword') || 'Update Password'}</Button>
-      </div>
+      {user?.hasPassword && (
+        <div className="card p-4 sm:p-6 space-y-4">
+          <h3 className="font-semibold text-surface-900">{t('changePassword') || 'Change Password'}</h3>
+          <Input label={t('newPassword') || 'New Password'} value={passForm.newPassword} onChange={(e) => setPassForm({ ...passForm, newPassword: e.target.value })} type="password" />
+          <Button variant="primary" size="md" onClick={handlePassUpdateClick} disabled={!passForm.newPassword}>{t('updatePassword') || 'Update Password'}</Button>
+        </div>
+      )}
 
       {/* Reviews */}
       {reviews?.length > 0 && (
@@ -111,6 +120,24 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+      {/* Password Confirmation Modal */}
+      <Modal isOpen={showPassConfirm} onClose={() => setShowPassConfirm(false)} title={t('confirmPasswordChange') || 'Confirm Password Change'}>
+        <p className="text-sm text-surface-600 mb-4">{t('typeChangeToConfirm') || 'Please type'} <strong>CHANGE</strong> {t('toConfirm') || 'to confirm.'}</p>
+        <Input value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="CHANGE" />
+        <Button 
+          variant="primary" 
+          className="w-full mt-4" 
+          disabled={confirmText !== 'CHANGE'}
+          loading={isPassPending}
+          onClick={() => {
+            updatePassword();
+            setShowPassConfirm(false);
+          }}
+        >
+          {t('confirm') || 'Confirm'}
+        </Button>
+      </Modal>
     </div>
   );
 };

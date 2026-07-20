@@ -15,48 +15,7 @@ import { timeAgo } from '../../utils/helpers';
 import Avatar from '../ui/Avatar';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 
-// ── Swipe to delete component ──────────────────────────────────────────────────
-const SwipeToDelete = ({ children, onDelete }) => {
-  const [offset, setOffset] = useState(0);
-  const [swiping, setSwiping] = useState(false);
-  const startX = useRef(0);
-
-  const handleTouchStart = (e) => {
-    startX.current = e.touches[0].clientX;
-    setSwiping(true);
-  };
-
-  const handleTouchMove = (e) => {
-    if (!swiping) return;
-    const diff = startX.current - e.touches[0].clientX;
-    if (diff > 0) setOffset(Math.min(diff, 80));
-  };
-
-  const handleTouchEnd = () => {
-    setSwiping(false);
-    if (offset > 50) {
-      onDelete();
-    }
-    setOffset(0);
-  };
-
-  return (
-    <div className="relative overflow-hidden touch-pan-y" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-      <div
-        className="transition-transform"
-        style={{ transform: `translateX(-${offset}px)`, transition: swiping ? 'none' : 'transform 0.2s ease' }}
-      >
-        {children}
-      </div>
-      {offset > 10 && (
-        <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-danger-500 text-white px-3" style={{ width: offset }}>
-          <Trash2 size={16} />
-        </div>
-      )}
-    </div>
-  );
-};
-
+// ── Navbar Data ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   {
     label: 'houses', baseType: 'HOUSE_RENTAL', icon: Home, children: [
@@ -385,7 +344,7 @@ export default function Navbar() {
                           </div>
                         ) : (
                           notifData?.slice(0, 20).map((notif, i) => (
-                            <SwipeToDelete key={notif.id} onDelete={() => deleteNotif.mutate(notif.id)}>
+                            <div key={notif.id} className="relative group border-b border-surface-50 last:border-0" style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 30}ms both` }}>
                               <button
                                 onClick={() => {
                                   markAsRead.mutate(notif.id);
@@ -394,8 +353,7 @@ export default function Navbar() {
                                   else if (notif.data?.listingId) navigate(`/listing/${notif.data.listingId}`);
                                   setNotifOpen(false);
                                 }}
-                                className={`w-full text-left px-4 py-3 hover:bg-surface-50 active:bg-surface-100 transition-colors border-b border-surface-50 last:border-0 ${!notif.read ? 'bg-primary-50/30' : ''}`}
-                                style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 30}ms both` }}
+                                className={`w-full text-left px-4 py-3 pr-12 hover:bg-surface-50 active:bg-surface-100 transition-colors ${!notif.read ? 'bg-primary-50/30' : ''}`}
                               >
                                 <div className="flex items-start gap-3">
                                   <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read ? 'bg-primary-500' : 'bg-surface-300'}`} />
@@ -406,7 +364,14 @@ export default function Navbar() {
                                   </div>
                                 </div>
                               </button>
-                            </SwipeToDelete>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); deleteNotif.mutate(notif.id); }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-danger-500 active:bg-danger-50 rounded-full transition-colors flex items-center justify-center"
+                                aria-label="Delete notification"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           ))
                         )}
                       </div>

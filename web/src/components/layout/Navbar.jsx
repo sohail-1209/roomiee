@@ -15,6 +15,53 @@ import { timeAgo } from '../../utils/helpers';
 import Avatar from '../ui/Avatar';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 
+// ── Notification Item (Local State for instant UI update) ──────────────────────
+const NotificationItem = ({ notif, index, deleteNotif, markAsRead, navigate, setNotifOpen }) => {
+  const [deleted, setDeleted] = useState(false);
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleted(true); // Optimistically hide it
+    deleteNotif.mutate(notif.id, {
+      onError: () => setDeleted(false) // revert if backend fails
+    });
+  };
+
+  if (deleted) return null;
+
+  return (
+    <div className="relative group border-b border-surface-50 last:border-0" style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${index * 30}ms both` }}>
+      <button
+        onClick={() => {
+          markAsRead.mutate(notif.id);
+          if (notif.data?.chatId) navigate(`/dashboard/chats/${notif.data.chatId}`);
+          else if (notif.data?.requestId) navigate('/dashboard/requests');
+          else if (notif.data?.listingId) navigate(`/listing/${notif.data.listingId}`);
+          setNotifOpen(false);
+        }}
+        className={`w-full text-left px-4 py-3 pr-12 hover:bg-surface-50 active:bg-surface-100 transition-colors ${!notif.read ? 'bg-primary-50/30' : ''}`}
+      >
+        <div className="flex items-start gap-3">
+          <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read ? 'bg-primary-500' : 'bg-surface-300'}`} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-surface-900">{notif.title}</p>
+            <p className="text-sm text-surface-600 line-clamp-2 mt-0.5">{notif.body}</p>
+            <p className="text-xs text-surface-400 mt-1">{timeAgo(notif.createdAt)}</p>
+          </div>
+        </div>
+      </button>
+      <button
+        onClick={handleDelete}
+        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-danger-500 active:bg-danger-50 rounded-full transition-colors flex items-center justify-center z-10"
+        aria-label="Delete notification"
+      >
+        <Trash2 size={16} />
+      </button>
+    </div>
+  );
+};
+
 // ── Navbar Data ────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   {
@@ -156,17 +203,8 @@ export default function Navbar() {
 
   const deleteNotif = useMutation({
     mutationFn: (id) => notificationsAPI.delete(id),
-    onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['notifications'] });
-      const previousNotifs = queryClient.getQueryData(['notifications']);
-      queryClient.setQueryData(['notifications'], (old) => old?.filter(n => n.id !== id) || []);
-      return { previousNotifs };
-    },
-    onError: (err, id, context) => {
-      queryClient.setQueryData(['notifications'], context.previousNotifs);
-      toast.error('Failed to delete notification');
-    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+    onError: () => toast.error('Failed to delete notification')
   });
 
   const handleLogout = async () => {
@@ -352,34 +390,15 @@ export default function Navbar() {
                           </div>
                         ) : (
                           notifData?.slice(0, 20).map((notif, i) => (
-                            <div key={notif.id} className="relative group border-b border-surface-50 last:border-0" style={{ animation: `slide-up 0.3s cubic-bezier(0.16,1,0.3,1) ${i * 30}ms both` }}>
-                              <button
-                                onClick={() => {
-                                  markAsRead.mutate(notif.id);
-                                  if (notif.data?.chatId) navigate(`/dashboard/chats/${notif.data.chatId}`);
-                                  else if (notif.data?.requestId) navigate('/dashboard/requests');
-                                  else if (notif.data?.listingId) navigate(`/listing/${notif.data.listingId}`);
-                                  setNotifOpen(false);
-                                }}
-                                className={`w-full text-left px-4 py-3 pr-12 hover:bg-surface-50 active:bg-surface-100 transition-colors ${!notif.read ? 'bg-primary-50/30' : ''}`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${!notif.read ? 'bg-primary-500' : 'bg-surface-300'}`} />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-surface-900">{notif.title}</p>
-                                    <p className="text-sm text-surface-600 line-clamp-2 mt-0.5">{notif.body}</p>
-                                    <p className="text-xs text-surface-400 mt-1">{timeAgo(notif.createdAt)}</p>
-                                  </div>
-                                </div>
-                              </button>
-                              <button
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteNotif.mutate(notif.id); }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-danger-500 active:bg-danger-50 rounded-full transition-colors flex items-center justify-center z-10"
-                                aria-label="Delete notification"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                            <NotificationItem
+                              key={notif.id}
+                              notif={notif}
+                              index={i}
+                              deleteNotif={deleteNotif}
+                              markAsRead={markAsRead}
+                              navigate={navigate}
+                              setNotifOpen={setNotifOpen}
+                            />
                           ))
                         )}
                       </div>

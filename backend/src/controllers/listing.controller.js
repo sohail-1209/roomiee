@@ -548,8 +548,17 @@ const completeBooking = asyncHandler(async (req, res) => {
       tenantId: req.user.id,
       status: 'ACCEPTED',
     },
+    include: { listing: true }
   });
   if (!request) throw new AppError('Booking not found', 404);
+
+  // If the tenant deletes the booking, reset the listing to ACTIVE so it can be rented again
+  if (request.listing.type !== 'HOSTEL') {
+    await prisma.listing.update({
+      where: { id: request.listingId },
+      data: { status: 'ACTIVE' },
+    });
+  }
 
   await prisma.request.delete({
     where: { id: req.params.id },

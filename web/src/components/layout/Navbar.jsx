@@ -110,13 +110,20 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setDropdownOpen(false);
-      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+    const handleOutsideClick = (e) => {
+      // Ignore clicks on elements that have been removed from the DOM (e.g. deleted notifications)
+      if (!document.body.contains(e.target)) return;
+
+      if (notifOpen && notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+      if (dropdownOpen && dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [notifOpen, dropdownOpen]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -157,6 +164,7 @@ export default function Navbar() {
     },
     onError: (err, id, context) => {
       queryClient.setQueryData(['notifications'], context.previousNotifs);
+      toast.error('Failed to delete notification');
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
   });
@@ -365,8 +373,8 @@ export default function Navbar() {
                                 </div>
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); deleteNotif.mutate(notif.id); }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-danger-500 active:bg-danger-50 rounded-full transition-colors flex items-center justify-center"
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteNotif.mutate(notif.id); }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-surface-400 hover:text-danger-500 active:bg-danger-50 rounded-full transition-colors flex items-center justify-center z-10"
                                 aria-label="Delete notification"
                               >
                                 <Trash2 size={16} />

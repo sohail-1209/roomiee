@@ -1,5 +1,6 @@
 // RequestCard — reused in both Owner Dashboard and Tenant Dashboard
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 import { formatRent, timeAgo, requestStatusClass } from '../utils/helpers';
 import { MapPin, Calendar, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -7,8 +8,10 @@ import { requestsAPI } from '../services/endpoints';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-const RequestCard = ({ request, userRole }) => {
+const RequestCard = ({ request }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const isListingOwner = request.listing?.ownerId === user?.id;
   const qc = useQueryClient();
   const { mutate: updateStatus, isPending } = useMutation({
     mutationFn: (status) => requestsAPI.update(request.id, status),
@@ -57,7 +60,7 @@ const RequestCard = ({ request, userRole }) => {
         </div>
 
         {/* Requester info (for owner view) */}
-        {userRole === 'OWNER' && (
+        {isListingOwner && (
           <div className="flex items-center gap-2 mt-2">
             <img
               src={request.tenant?.profileImage || `https://ui-avatars.com/api/?name=${request.tenant?.name}&background=6366f1&color=fff`}
@@ -78,7 +81,7 @@ const RequestCard = ({ request, userRole }) => {
           </span>
 
           {/* Owner action buttons */}
-          {userRole === 'OWNER' && request.status === 'PENDING' && (
+          {isListingOwner && request.status === 'PENDING' && (
             <div className="flex gap-2 ml-auto">
               <button
                 onClick={() => updateStatus('REJECTED')}
@@ -98,7 +101,7 @@ const RequestCard = ({ request, userRole }) => {
           )}
 
           {/* Tenant: go to chat if accepted */}
-          {userRole === 'TENANT' && request.status === 'ACCEPTED' && request.chat?.id && (
+          {!isListingOwner && request.status === 'ACCEPTED' && request.chat?.id && (
             <Link to={`/dashboard/chats/${request.chat.id}`} className="ml-auto btn-primary btn-sm px-3 py-1 text-xs rounded-lg">
               {t('openChat')}
             </Link>

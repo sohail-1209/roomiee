@@ -156,7 +156,7 @@ export default function RequestsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((req) => (
-            <RequestCard key={req.id} request={req} userRole={userRole} />
+            <RequestCard key={req.id} request={req} />
           ))}
         </div>
       )}

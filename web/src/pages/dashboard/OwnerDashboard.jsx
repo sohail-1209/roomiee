@@ -249,7 +249,7 @@ export default function OwnerDashboard() {
           ) : (
             <div className="space-y-3">
               {recentPendingRequests.map((req) => (
-                <RequestCard key={req.id} request={req} userRole="OWNER" />
+                <RequestCard key={req.id} request={req} />
               ))}
             </div>
           )}

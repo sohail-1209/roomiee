@@ -105,19 +105,19 @@ const updateRequest = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { status, chatId: chat?.id } });
 });
 
-// ─── GET /requests — list for owner or tenant ─────────
 const getRequests = asyncHandler(async (req, res) => {
-  const isOwner = req.user.role === 'OWNER';
-
   const requests = await prisma.request.findMany({
-    where: isOwner
-      ? { listing: { ownerId: req.user.id } }
-      : { tenantId: req.user.id },
+    where: {
+      OR: [
+        { listing: { ownerId: req.user.id } },
+        { tenantId: req.user.id }
+      ]
+    },
     include: {
       tenant: { select: { id: true, name: true, profileImage: true, avgRating: true } },
       listing: {
         select: {
-          id: true, title: true, city: true, rent: true,
+          id: true, title: true, city: true, rent: true, type: true, ownerId: true,
           photos: { where: { isPrimary: true }, take: 1 },
         },
       },

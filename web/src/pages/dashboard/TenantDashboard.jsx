@@ -132,6 +132,7 @@ export default function TenantDashboard() {
     mutationFn: (id) => listingsAPI.completeBooking(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['myBookings'] });
+      qc.invalidateQueries({ queryKey: ['requests'] });
       toast.success(t('bookingCompleted') || 'Booking activated!');
     },
     onError: () => toast.error(t('failedToUpdate')),
@@ -232,7 +233,7 @@ export default function TenantDashboard() {
         ) : (
           <div className="space-y-3">
             {recentRequests.map((req) => (
-              <RequestCard key={req.id} request={req} userRole="TENANT" />
+              <RequestCard key={req.id} request={req} />
             ))}
           </div>
         )}

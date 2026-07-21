@@ -51,6 +51,7 @@ api.interceptors.response.use(
       isRefreshing = true;
       try {
         const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) throw new Error('No refresh token');
         const { data } = await api.post('/auth/refresh', { refreshToken });
         const newToken = data.data.accessToken;
         const newRefresh = data.data.refreshToken;
@@ -61,9 +62,11 @@ api.interceptors.response.use(
         return api(original);
       } catch (err) {
         processQueue(err, null);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          window.location.href = '/login';
+        }
         return Promise.reject(err);
       } finally {
         isRefreshing = false;

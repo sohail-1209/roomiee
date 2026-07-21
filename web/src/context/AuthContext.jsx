@@ -19,9 +19,11 @@ export const AuthProvider = ({ children }) => {
         setUser(data.data);
         subscribeToPush().catch(() => {});
       })
-      .catch(() => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+      .catch((err) => {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
       })
       .finally(() => setLoading(false));
   }, []);

@@ -88,7 +88,7 @@ const HostelDetail = () => {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: data?.title,
-    description: `${data?.title} - Hostel in ${data?.city}. Starting from ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}/month.`,
+    description: `${data?.title} - Hostel in ${data?.city}. Starting from ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}${data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : '/month'}.`,
     image: primaryPhoto,
     url: `https://quikden.vercel.app/hostel/${id}`,
     offers: {
@@ -104,7 +104,7 @@ const HostelDetail = () => {
     <>
       <SEO
         title={`${data?.title} — Hostel in ${data?.city}`}
-        description={`${data?.title} available in ${data?.city}. Hostel accommodation starting ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}/month. ${hs?.genderRequired ? hs.genderRequired + ' preferred' : 'All genders'}. Zero brokerage on Quikden.`}
+        description={`${data?.title} available in ${data?.city}. Hostel accommodation starting ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}${data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : '/month'}. ${hs?.genderRequired ? hs.genderRequired + ' preferred' : 'All genders'}. Zero brokerage on Quikden.`}
         image={primaryPhoto}
         url={`/hostel/${id}`}
         type="article"
@@ -157,7 +157,7 @@ const HostelDetail = () => {
                         <span className="font-bold text-lg text-surface-900">{tier.sharingSize}</span>
                       </div>
                       <p className="text-xs text-surface-500 mb-1">{tier.available ? t('sharing') : t('full') || 'Full'}</p>
-                      <p className={`font-display font-bold ${tier.available ? 'text-primary-600' : 'text-surface-500'}`}>{formatRent(tier.price)}<span className="text-xs font-normal text-surface-400">/mo</span></p>
+                      <p className={`font-display font-bold ${tier.available ? 'text-primary-600' : 'text-surface-500'}`}>{formatRent(tier.price)}<span className="text-xs font-normal text-surface-400">{data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : '/mo'}</span></p>
                     </div>
                   ))}
                 </div>
@@ -213,13 +213,13 @@ const HostelDetail = () => {
                       <span className="font-display font-bold text-3xl text-surface-900">
                         {formatRent(Math.min(...tiers.map((t) => t.price)))}
                       </span>
-                      <span className="text-surface-400 text-sm">{t('mo')}</span>
+                      <span className="text-surface-400 text-sm">{data?.rentPeriod === 'per year' ? t('yr') || '/yr' : data?.rentPeriod === 'custom' ? '' : t('mo') || '/mo'}</span>
                     </div>
                   </div>
                 ) : (
                   <div>
                     <span className="font-display font-bold text-3xl text-surface-900">{formatRent(data?.rent)}</span>
-                    <span className="text-surface-400 text-sm">{t('month')}</span>
+                    <span className="text-surface-400 text-sm">{data?.rentPeriod === 'per year' ? t('year') || 'per year' : data?.rentPeriod === 'custom' ? '' : t('month') || 'per month'}</span>
                   </div>
                 )}
               </div>
@@ -230,7 +230,7 @@ const HostelDetail = () => {
                 {selectedTier && (
                   <div className="flex justify-between text-primary-600 font-medium pt-2 border-t border-surface-100">
                     <span>{t('selected')}</span>
-                    <span>{selectedTier.sharingSize}-sharing · {formatRent(selectedTier.price)}{t('mo')}</span>
+                    <span>{selectedTier.sharingSize}-sharing · {formatRent(selectedTier.price)}{data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : (t('mo') || '/mo')}</span>
                   </div>
                 )}
               </div>
@@ -287,7 +287,7 @@ const HostelDetail = () => {
         <div className="space-y-4">
           {selectedTier && (
               <div className="p-3 bg-primary-50 rounded-xl text-sm text-primary-700 font-medium">
-                {t('selectedPrefix')} {selectedTier.sharingSize}-sharing at {formatRent(selectedTier.price)}{t('mo')}
+                {t('selectedPrefix')} {selectedTier.sharingSize}-sharing at {formatRent(selectedTier.price)}{data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : (t('mo') || '/mo')}
             </div>
           )}
           <textarea value={requestMsg} onChange={(e) => setRequestMsg(e.target.value)} placeholder={t('introduceShare')} rows={4} className="input resize-none" />

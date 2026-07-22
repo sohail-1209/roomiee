@@ -115,7 +115,7 @@ const MyListingsPage = () => {
                     <div className="flex items-center gap-1 text-xs text-surface-400 mb-2">
                       <MapPin size={11} className="flex-shrink-0" /> <span className="truncate">{listing.city}</span>
                     </div>
-                    <p className="text-sm font-semibold text-surface-900 mb-2">{listing.type === 'HOSTEL' && listing._minHostelPrice > 0 ? `From ${formatRent(listing._minHostelPrice)}` : formatRent(listing.rent)} <span className="text-xs font-normal text-surface-400">/ mo</span></p>
+                    <p className="text-sm font-semibold text-surface-900 mb-2">{listing.type === 'HOSTEL' && listing._minHostelPrice > 0 ? `From ${formatRent(listing._minHostelPrice)}` : formatRent(listing.rent)} {listing.type !== 'LAND_SALE' && <span className="text-xs font-normal text-surface-400">{listing.rentPeriod === 'per year' ? '/yr' : listing.rentPeriod === 'custom' ? '' : '/mo'}</span>}</p>
                     {/* Views & Requests */}
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1.5 bg-surface-50 border border-surface-200 rounded-lg px-2.5 py-1.5">

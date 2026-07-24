@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 const SITE_NAME = 'Quikden';
 const DEFAULT_DESCRIPTION = "India's easiest platform to find rental houses, rooms, hostels, and roommates. AI-powered search, zero brokerage, verified listings.";
 const DEFAULT_IMAGE = 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png';
-const BASE_URL = 'https://quikden.vercel.app';
+const BASE_URL = 'https://quikden.in';
 
 export default function SEO({
   title,

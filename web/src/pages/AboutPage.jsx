@@ -19,11 +19,11 @@ export default function AboutPage() {
     '@type': 'AboutPage',
     name: 'About Quikden',
     description: 'Quikden is India\'s premier zero-brokerage platform for finding rooms, hostels, PG accommodations, and flatmates.',
-    url: 'https://quikden.vercel.app/about',
+    url: 'https://quikden.in/about',
     mainEntity: {
       '@type': 'Organization',
       name: 'Quikden',
-      url: 'https://quikden.vercel.app',
+      url: 'https://quikden.in',
       logo: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
     },
   };

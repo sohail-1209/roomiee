@@ -99,7 +99,7 @@ const ListingDetail = () => {
     name: data.title,
     description: `${data.title} - ${data.type?.replace(/_/g, ' ')} in ${data.city}. Rent: ₹${data.rent}${data.rentPeriod === 'per year' ? '/yr' : data.rentPeriod === 'custom' ? '' : '/month'}.`,
     image: primaryPhoto,
-    url: `https://quikden.vercel.app/listing/${id}`,
+    url: `https://quikden.in/listing/${id}`,
     offers: {
       '@type': 'Offer',
       price: data.rent,

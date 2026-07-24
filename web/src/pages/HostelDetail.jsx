@@ -90,7 +90,7 @@ const HostelDetail = () => {
     name: data?.title,
     description: `${data?.title} - Hostel in ${data?.city}. Starting from ₹${tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent}${data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : '/month'}.`,
     image: primaryPhoto,
-    url: `https://quikden.vercel.app/hostel/${id}`,
+    url: `https://quikden.in/hostel/${id}`,
     offers: {
       '@type': 'Offer',
       price: tiers.length > 0 ? Math.min(...tiers.map(t => t.price)) : data?.rent,

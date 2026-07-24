@@ -4,4 +4,4 @@ Disallow: /dashboard/
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://quikden.vercel.app/sitemap.xml
+Sitemap: https://quikden.in/sitemap.xml

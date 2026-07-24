@@ -214,11 +214,11 @@ export default function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Quikden',
-    url: 'https://quikden.vercel.app',
+    url: 'https://quikden.in',
     description: "India's easiest platform to find rental houses, rooms, hostels, and roommates.",
     potentialAction: {
       '@type': 'SearchAction',
-      target: 'https://quikden.vercel.app/search?q={search_term_string}',
+      target: 'https://quikden.in/search?q={search_term_string}',
       'query-input': 'required name=search_term_string',
     },
   };
@@ -227,7 +227,7 @@ export default function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Quikden',
-    url: 'https://quikden.vercel.app',
+    url: 'https://quikden.in',
     logo: 'https://res.cloudinary.com/dldgj84bm/image/upload/v1784198779/ChatGPT_Image_Jul_16_2026_04_15_03_PM_wtomms.png',
     sameAs: ['https://instagram.com/quikden'],
     contactPoint: {

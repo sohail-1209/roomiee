@@ -50,7 +50,7 @@ export default function LandDetail() {
     name: data.title,
     description: `${data.title} - Land for sale in ${data.city}. Price: ₹${data.rent}.`,
     image: primaryPhoto,
-    url: `https://quikden.vercel.app/land/${id}`,
+    url: `https://quikden.in/land/${id}`,
     offers: {
       '@type': 'Offer',
       price: data.rent,

@@ -88,7 +88,7 @@ const RoomDetail = () => {
     name: data?.title,
     description: `${data?.title} - Shared room in ${data?.city}. Rent: ₹${data?.rent}${data?.rentPeriod === 'per year' ? '/yr' : data?.rentPeriod === 'custom' ? '' : '/month'}.`,
     image: primaryPhoto,
-    url: `https://quikden.vercel.app/room/${id}`,
+    url: `https://quikden.in/room/${id}`,
     offers: {
       '@type': 'Offer',
       price: data?.rent,
